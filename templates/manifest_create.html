@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
+{% load widget_tweaks %}
 
     {% if messages %}
     <div class="messages">
@@ -25,43 +26,59 @@
     </div>
     {% endif %}
 
+
     <form method="POST" enctype="multipart/form-data" action="{% url 'create_manifest' %}">
         {% csrf_token %}
+
         <!-- Manifest Details Section -->
         <section class="manifest-details-section">
             <h2 class="section-title">Manifest Details</h2>
             <div class="manifest-details">
                 <div>
+                    <label for="{{ form.vendor_name.id_for_label }}">Vendor Name</label>
+                    {{ form.vendor_name|add_class:"custom-input" }}
+                </div>
+                <div>
                     <label for="{{ form.origin_branch.id_for_label }}">Origin Branch</label>
-                    {{ form.origin_branch }}
+                    {{ form.origin_branch|add_class:"custom-input" }}
                 </div>
                 <div>
                     <label for="{{ form.destination_branch.id_for_label }}">Destination Branch</label>
-                    {{ form.destination_branch }}
+                    {{ form.destination_branch|add_class:"custom-input" }}
                 </div>
                 <div>
                     <label for="{{ form.vehicle_no.id_for_label }}">Vehicle No</label>
-                    {{ form.vehicle_no }}
+                    {{ form.vehicle_no|add_class:"custom-input" }}
                 </div>
                 <div>
                     <label for="{{ form.driver_name.id_for_label }}">Driver Name</label>
-                    {{ form.driver_name }}
+                    {{ form.driver_name|add_class:"custom-input" }}
                 </div>
                 <div>
                     <label for="{{ form.driver_contact.id_for_label }}">Driver Contact</label>
-                    {{ form.driver_contact }}
+                    {{ form.driver_contact|add_class:"custom-input" }}
                 </div>
                 <div>
-                    <label for="{{ form.document.id_for_label }}">Upload Document</label>
-                    {{ form.document }}
+                    <label for="{{ form.advance_amount.id_for_label }}">Advance Amount</label>
+                    {{ form.advance_amount|add_class:"custom-input" }}
+                </div>
+                <div>
+                    <label for="{{ form.additional_freight.id_for_label }}">Additional Freight</label>
+                    {{ form.additional_freight|add_class:"custom-input" }}
                 </div>
                 <div>
                     <label for="total_articles">Total Articles</label>
-                    <input type="text" id="total_articles" name="total_articles" value="{{ form.total_articles.value|default_if_none:'0' }}" readonly/>
+                    <input type="text" id="total_articles" name="total_articles"
+                           value="{{ form.total_articles.value|default_if_none:'0' }}" class="custom-input" readonly/>
                 </div>
                 <div>
                     <label for="total_freight">Total Freight</label>
-                    <input type="text" id="total_freight" name="total_freight" value="{{ form.total_freight.value|default_if_none:'0.00' }}" readonly/>
+                    <input type="text" id="total_freight" name="total_freight"
+                           value="{{ form.total_freight.value|default_if_none:'0.00' }}" class="custom-input" readonly/>
+                </div>
+                <div>
+                    <label for="{{ form.document.id_for_label }}">Upload Document</label>
+                    {{ form.document|add_class:"custom-input" }}
                 </div>
             </div>
         </section>
@@ -108,6 +125,7 @@
     </form>
 </div>
 
+<!-- CSS Styling -->
 <style>
     body {
         background: #f0f4f8;
@@ -116,23 +134,20 @@
         margin: 20px;
     }
     .container {
-        max-width: 900px;
+        max-width: 1000px;
         margin: 40px auto;
         background: white;
-        padding: 25px 35px;
-        border-radius: 8px;
+        padding: 30px 40px;
+        border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-    h1 {
-        font-weight: 700;
-        color: #2c3e50;
-        margin-bottom: 20px;
-    }
+
     h2.section-title {
         border-bottom: 2px solid #ff6f61;
-        padding-bottom: 5px;
-        margin-bottom: 15px;
+        padding-bottom: 8px;
+        margin-bottom: 20px;
         color: #ff6f61;
+        font-size: 18px;
     }
     form {
         display: flex;
@@ -144,21 +159,14 @@
         grid-template-columns: repeat(2, 1fr);
         gap: 20px 40px;
     }
-
-        label {
-
-        font-size: 10px; /* Increased font size for better readability */
-        margin-bottom: 5px;
-        display: block;
-    }
-
     label {
-
-        font-size: 10px;
+        font-size: 13px;
+        font-weight: 600;
         margin-bottom: 5px;
         display: block;
         color: #34495e;
     }
+    .custom-input,
     input[type="text"],
     input[type="file"],
     select {
@@ -167,14 +175,16 @@
         border: 1.5px solid #ccc;
         border-radius: 6px;
         font-size: 14px;
-        transition: border-color 0.2s ease-in-out;
+        transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         font-family: inherit;
-        box-sizing: border-box; /* Ensure padding is included in width */
+        box-sizing: border-box;
     }
+    .custom-input:focus,
     input[type="text"]:focus,
     select:focus {
         border-color: #ff6f61;
         outline: none;
+        box-shadow: 0 0 4px rgba(255, 111, 97, 0.4);
     }
     input[readonly], input[disabled] {
         background-color: #e9ecef;
@@ -209,8 +219,8 @@
         background-color: #ffe9e6;
     }
     .submit-button {
-        width: 150px;
-        padding: 12px 15px;
+        width: 180px;
+        padding: 12px 18px;
         background-color: #ff6f61;
         color: white;
         border: none;
@@ -230,4 +240,5 @@
         font-weight: 600;
     }
 </style>
+
 {% endblock %}

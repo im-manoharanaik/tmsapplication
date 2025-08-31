@@ -163,8 +163,9 @@ class CustomUser(AbstractUser):
         return self.username
 
 
+from django.db import models
+from django.utils import timezone
 class Shipment(models.Model):
-    objects = None
     PAYMENT_MODES = [
         ('TO-PAY', 'TO-PAY'),
         ('TBB', 'TBB'),
@@ -174,33 +175,54 @@ class Shipment(models.Model):
 
     STATUS_CHOICES = [
         ('Booked', 'Booked'),
+        ('Picked-Up', 'Picked-Up'),
+        ('Arrived', 'Arrived'),
+        ('Accepted at Hub', 'Accepted at Hub'),
         ('In Transit', 'In Transit'),
         ('Out For Delivery', 'Out For Delivery'),
         ('Delivered', 'Delivered'),
         ('Cancelled', 'Cancelled'),
+        ('Partial Delivered', 'Partial Delivered'),
+        ('RTO', 'Return to Origin'),
     ]
 
     SHIPMENT_TYPES = [
-        ('LTL', 'LTL'),
-        ('FTL', 'FTL')
+        ('PTL', 'PTL'),  # ✅ changed from LTL → PTL
+        ('FTL', 'FTL'),
+        ('PTL-RTO', 'PTL-RTO'),
+        ('FTL-RTO', 'FTL-RTO'),
+        ('PTL-APT', 'PTL-APT'),
+        ('PTL-NOR', 'PTL-NOR'),
+        ('FTL-APT', 'FTL-APT'),
+        ('FTL-NOR', 'FTL-NOR'),
     ]
-    
+
+    SHIPMENT_MODES = [
+        ('By_Road', 'By Road'),
+        ('By_Air', 'By Air'),
+        ('By_Train', 'By Train'),
+    ]
+
     consignment_no = models.CharField(max_length=50, unique=True, editable=False)
     date = models.DateField(default=timezone.now)
     freight = models.DecimalField(max_digits=10, decimal_places=2)
-    shipment_type = models.CharField(max_length=10, choices=SHIPMENT_TYPES)
+    shipment_type = models.CharField(max_length=15, choices=SHIPMENT_TYPES)
+    shipment_mode = models.CharField(max_length=15, choices=SHIPMENT_MODES, default='By_Road')
     payment_mode = models.CharField(max_length=10, choices=PAYMENT_MODES)
+
     origin = models.CharField(max_length=100)
     origin_pin = models.CharField(max_length=6)
     destination = models.CharField(max_length=100)
     destination_pin = models.CharField(max_length=6)
+
     vehicle_no = models.CharField(max_length=50)
     driver_details = models.CharField(max_length=100)
+
     billto_customer = models.ForeignKey(
         "CustomerMaster",
         on_delete=models.CASCADE,
-        to_field="customer_id",   # ✅ point to customer_id
-        db_column="billto_customer",  # ✅ column in Shipment table
+        to_field="customer_id",
+        db_column="billto_customer",
         related_name="shipments",
         null=True,
         blank=True,
@@ -218,25 +240,36 @@ class Shipment(models.Model):
     consignee_gst = models.CharField(max_length=20, blank=True, null=True)
     consignee_contact = models.CharField(max_length=20)
 
+    # References
     invoice_ref_number = models.CharField(max_length=500)
-    boe_num = models.TextField(default=None)
+    so_number = models.CharField(max_length=500, blank=True, null=True)   # ✅ Sales Order
+    ro_number = models.CharField(max_length=500, blank=True, null=True)   # ✅ Release Order
+    boe_num = models.CharField(max_length=500, blank=True, null=True)     # ✅ Bill of Entry
     ewaybill_number = models.CharField(max_length=500, blank=True, null=True)
+    additional_ref_number = models.CharField(max_length=500, blank=True, null=True)
+
+    # Cargo details
     value = models.DecimalField(max_digits=12, decimal_places=2)
     no_article = models.IntegerField(default=0)
     actual_weight = models.DecimalField(max_digits=12, decimal_places=2, default=0.0)
     charged_weight = models.DecimalField(max_digits=12, decimal_places=2, default=0.0)
     pack_type = models.CharField(max_length=50)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Booked')
 
+    # Status & tracking
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='Booked')
     estimated_delivery_date = models.DateField(null=True, blank=True)
     delivery_date = models.DateField(blank=True, null=True)
-    pod_scan = models.FileField(upload_to='pod_scans/', blank=True, null=True)
 
+    # Proof of Delivery
+    pod_scan = models.FileField(upload_to='pod_scans/', blank=True, null=True)
+    pod_link = models.URLField(blank=True, null=True)
+
+    # Appointment delivery
     appointment_delivery = models.BooleanField(default=False)
     appointment_date = models.DateField(blank=True, null=True)
 
+    # Extra info
     remark = models.TextField(null=True, blank=True)
-    pod_link = models.URLField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.pk and not self.consignment_no:
@@ -261,33 +294,60 @@ class Shipment(models.Model):
         return self.consignment_no
 
 
+from django.db import models
+from django.utils import timezone
+
+
 class Manifest(models.Model):
     manifest_id = models.CharField(max_length=100, unique=True, editable=False)
     shipments = models.ManyToManyField('Shipment', related_name='manifests')
+
     total_articles = models.IntegerField(default=0)
     total_freight = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    # Newly added fields
+    advance_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    additional_freight = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    vendor_name = models.ForeignKey(
+        "VendorMaster",
+        on_delete=models.CASCADE,
+        to_field="vendor_code",     # ✅ assuming VendorMaster has vendor_id
+        db_column="vendor_name",  # ✅ column in DB
+        related_name="manifests",
+        null=True,
+        blank=True,
+    )
+
     origin_branch = models.CharField(max_length=100, null=True)
     destination_branch = models.CharField(max_length=100, null=True)
     vehicle_no = models.CharField(max_length=50, null=True)
     driver_name = models.CharField(max_length=100, blank=True)
     driver_contact = models.CharField(max_length=20, blank=True)
+
     document = models.FileField(upload_to='manifest_documents/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
         if not self.manifest_id:
             year_prefix = str(timezone.now().year)[2:]
-            last_manifest = Manifest.objects.filter(manifest_id__startswith=f"MF-{year_prefix}").order_by('-id').first()
-            if last_manifest:
+            last_manifest = Manifest.objects.filter(
+                manifest_id__startswith=f"MF-{year_prefix}"
+            ).order_by('-id').first()
+
+            if last_manifest and last_manifest.manifest_id[-3:].isdigit():
                 last_number = int(last_manifest.manifest_id[-3:])
                 new_number = last_number + 1
             else:
                 new_number = 1
+
             self.manifest_id = f"MF-{year_prefix}{new_number:03d}"
+
         super().save(*args, **kwargs)
 
     def __str__(self):
         return self.manifest_id
+
 
 class VendorMaster(models.Model):
     STATUS_CHOICES = [
@@ -324,7 +384,6 @@ class VendorMaster(models.Model):
 
     def __str__(self):
         return f"{self.vendor_name} ({self.vendor_code})"
-
 
 class TripOutToVendor(models.Model):
     STATUS_CHOICES = [
@@ -369,3 +428,5 @@ class TripOutToVendor(models.Model):
 
     def __str__(self):
         return self.trip_id
+
+

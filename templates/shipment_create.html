@@ -44,6 +44,10 @@
             {{ form.shipment_type }}
         </div>
         <div>
+            <label>Shipment Mode</label>
+            {{ form.shipment_mode }}
+        </div>
+        <div>
             <label>Vehicle No</label>
             {{ form.vehicle_no }}
         </div>
@@ -106,13 +110,19 @@
             {{ form.consignee_contact }}
         </div>
 
-        <!-- Invoice -->
+        <!-- References -->
         <div>
             <label>Invoice Ref No</label>
             {{ form.invoice_ref_number }}
         </div>
-
-
+        <div>
+            <label>Sales Order Number</label>
+            {{ form.so_number }}
+        </div>
+        <div>
+            <label>Release Order Number</label>
+            {{ form.ro_number }}
+        </div>
         <div>
             <label>Bill of Entry Ref No</label>
             {{ form.boe_num }}
@@ -121,6 +131,12 @@
             <label>E-Waybill Number</label>
             {{ form.ewaybill_number }}
         </div>
+        <div>
+            <label>Additional Ref Number</label>
+            {{ form.additional_ref_number }}
+        </div>
+
+        <!-- Cargo details -->
         <div>
             <label>Value</label>
             {{ form.value }}
@@ -141,6 +157,8 @@
             <label>Charged Weight</label>
             {{ form.charged_weight }}
         </div>
+
+        <!-- Status & tracking -->
         <div>
             <label>Status</label>
             {{ form.status }}
@@ -150,15 +168,18 @@
             {{ form.estimated_delivery_date }}
         </div>
 
+        <!-- Appointment delivery -->
         <div class="full-width"><strong>Appointment Details</strong></div>
         <div>
             <label>Is This Appointment Delivery</label>
             {{ form.appointment_delivery }}
-
+        </div>
+        <div>
             <label>Appointment Date</label>
             {{ form.appointment_date }}
         </div>
 
+        <!-- Remark -->
         <div class="full-width"><strong>Remark</strong></div>
         <div>
             <label>Remark about the Shipment</label>
@@ -178,13 +199,13 @@
 
     form {
         display: grid;
-        grid-template-columns: repeat(2, 1fr); /* Adjusted to use two equal columns */
-        gap: 20px; /* Space between grid items */
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
     }
 
     label {
         font-weight: bold;
-        font-size: 12px; /* Increased font size for better readability */
+        font-size: 12px;
         margin-bottom: 5px;
         display: block;
     }
@@ -194,7 +215,7 @@
         padding: 8px;
         border: 1px solid #ccc;
         border-radius: 4px;
-        box-sizing: border-box; /* Ensure padding is included in width */
+        box-sizing: border-box;
     }
 
     textarea {
@@ -202,19 +223,19 @@
     }
 
     .full-width {
-        grid-column: 1 / -1; /* Make full-width elements span both columns */
+        grid-column: 1 / -1;
     }
 
     button {
         background-color: #ff6f61;
-        width: 10%; /* Make button full width */
+        width: 10%;
         color: white;
         border: none;
         padding: 10px 20px;
         font-size: 16px;
         border-radius: 4px;
         cursor: pointer;
-        grid-column: 1 / -1; /* Make button span both columns */
+        grid-column: 1 / -1;
     }
 
     button:hover {

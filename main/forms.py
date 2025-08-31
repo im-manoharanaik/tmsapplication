@@ -51,10 +51,23 @@ class CustomUserCreationForm(UserCreationForm):
         return cleaned_data
 
 
+from django import forms
+from .models import Manifest, Shipment, VendorMaster
+
 class ManifestForm(forms.ModelForm):
     class Meta:
         model = Manifest
         fields = '__all__'
+        widgets = {
+            'advance_amount': forms.NumberInput(attrs={
+                'class': 'form-control custom-input',
+                'placeholder': 'Enter advance amount'
+            }),
+            'additional_freight': forms.NumberInput(attrs={
+                'class': 'form-control custom-input',
+                'placeholder': 'Enter additional freight'
+            }),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -72,7 +85,6 @@ class ManifestForm(forms.ModelForm):
             cleaned_data['total_freight'] = total_freight
 
         return cleaned_data
-
 
 class PODUploadForm(forms.ModelForm):
     class Meta:
