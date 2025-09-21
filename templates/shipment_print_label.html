@@ -2,53 +2,859 @@
 {% block content %}
 {% load static %}
 
-<div class="container">
 
-<form method="post" action="{% url 'download_labels' %}">
-    {% csrf_token %}
-    <label>Enter Consignment Numbers:</label>
-    <textarea name="consignments" rows="4" cols="50" placeholder="CN-25001 CN-25002"></textarea>
-    <button type="submit" class="back-button">Download Labels</button>
-</form>
+    <!-- Main Form Section -->
+    <div class="form-section">
+        <form method="post" action="{% url 'download_labels' %}" class="labels-form" id="labelsForm">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="consignments" class="form-label">
+                    <i class="fas fa-barcode" aria-hidden="true"></i>
+                    Consignment Numbers
+                    <span class="required">*</span>
+                </label>
+
+                <div class="input-wrapper">
+                    <textarea
+                        name="consignments"
+                        id="consignments"
+                        rows="5"
+                        class="form-input"
+                        placeholder="Enter consignment numbers (one per line or separated by spaces/commas)&#10;&#10;Example:&#10;CN-25001&#10;CN-25002&#10;CN-25003"
+                        required
+                        aria-describedby="consignments-help">{{ request.POST.consignments }}</textarea>
+
+                    <div class="input-info">
+                        <span class="consignment-counter">
+                            <i class="fas fa-hashtag" aria-hidden="true"></i>
+                            <span id="count">0</span> consignments
+                        </span>
+                        <button type="button" class="btn-clear" onclick="clearTextarea()">
+                            <i class="fas fa-eraser" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <small id="consignments-help" class="form-help">
+                    <i class="fas fa-info-circle" aria-hidden="true"></i>
+                    You can enter multiple consignment numbers separated by spaces, commas, or new lines
+                </small>
+            </div>
+
+            <!-- Label Options -->
+            <div class="options-section">
+                <h3>
+                    <i class="fas fa-cog" aria-hidden="true"></i>
+                    Label Options
+                </h3>
+
+                <div class="options-grid">
+                    <div class="option-group">
+                        <label class="option-label">
+                            <i class="fas fa-expand-arrows-alt" aria-hidden="true"></i>
+                            Label Size
+                        </label>
+                        <select name="label_size" class="option-select">
+                            <option value="A4">A4 (Standard)</option>
+                            <option value="A5">A5 (Compact)</option>
+                            <option value="thermal">Thermal (4x6)</option>
+                        </select>
+                    </div>
+
+                    <div class="option-group">
+                        <label class="option-label">
+                            <i class="fas fa-file-pdf" aria-hidden="true"></i>
+                            Format
+                        </label>
+                        <select name="format" class="option-select">
+                            <option value="pdf">PDF</option>
+                            <option value="png">PNG Images</option>
+                        </select>
+                    </div>
+
+                    <div class="option-group">
+                        <label class="option-label">
+                            <i class="fas fa-layer-group" aria-hidden="true"></i>
+                            Layout
+                        </label>
+                        <select name="layout" class="option-select">
+                            <option value="single">One per page</option>
+                            <option value="multiple">Multiple per page</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Additional Options -->
+                <div class="checkbox-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="include_barcode" value="1" checked>
+                        <span class="checkmark"></span>
+                        <span class="checkbox-text">
+                            <i class="fas fa-barcode" aria-hidden="true"></i>
+                            Include Barcode
+                        </span>
+                    </label>
+
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="include_logo" value="1" checked>
+                        <span class="checkmark"></span>
+                        <span class="checkbox-text">
+                            <i class="fas fa-image" aria-hidden="true"></i>
+                            Include Company Logo
+                        </span>
+                    </label>
+
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="include_tracking" value="1">
+                        <span class="checkmark"></span>
+                        <span class="checkbox-text">
+                            <i class="fas fa-search-location" aria-hidden="true"></i>
+                            Include Tracking Info
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="form-actions">
+                <button type="button" class="btn-preview" onclick="previewLabels()">
+                    <i class="fas fa-eye" aria-hidden="true"></i>
+                    <span>Preview</span>
+                </button>
+
+                <button type="submit" class="btn-download" id="downloadBtn">
+                    <i class="fas fa-download" aria-hidden="true"></i>
+                    <span class="btn-text">Download Labels</span>
+                    <div class="btn-loader" style="display: none;">
+                        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                    </div>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h3>
+            <i class="fas fa-bolt" aria-hidden="true"></i>
+            Quick Actions
+        </h3>
+
+        <div class="action-grid">
+            <a href="{% url 'shipment_list' %}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-list" aria-hidden="true"></i>
+                </div>
+                <div class="action-content">
+                    <h4>View Shipments</h4>
+                    <p>Browse all shipments</p>
+                </div>
+            </a>
+
+            <a href="{% url 'bulk_tracking' %}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-search-location" aria-hidden="true"></i>
+                </div>
+                <div class="action-content">
+                    <h4>Track Shipments</h4>
+                    <p>Bulk tracking tool</p>
+                </div>
+            </a>
+
+            <a href="{% url 'consignment_note' %}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-file-alt" aria-hidden="true"></i>
+                </div>
+                <div class="action-content">
+                    <h4>Consignment Notes</h4>
+                    <p>Generate notes</p>
+                </div>
+            </a>
+        </div>
+    </div>
 </div>
 
 <style>
+/* Enhanced CSS with modern design */
+:root {
+    --primary-color: #3b82f6;
+    --primary-dark: #2563eb;
+    --secondary-color: #ff6f61;
+    --secondary-dark: #e55a4c;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --border-radius: 0.5rem;
+    --border-radius-lg: 0.75rem;
+    --border-radius-xl: 1rem;
+    --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-    h2 {
-        color: #2c3e50;
-        margin-bottom: 20px;
-        font-size: 22px;
+.labels-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+}
+
+.header-content {
+    position: relative;
+    z-index: 1;
+}
+
+.header-content h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    letter-spacing: -0.02em;
+}
+
+.header-content p {
+    font-size: 1.125rem;
+    opacity: 0.9;
+    margin: 0;
+    font-weight: 400;
+}
+
+/* Enhanced Form Section */
+.form-section {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius-xl);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--gray-200);
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 2rem;
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    color: var(--gray-900);
+    font-size: 1rem;
+}
+
+.required {
+    color: var(--danger-color);
+    font-weight: 700;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.form-input {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid var(--gray-300);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    font-family: 'Courier New', monospace;
+    resize: vertical;
+    transition: var(--transition);
+    background: var(--gray-50);
+    min-height: 120px;
+    line-height: 1.5;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background: white;
+}
+
+.input-info {
+    position: absolute;
+    bottom: 0.75rem;
+    right: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.consignment-counter {
+    background: white;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-300);
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.btn-clear {
+    background: var(--gray-100);
+    border: 1px solid var(--gray-300);
+    color: var(--gray-600);
+    padding: 0.375rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.btn-clear:hover {
+    background: var(--gray-200);
+    color: var(--gray-800);
+}
+
+.form-help {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    color: var(--gray-500);
+    font-size: 0.875rem;
+}
+
+/* Options Section */
+.options-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--gray-200);
+}
+
+.options-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 1.5rem 0;
+    color: var(--gray-900);
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.option-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.option-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--gray-700);
+    font-size: 0.875rem;
+}
+
+.option-select {
+    padding: 0.75rem;
+    border: 2px solid var(--gray-300);
+    border-radius: var(--border-radius);
+    font-size: 0.875rem;
+    background: white;
+    color: var(--gray-900);
+    transition: var(--transition);
+}
+
+.option-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Checkbox Options */
+.checkbox-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    padding: 0.75rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+    transition: var(--transition);
+}
+
+.checkbox-label:hover {
+    background: var(--gray-100);
+}
+
+.checkbox-label input[type="checkbox"] {
+    display: none;
+}
+
+.checkmark {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border: 2px solid var(--gray-300);
+    border-radius: 4px;
+    transition: var(--transition);
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.checkbox-text {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--gray-700);
+    font-weight: 500;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--gray-200);
+}
+
+.btn-preview,
+.btn-download {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-preview {
+    background: var(--gray-100);
+    color: var(--gray-700);
+    border: 2px solid var(--gray-300);
+}
+
+.btn-preview:hover {
+    background: var(--gray-200);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-download {
+    background: var(--secondary-color);
+    color: white;
+    border: 2px solid var(--secondary-color);
+}
+
+.btn-download:hover:not(:disabled) {
+    background: var(--secondary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-download:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-loader {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Quick Actions */
+.quick-actions {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius-xl);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--gray-200);
+}
+
+.quick-actions h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 1.5rem 0;
+    color: var(--gray-900);
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.action-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.action-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius-lg);
+    text-decoration: none;
+    transition: var(--transition);
+    color: inherit;
+}
+
+.action-card:hover {
+    background: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
+}
+
+.action-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: var(--border-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.action-content h4 {
+    margin: 0 0 0.25rem 0;
+    color: var(--gray-900);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.action-content p {
+    margin: 0;
+    color: var(--gray-600);
+    font-size: 0.875rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .labels-container {
+        margin: 1rem auto;
+        padding: 0 0.5rem;
     }
 
-    label {
-        font-weight: bold;
-        font-size: 12px;
-        margin-bottom: 5px;
-        display: block;
+    .page-header {
+        padding: 2rem 1rem;
     }
 
-    textarea {
-        padding: 8px;
-        width: 100%;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        font-size: 14px;
+    .header-content h1 {
+        font-size: 2rem;
+        flex-direction: column;
+        gap: 0.5rem;
     }
 
-    .back-button {
-        background-color: #ff6f61;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        font-size: 16px;
-        border-radius: 4px;
-        cursor: pointer;
+    .form-section {
+        padding: 1.5rem;
     }
 
-    .back-button:hover {
-        background-color: #e65b50;
+    .options-grid {
+        grid-template-columns: 1fr;
     }
+
+    .checkbox-options {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .action-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .input-info {
+        position: static;
+        margin-top: 0.75rem;
+        justify-content: space-between;
+    }
+}
+
+/* Loading Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.labels-container {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Focus indicators */
+.btn-preview:focus,
+.btn-download:focus,
+.btn-clear:focus,
+.option-select:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
 </style>
 
+<script>
+(function() {
+    'use strict';
+
+    class LabelsManager {
+        constructor() {
+            this.init();
+        }
+
+        init() {
+            this.bindEvents();
+            this.updateCounter();
+        }
+
+        bindEvents() {
+            const textarea = document.getElementById('consignments');
+            const form = document.getElementById('labelsForm');
+
+            if (textarea) {
+                textarea.addEventListener('input', () => this.updateCounter());
+                textarea.addEventListener('paste', () => {
+                    setTimeout(() => this.updateCounter(), 10);
+                });
+            }
+
+            if (form) {
+                form.addEventListener('submit', (e) => this.handleSubmit(e));
+            }
+
+            // Global functions
+            window.clearTextarea = () => this.clearTextarea();
+            window.previewLabels = () => this.previewLabels();
+        }
+
+        updateCounter() {
+            const textarea = document.getElementById('consignments');
+            const counter = document.getElementById('count');
+
+            if (textarea && counter) {
+                const value = textarea.value.trim();
+                if (!value) {
+                    counter.textContent = '0';
+                    return;
+                }
+
+                // Count consignment numbers (split by space, comma, or newline)
+                const consignments = value
+                    .split(/[\s,\n]+/)
+                    .filter(c => c.length > 0);
+
+                counter.textContent = consignments.length;
+            }
+        }
+
+        clearTextarea() {
+            const textarea = document.getElementById('consignments');
+            if (textarea) {
+                textarea.value = '';
+                textarea.focus();
+                this.updateCounter();
+            }
+        }
+
+        handleSubmit(event) {
+            const textarea = document.getElementById('consignments');
+            const submitBtn = document.getElementById('downloadBtn');
+            const loader = submitBtn.querySelector('.btn-loader');
+            const btnText = submitBtn.querySelector('.btn-text');
+
+            // Validate form
+            if (!textarea.value.trim()) {
+                event.preventDefault();
+                this.showError('Please enter at least one consignment number');
+                textarea.focus();
+                return;
+            }
+
+            // Show loading state
+            submitBtn.disabled = true;
+            loader.style.display = 'block';
+            btnText.style.opacity = '0.7';
+
+            // Reset after 30 seconds as fallback
+            setTimeout(() => {
+                this.resetSubmitButton(submitBtn, loader, btnText);
+            }, 30000);
+        }
+
+        previewLabels() {
+            const textarea = document.getElementById('consignments');
+
+            if (!textarea.value.trim()) {
+                this.showError('Please enter consignment numbers first');
+                textarea.focus();
+                return;
+            }
+
+            // You can implement preview functionality here
+            this.showSuccess('Preview feature will be available soon');
+        }
+
+        resetSubmitButton(submitBtn, loader, btnText) {
+            submitBtn.disabled = false;
+            loader.style.display = 'none';
+            btnText.style.opacity = '1';
+        }
+
+        showError(message) {
+            this.showNotification(message, 'error');
+        }
+
+        showSuccess(message) {
+            this.showNotification(message, 'success');
+        }
+
+        showNotification(message, type) {
+            // Remove existing notifications
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+
+            // Create new notification
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 0.5rem;
+                color: white;
+                font-weight: 500;
+                z-index: 10000;
+                animation: slideInRight 0.3s ease-out;
+                max-width: 400px;
+                box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            `;
+
+            if (type === 'error') {
+                notification.style.background = 'var(--danger-color)';
+                notification.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+            } else {
+                notification.style.background = 'var(--success-color)';
+                notification.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            }
+
+            document.body.appendChild(notification);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.animation = 'slideOutRight 0.3s ease-in';
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, 5000);
+        }
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => new LabelsManager());
+    } else {
+        new LabelsManager();
+    }
+
+    // Add CSS for notification animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
+})();
+</script>
 
 {% endblock %}

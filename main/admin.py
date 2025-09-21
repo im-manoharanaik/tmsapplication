@@ -74,7 +74,7 @@ class ShipmentUploadForm(forms.Form):
 class ShipmentAdmin(admin.ModelAdmin):
     list_display = (
         'consignment_no','billto_customer', 'date', 'origin', 'destination',
-        'vehicle_no', 'payment_mode', 'status', 'estimated_delivery_date',
+        'vehicle_no','vendor', 'payment_mode', 'status', 'estimated_delivery_date',
         'delivery_date', 'pod_preview','pod_link_display'
     )
     list_filter = ('status', 'payment_mode', 'origin', 'destination')
@@ -93,7 +93,7 @@ class ShipmentAdmin(admin.ModelAdmin):
             'fields': ('date', 'freight', 'payment_mode', 'shipment_type', 'status')
         }),
         ('Route & Vehicle', {
-            'fields': ('origin', 'origin_pin', 'destination', 'destination_pin',
+            'fields': ('origin', 'origin_pin', 'destination', 'destination_pin','vendor',
                        'vehicle_no', 'driver_details')
         }),
         ('Consignor (Shipper)', {
@@ -112,6 +112,9 @@ class ShipmentAdmin(admin.ModelAdmin):
             'fields': ('pod_scan', 'pod_preview')
         }),
     )
+
+    list_editable = ['status', 'estimated_delivery_date',
+        'delivery_date',]
 
     @admin.display(description='POD Preview', ordering='pod_scan')
     def pod_preview(self, obj):
@@ -281,7 +284,6 @@ class ManifestAdmin(admin.ModelAdmin):
     list_filter = ('origin_branch', 'destination_branch', 'created_at')
     filter_horizontal = ('shipments',)
 
-
 # -------------------- CUSTOMER --------------------
 @admin.register(CustomerMaster)
 class CustomerAdmin(admin.ModelAdmin):
@@ -338,7 +340,6 @@ class BranchAdmin(admin.ModelAdmin):
     search_fields = ('branch_code', 'name', 'city', 'state')
     ordering = ('branch_code',)
 
-
 # -------------------- FLEET --------------------
 @admin.register(Fleet)
 class FleetMasterAdmin(admin.ModelAdmin):
@@ -361,8 +362,6 @@ class FleetMasterAdmin(admin.ModelAdmin):
 from django.contrib import admin
 
 from .models import VendorMaster, TripOutToVendor
-
-
 @admin.register(VendorMaster)
 class VendorAdmin(admin.ModelAdmin):
     list_display = (
@@ -378,7 +377,6 @@ class VendorAdmin(admin.ModelAdmin):
     search_fields = ("vendor_code", "vendor_name", "city", "state", "gstn", "pan")
     list_filter = ("status", "state", "created_at")
     ordering = ("-created_at",)
-
 
 @admin.register(TripOutToVendor)
 class TripOutToVendorAdmin(admin.ModelAdmin):
@@ -411,3 +409,36 @@ class TripOutToVendorAdmin(admin.ModelAdmin):
         if not obj.total_bill_amount:
             obj.total_bill_amount = (obj.trip_charge or 0) + (obj.additional_charge or 0)
         super().save_model(request, obj, form, change)
+
+from .models import Content  # Adjust if your model is in another module
+
+@admin.register(Content)
+class ContentAdmin(admin.ModelAdmin):
+    list_display = (
+        'batch_id',
+        'shipment',
+        'count_of_box',
+        'box_weight',
+        'box_length',
+        'box_width',
+        'box_height',
+        'box_type'
+    )
+    search_fields = ('batch_id', 'shipment__consignment_no')
+    list_filter = ('box_type', 'shipment')
+    readonly_fields = ('batch_id', 'total_volumetric')
+
+    # Optional: better layout in admin form
+    fieldsets = (
+        (None, {
+            'fields': (
+                'shipment',
+                'batch_id',
+                ('box_length', 'box_width', 'box_height'),
+                'box_weight',
+                'box_type',
+                'remark',
+                'total_volumetric',
+            )
+        }),
+    )

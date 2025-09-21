@@ -1,249 +1,1031 @@
 {% extends "base.html" %}
 {% load static %}
+{% load custom_filters %}  <!-- Add this line -->
 {% block content %}
-<div class="container">
+
     {% if messages %}
         {% for message in messages %}
-            <p style="color: red;">{{ message }}</p>
+            <p class="alert alert-error">{{ message }}</p>
         {% endfor %}
     {% endif %}
 
     {% if form.errors %}
-        <div style="color: red;">
+        <div class="alert alert-error">
             <ul>
-            {% for field in form %}
-                {% for error in field.errors %}
-                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                    {% endfor %}
                 {% endfor %}
-            {% endfor %}
-            {% for error in form.non_field_errors %}
-                <li>{{ error }}</li>
-            {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
             </ul>
         </div>
     {% endif %}
 
-    <form method="POST" enctype="multipart/form-data" action="{% url 'shipment_create' %}">
+    <form method="POST" enctype="multipart/form-data" action="{% url 'shipment_create' %}" id="shipment-form">
         {% csrf_token %}
 
         <!-- Consignment Info -->
-        <div>
-            <label>Date</label>
-            {{ form.date }}
+        <div><label for="{{ form.date.id_for_label }}">Date</label>{{ form.date }}</div>
+        <div><label for="{{ form.freight.id_for_label }}">Freight</label>{{ form.freight }}</div>
+        <div><label for="{{ form.payment_mode.id_for_label }}">Payment Mode</label>{{ form.payment_mode }}</div>
+        <div><label for="{{ form.shipment_type.id_for_label }}">Shipment Type</label>{{ form.shipment_type }}</div>
+        <div><label for="{{ form.shipment_mode.id_for_label }}">Shipment Mode</label>{{ form.shipment_mode }}</div>
+        <div><label for="{{ form.vendor.id_for_label }}">Vendor</label>{{ form.vendor }}</div>
+        <div><label for="{{ form.vehicle_type.id_for_label }}">Vehicle Type</label>{{ form.vehicle_type }}</div>
+        <div><label for="{{ form.vehicle_no.id_for_label }}">Vehicle No</label>{{ form.vehicle_no }}</div>
+
+        <div><label for="{{ form.origin.id_for_label }}">Origin</label>{{ form.origin }}</div>
+        <div><label for="{{ form.origin_pin.id_for_label }}">Origin Pincode</label>{{ form.origin_pin }}</div>
+        <div><label for="{{ form.destination.id_for_label }}">Destination</label>{{ form.destination }}</div>
+        <div><label for="{{ form.destination_pin.id_for_label }}">Destination Pincode</label>{{ form.destination_pin }}</div>
+        <div><label for="{{ form.driver_details.id_for_label }}">Driver Details</label>{{ form.driver_details }}</div>
+
+        <!-- Consignor Details with Autocomplete -->
+        <div class="full-width section-title">
+            Consignor Details
+            <span class="helper-text">Start typing company name to search existing customers</span>
         </div>
-        <div>
-            <label>Freight</label>
-            {{ form.freight }}
-        </div>
-        <div>
-            <label>Payment Mode</label>
-            {{ form.payment_mode }}
-        </div>
-        <div>
-            <label>Shipment Type</label>
-            {{ form.shipment_type }}
-        </div>
-        <div>
-            <label>Shipment Mode</label>
-            {{ form.shipment_mode }}
-        </div>
-        <div>
-            <label>Vehicle No</label>
-            {{ form.vehicle_no }}
-        </div>
-        <div>
-            <label>Origin</label>
-            {{ form.origin }}
-        </div>
-        <div>
-            <label>Origin Pincode</label>
-            {{ form.origin_pin }}
-        </div>
-        <div>
-            <label>Destination</label>
-            {{ form.destination }}
-        </div>
-        <div>
-            <label>Destination Pincode</label>
-            {{ form.destination_pin }}
-        </div>
-        <div>
-            <label>Driver Details</label>
-            {{ form.driver_details }}
+        <div><label for="{{ form.billto_customer.id_for_label }}">Billed To Customer</label>{{ form.billto_customer }}</div>
+
+        <div class="autocomplete-container">
+            <label for="consignor_search">Search Consignor</label>
+            <input type="text" id="consignor_search" placeholder="Type company name or contact person..." class="autocomplete-input">
+            <div id="consignor_suggestions" class="autocomplete-suggestions"></div>
+            <button type="button" id="clear_consignor" class="clear-btn" style="display:none;">Clear & Enter Manually</button>
         </div>
 
-        <!-- Consignor -->
-        <div class="full-width"><strong>Consignor Details</strong></div>
-        <div>
-            <label>Consignor Name</label>
-            {{ form.consignor_name }}
-        </div>
-        <div class="full-width">
-            <label>Consignor Address</label>
-            {{ form.consignor_address }}
-        </div>
-        <div>
-            <label>Consignor GST</label>
-            {{ form.consignor_gst }}
-        </div>
-        <div>
-            <label>Consignor Contact</label>
-            {{ form.consignor_contact }}
+        <div><label for="{{ form.consignor_name.id_for_label }}">Consignor Name</label>{{ form.consignor_name }}</div>
+        <div class="full-width"><label for="{{ form.consignor_address.id_for_label }}">Consignor Address</label>{{ form.consignor_address }}</div>
+        <div><label for="{{ form.consignor_gst.id_for_label }}">Consignor GST</label>{{ form.consignor_gst }}</div>
+        <div><label for="{{ form.consignor_contact.id_for_label }}">Consignor Contact</label>{{ form.consignor_contact }}</div>
+
+        <!-- Consignee Details with Autocomplete -->
+        <div class="full-width section-title">
+            Consignee Details
+            <span class="helper-text">Start typing company name to search existing customers</span>
         </div>
 
-        <!-- Consignee -->
-        <div class="full-width"><strong>Consignee Details</strong></div>
-        <div>
-            <label>Consignee Name</label>
-            {{ form.consignee_name }}
+        <div class="autocomplete-container">
+            <label for="consignee_search">Search Consignee</label>
+            <input type="text" id="consignee_search" placeholder="Type company name or contact person..." class="autocomplete-input">
+            <div id="consignee_suggestions" class="autocomplete-suggestions"></div>
+            <button type="button" id="clear_consignee" class="clear-btn" style="display:none;">Clear & Enter Manually</button>
         </div>
-        <div class="full-width">
-            <label>Consignee Address</label>
-            {{ form.consignee_address }}
-        </div>
-        <div>
-            <label>Consignee GST</label>
-            {{ form.consignee_gst }}
-        </div>
-        <div>
-            <label>Consignee Contact</label>
-            {{ form.consignee_contact }}
-        </div>
+
+        <div><label for="{{ form.consignee_name.id_for_label }}">Consignee Name</label>{{ form.consignee_name }}</div>
+        <div class="full-width"><label for="{{ form.consignee_address.id_for_label }}">Consignee Address</label>{{ form.consignee_address }}</div>
+        <div><label for="{{ form.consignee_gst.id_for_label }}">Consignee GST</label>{{ form.consignee_gst }}</div>
+        <div><label for="{{ form.consignee_contact.id_for_label }}">Consignee Contact</label>{{ form.consignee_contact }}</div>
 
         <!-- References -->
-        <div>
-            <label>Invoice Ref No</label>
-            {{ form.invoice_ref_number }}
-        </div>
-        <div>
-            <label>Sales Order Number</label>
-            {{ form.so_number }}
-        </div>
-        <div>
-            <label>Release Order Number</label>
-            {{ form.ro_number }}
-        </div>
-        <div>
-            <label>Bill of Entry Ref No</label>
-            {{ form.boe_num }}
-        </div>
-        <div>
-            <label>E-Waybill Number</label>
-            {{ form.ewaybill_number }}
-        </div>
-        <div>
-            <label>Additional Ref Number</label>
-            {{ form.additional_ref_number }}
+        <div><label for="{{ form.invoice_ref_number.id_for_label }}">Invoice Ref No</label>{{ form.invoice_ref_number }}</div>
+        <div><label for="{{ form.so_number.id_for_label }}">Sales Order Number</label>{{ form.so_number }}</div>
+        <div><label for="{{ form.ro_number.id_for_label }}">Return Order Number</label>{{ form.ro_number }}</div>
+        <div><label for="{{ form.boe_num.id_for_label }}">Bill of Entry Ref No</label>{{ form.boe_num }}</div>
+        <div><label for="{{ form.ewaybill_number.id_for_label }}">E-Waybill Number</label>{{ form.ewaybill_number }}</div>
+        <div><label for="{{ form.additional_ref_number.id_for_label }}">Additional Ref Number</label>{{ form.additional_ref_number }}</div>
+
+        <!-- Cargo Details -->
+        <div class="full-width section-title">Cargo Details</div>
+        <div><label for="{{ form.value.id_for_label }}">Value</label>{{ form.value }}</div>
+        <div><label for="{{ form.pack_type.id_for_label }}">Pack Type</label>{{ form.pack_type }}</div>
+        <div><label for="{{ form.no_article.id_for_label }}">No of Articles</label>{{ form.no_article }}</div>
+        <div><label for="{{ form.item_count.id_for_label }}">Item Count</label>{{ form.item_count }}</div>
+        <div><label for="{{ form.actual_weight.id_for_label }}">Actual Weight</label>{{ form.actual_weight }}</div>
+        <div><label for="{{ form.charged_weight.id_for_label }}">Charged Weight</label>{{ form.charged_weight }}</div>
+
+        <!-- Enhanced Dimension Details Section -->
+        <div class="full-width section-title">
+            Dimension Details (Box-wise)
+            <button type="button" id="add_dimension" class="add-btn">
+                <i class="fas fa-plus"></i> Add Box
+            </button>
+            <span class="helper-text">Add dimensions for each type of box/package</span>
         </div>
 
-        <!-- Cargo details -->
-        <div>
-            <label>Value</label>
-            {{ form.value }}
-        </div>
-        <div>
-            <label>Pack Type</label>
-            {{ form.pack_type }}
-        </div>
-        <div>
-            <label>No of Articles</label>
-            {{ form.no_article }}
-        </div>
-        <div>
-            <label>Actual Weight</label>
-            {{ form.actual_weight }}
-        </div>
-        <div>
-            <label>Charged Weight</label>
-            {{ form.charged_weight }}
+        <div class="dimension-summary">
+            <div class="summary-item">
+                <label>Total Boxes:</label>
+                <span id="total_boxes">0</span>
+            </div>
+            <div class="summary-item">
+                <label>Total Volume:</label>
+                <span id="total_volume">0.00</span> CFT
+            </div>
+            <div class="summary-item">
+                <label>Remaining Articles:</label>
+                <span id="remaining_articles">0</span>
+            </div>
         </div>
 
-        <!-- Status & tracking -->
-        <div>
-            <label>Status</label>
-            {{ form.status }}
-        </div>
-        <div>
-            <label>Estimated Delivery Date</label>
-            {{ form.estimated_delivery_date }}
+        <div id="dimension_items_container">
+            <!-- Dimension items will be added by JavaScript -->
         </div>
 
-        <!-- Appointment delivery -->
-        <div class="full-width"><strong>Appointment Details</strong></div>
-        <div>
-            <label>Is This Appointment Delivery</label>
-            {{ form.appointment_delivery }}
+        <!-- Aggregated Shipment Dimensions (Required Fields) -->
+        <div class="full-width section-title">Aggregated Shipment Dimensions</div>
+
+        <div class="aggregated-dimensions">
+            <div class="aggregation-field">
+                <label for="length_ft">Total Length (ft) *</label>
+                <input type="number" step="0.01" min="0" id="length_ft" name="length_ft" readonly value="0.00" required />
+                <small>Auto-calculated from all boxes</small>
+            </div>
+            <div class="aggregation-field">
+                <label for="width_ft">Total Width (ft) *</label>
+                <input type="number" step="0.01" min="0" id="width_ft" name="width_ft" readonly value="0.00" required />
+                <small>Auto-calculated from all boxes</small>
+            </div>
+            <div class="aggregation-field">
+                <label for="height_ft">Total Height (ft) *</label>
+                <input type="number" step="0.01" min="0" id="height_ft" name="height" readonly value="0.00" required />
+                <small>Auto-calculated from all boxes</small>
+            </div>
+            <div class="aggregation-field">
+                <label for="total_dfc">Total Volume/CFT *</label>
+                <input type="number" step="0.01" min="0" id="total_dfc" name="total_dfc" readonly value="0.00" required />
+                <small>Auto-calculated total cubic feet</small>
+            </div>
         </div>
-        <div>
-            <label>Appointment Date</label>
-            {{ form.appointment_date }}
-        </div>
+
+        <!-- Status & Tracking -->
+        <div><label for="{{ form.status.id_for_label }}">Status</label>{{ form.status }}</div>
+        <div><label for="{{ form.estimated_delivery_date.id_for_label }}">Estimated Delivery Date</label>{{ form.estimated_delivery_date }}</div>
+
+        <!-- Appointment Details -->
+        <div class="full-width section-title">Appointment Details</div>
+        <div><label for="{{ form.appointment_delivery.id_for_label }}">Is This Appointment Delivery</label>{{ form.appointment_delivery }}</div>
+        <div><label for="{{ form.appointment_date.id_for_label }}">Appointment Date</label>{{ form.appointment_date }}</div>
 
         <!-- Remark -->
-        <div class="full-width"><strong>Remark</strong></div>
-        <div>
-            <label>Remark about the Shipment</label>
+        <div class="full-width section-title">Remark</div>
+        <div class="full-width">
+            <label for="{{ form.remark.id_for_label }}">Remark about the Shipment</label>
             {{ form.remark }}
         </div>
 
-        <!-- Submit -->
-        <button type="submit">Create</button>
+        <!-- Submit button -->
+        <div class="full-width" style="text-align:center; margin-top:20px;">
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-save"></i> Create Shipment
+            </button>
+        </div>
     </form>
-</div>
 
 <style>
-    h2 {
-        color: #2c3e50;
-        margin-bottom: 20px;
+    .container {
+        max-width: 1000px;
+        margin: 30px auto 80px;
+        padding: 0 15px;
     }
 
     form {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 20px;
+        align-items: start;
     }
 
     label {
-        font-weight: bold;
-        font-size: 12px;
-        margin-bottom: 5px;
+        font-weight: 600;
+        font-size: 13px;
+        margin-bottom: 6px;
         display: block;
+        color: #34495e;
+        user-select: none;
     }
 
-    input, select, textarea {
+    input[type="text"], input[type="number"], input[type="date"], select, textarea {
         width: 100%;
-        padding: 8px;
+        padding: 8px 12px;
         border: 1px solid #ccc;
-        border-radius: 4px;
+        border-radius: 5px;
+        font-size: 14px;
         box-sizing: border-box;
+        transition: border-color 0.3s ease;
+        background-color: #fff;
+    }
+
+    input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
+        border-color: #2980b9;
+        outline: none;
+        background-color: #fcfdff;
     }
 
     textarea {
-        height: 40px;
+        min-height: 70px;
+        resize: vertical;
+        background: antiquewhite;
+    }
+
+    select {
+        background: antiquewhite;
+        cursor: pointer;
     }
 
     .full-width {
         grid-column: 1 / -1;
     }
 
-    button {
-        background-color: #ff6f61;
-        width: 10%;
+    .section-title {
+        grid-column: 1 / -1;
+        font-weight: 700;
+        font-size: 16px;
+        color: #2c3e50;
+        padding: 12px 0;
+        border-bottom: 2px solid #2980b9;
+        margin-top: 30px;
+        user-select: none;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .helper-text {
+        font-size: 11px;
+        font-weight: 400;
+        color: #7f8c8d;
+        font-style: italic;
+    }
+
+    .add-btn {
+        background: linear-gradient(135deg, #27ae60, #2ecc71);
         color: white;
         border: none;
-        padding: 10px 20px;
-        font-size: 16px;
-        border-radius: 4px;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
         cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .add-btn:hover {
+        background: linear-gradient(135deg, #219a52, #27ae60);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+    }
+
+    /* Dimension Summary */
+    .dimension-summary {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        background: linear-gradient(135deg, #e8f5e8, #f0f8ff);
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #c3e6cb;
+        margin-bottom: 10px;
+    }
+
+    .summary-item {
+        text-align: center;
+        padding: 8px;
+        background: white;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .summary-item label {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 4px;
+    }
+
+    .summary-item span {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+
+    /* Aggregated Dimensions */
+    .aggregated-dimensions {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        background: linear-gradient(135deg, #fff5f5, #ffe6e6);
+        padding: 20px;
+        border-radius: 8px;
+        border: 2px solid #ff6b6b;
+        margin: 15px 0;
+    }
+
+    .aggregation-field {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .aggregation-field label {
+        font-weight: 600;
+        font-size: 13px;
+        color: #c92a2a;
+        margin-bottom: 6px;
+    }
+
+    .aggregation-field input {
+        background: #f8f9fa;
+        border: 2px solid #dee2e6;
+        color: #495057;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: not-allowed;
+    }
+
+    .aggregation-field small {
+        font-size: 11px;
+        color: #868e96;
+        margin-top: 4px;
+        font-style: italic;
+    }
+
+    /* Dimension Items */
+    #dimension_items_container {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .dimension-item {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 15px;
+        position: relative;
+    }
+
+    .dimension-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .dimension-item-title {
+        font-weight: 600;
+        color: #495057;
+        font-size: 14px;
+    }
+
+    .dimension-fields {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+        align-items: end;
+    }
+
+    .dimension-field {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .dimension-field label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 4px;
+    }
+
+    .dimension-field input {
+        padding: 8px 10px;
+        font-size: 14px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        background: white;
+    }
+
+    .dimension-field input:focus {
+        border-color: #27ae60;
+        box-shadow: 0 0 0 2px rgba(39, 174, 96, 0.1);
+    }
+
+    .dimension-calculated {
+        background: #e8f5e8;
+        border-color: #27ae60;
+        color: #155724;
+        font-weight: 600;
+    }
+
+    .remove-dimension-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #dc3545;
+        color: white;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .remove-dimension-btn:hover {
+        background: #c82333;
+        transform: scale(1.1);
+    }
+
+    .validation-error {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.1) !important;
+    }
+
+    .error-message {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    /* Submit Button */
+    button.submit-btn {
+        background: linear-gradient(135deg, #ff6f61, #ff8a50);
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        justify-self: center;
+    }
+
+    button.submit-btn:hover {
+        background: linear-gradient(135deg, #e55a4c, #ff6f61);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 111, 97, 0.3);
+    }
+
+    /* Autocomplete Styles (keeping existing) */
+    .autocomplete-container {
+        position: relative;
         grid-column: 1 / -1;
     }
 
-    button:hover {
-        background-color: #e65b50;
+    .autocomplete-input {
+        background: linear-gradient(135deg, #e8f5e8, #f0f8ff);
+        border: 2px solid #27ae60;
+        font-weight: 600;
     }
 
-    input[type="checkbox"] {
+    .autocomplete-input:focus {
+        border-color: #27ae60;
+        box-shadow: 0 0 10px rgba(39, 174, 96, 0.3);
+    }
+
+    .autocomplete-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-top: none;
+        border-radius: 0 0 5px 5px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .suggestion-item {
+        padding: 12px;
         cursor: pointer;
+        border-bottom: 1px solid #eee;
+        transition: background-color 0.2s ease;
+    }
+
+    .suggestion-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .suggestion-company {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 4px;
+    }
+
+    .suggestion-contact {
+        font-size: 12px;
+        color: #7f8c8d;
+    }
+
+    .clear-btn {
+        background: #e74c3c;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        margin-top: 5px;
+    }
+
+    .auto-filled {
+        background: linear-gradient(135deg, #d5f4e6, #ffeaa7) !important;
+        border-color: #00b894 !important;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .dimension-fields {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .dimension-summary {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .aggregated-dimensions {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .dimension-fields {
+            grid-template-columns: 1fr;
+        }
+
+        .dimension-summary {
+            grid-template-columns: 1fr;
+        }
+
+        .aggregated-dimensions {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
+
+<script>
+// Enhanced Dimension Management with Aggregation
+class DimensionManager {
+    constructor() {
+        this.dimensionIndex = 0;
+        this.container = document.getElementById('dimension_items_container');
+        this.addBtn = document.getElementById('add_dimension');
+
+        this.init();
+        this.addDimensionItem(); // Add initial item
+    }
+
+    init() {
+        this.addBtn.addEventListener('click', () => this.addDimensionItem());
+
+        // Listen to article count changes
+        const articleInput = document.getElementById('id_no_article');
+        if (articleInput) {
+            articleInput.addEventListener('input', () => this.updateSummary());
+        }
+    }
+
+    addDimensionItem() {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'dimension-item';
+        itemDiv.setAttribute('data-index', this.dimensionIndex);
+
+        itemDiv.innerHTML = `
+            <div class="dimension-item-header">
+                <span class="dimension-item-title">Box Type ${this.dimensionIndex + 1}</span>
+                <button type="button" class="remove-dimension-btn" title="Remove this box type">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="dimension-fields">
+                <div class="dimension-field">
+                    <label for="dimension_${this.dimensionIndex}_length">Length (ft)</label>
+                    <input type="number"
+                           step="0.01"
+                           min="0"
+                           id="dimension_${this.dimensionIndex}_length"
+                           name="dimensions[${this.dimensionIndex}][box_length]"
+                           value="0.00"
+                           required>
+                </div>
+
+                <div class="dimension-field">
+                    <label for="dimension_${this.dimensionIndex}_width">Width (ft)</label>
+                    <input type="number"
+                           step="0.01"
+                           min="0"
+                           id="dimension_${this.dimensionIndex}_width"
+                           name="dimensions[${this.dimensionIndex}][box_width]"
+                           value="0.00"
+                           required>
+                </div>
+
+                <div class="dimension-field">
+                    <label for="dimension_${this.dimensionIndex}_height">Height (ft)</label>
+                    <input type="number"
+                           step="0.01"
+                           min="0"
+                           id="dimension_${this.dimensionIndex}_height"
+                           name="dimensions[${this.dimensionIndex}][box_height]"
+                           value="0.00"
+                           required>
+                </div>
+
+                <div class="dimension-field">
+                    <label for="dimension_${this.dimensionIndex}_type">Box Type</label>
+                    <input type="text"
+                           id="dimension_${this.dimensionIndex}_type"
+                           name="dimensions[${this.dimensionIndex}][box_type]"
+                           placeholder="e.g., Carton, Wooden Box"
+                           required>
+                </div>
+
+                <div class="dimension-field">
+                    <label for="dimension_${this.dimensionIndex}_count">Count of Boxes</label>
+                    <input type="number"
+                           min="1"
+                           id="dimension_${this.dimensionIndex}_count"
+                           name="dimensions[${this.dimensionIndex}][count_of_box]"
+                           value="1"
+                           required>
+                    <div class="error-message" id="error_${this.dimensionIndex}_count" style="display: none;"></div>
+                </div>
+
+                <div class="dimension-field">
+                    <label for="dimension_${this.dimensionIndex}_weight">Box Weight (kg)</label>
+                    <input type="number"
+                           step="0.01"
+                           min="0"
+                           id="dimension_${this.dimensionIndex}_weight"
+                           name="dimensions[${this.dimensionIndex}][box_weight]"
+                           value="0.00"
+                           required>
+                </div>
+
+                <div class="dimension-field">
+                    <label for="dimension_${this.dimensionIndex}_volume">Volume/Box (CFT)</label>
+                    <input type="text"
+                           id="dimension_${this.dimensionIndex}_volume"
+                           class="dimension-calculated"
+                           readonly
+                           value="0.00">
+                </div>
+
+                <div class="dimension-field">
+                    <label for="dimension_${this.dimensionIndex}_remark">Remark</label>
+                    <input type="text"
+                           id="dimension_${this.dimensionIndex}_remark"
+                           name="dimensions[${this.dimensionIndex}][remark]"
+                           placeholder="Optional remarks">
+                </div>
+            </div>
+        `;
+
+        this.container.appendChild(itemDiv);
+
+        // Add event listeners
+        this.attachEventListeners(itemDiv, this.dimensionIndex);
+
+        this.dimensionIndex++;
+        this.updateSummary();
+        this.updateAggregates();
+    }
+
+    attachEventListeners(itemDiv, index) {
+        // Remove button
+        const removeBtn = itemDiv.querySelector('.remove-dimension-btn');
+        removeBtn.addEventListener('click', () => {
+            if (this.container.children.length > 1) {
+                itemDiv.remove();
+                this.updateSummary();
+                this.updateAggregates();
+            } else {
+                alert('At least one dimension item is required.');
+            }
+        });
+
+        // Volume calculation and aggregation update
+        const lengthInput = itemDiv.querySelector(`#dimension_${index}_length`);
+        const widthInput = itemDiv.querySelector(`#dimension_${index}_width`);
+        const heightInput = itemDiv.querySelector(`#dimension_${index}_height`);
+        const volumeInput = itemDiv.querySelector(`#dimension_${index}_volume`);
+        const countInput = itemDiv.querySelector(`#dimension_${index}_count`);
+
+        [lengthInput, widthInput, heightInput, countInput].forEach(input => {
+            input.addEventListener('input', () => {
+                // Calculate volume per box
+                const length = parseFloat(lengthInput.value) || 0;
+                const width = parseFloat(widthInput.value) || 0;
+                const height = parseFloat(heightInput.value) || 0;
+                const volume = length * width * height;
+                volumeInput.value = volume.toFixed(2);
+
+                // Update summaries and aggregates
+                this.validateBoxCount(countInput, index);
+                this.updateSummary();
+                this.updateAggregates();
+            });
+        });
+    }
+
+    validateBoxCount(input, index) {
+        const totalArticles = parseInt(document.getElementById('id_no_article')?.value) || 0;
+        const currentCount = parseInt(input.value) || 0;
+
+        // Calculate total count from all other dimension items
+        let otherItemsCount = 0;
+        this.container.querySelectorAll('.dimension-item').forEach(item => {
+            if (item.getAttribute('data-index') != index) {
+                const countInput = item.querySelector('input[name*="[count_of_box]"]');
+                otherItemsCount += parseInt(countInput?.value) || 0;
+            }
+        });
+
+        const totalCount = otherItemsCount + currentCount;
+        const errorDiv = document.getElementById(`error_${index}_count`);
+
+        if (totalCount > totalArticles) {
+            input.classList.add('validation-error');
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = `Total boxes (${totalCount}) cannot exceed articles (${totalArticles})`;
+            return false;
+        } else {
+            input.classList.remove('validation-error');
+            errorDiv.style.display = 'none';
+            return true;
+        }
+    }
+
+    updateSummary() {
+        let totalBoxes = 0;
+        let totalVolume = 0;
+
+        this.container.querySelectorAll('.dimension-item').forEach(item => {
+            const countInput = item.querySelector('input[name*="[count_of_box]"]');
+            const volumeInput = item.querySelector('input[readonly]');
+
+            const count = parseInt(countInput?.value) || 0;
+            const volume = parseFloat(volumeInput?.value) || 0;
+
+            totalBoxes += count;
+            totalVolume += (volume * count);
+        });
+
+        const totalArticles = parseInt(document.getElementById('id_no_article')?.value) || 0;
+        const remainingArticles = Math.max(0, totalArticles - totalBoxes);
+
+        // Update summary display
+        document.getElementById('total_boxes').textContent = totalBoxes;
+        document.getElementById('total_volume').textContent = totalVolume.toFixed(2);
+        document.getElementById('remaining_articles').textContent = remainingArticles;
+
+        // Color coding for remaining articles
+        const remainingSpan = document.getElementById('remaining_articles');
+        if (remainingArticles < 0) {
+            remainingSpan.style.color = '#dc3545';
+        } else if (remainingArticles === 0) {
+            remainingSpan.style.color = '#28a745';
+        } else {
+            remainingSpan.style.color = '#ffc107';
+        }
+    }
+
+    updateAggregates() {
+        let totalLength = 0, totalWidth = 0, totalHeight = 0, totalVolume = 0;
+
+        this.container.querySelectorAll('.dimension-item').forEach(item => {
+            const count = parseInt(item.querySelector('input[name*="[count_of_box]"]')?.value) || 0;
+            const length = parseFloat(item.querySelector('input[name*="[box_length]"]')?.value) || 0;
+            const width = parseFloat(item.querySelector('input[name*="[box_width]"]')?.value) || 0;
+            const height = parseFloat(item.querySelector('input[name*="[box_height]"]')?.value) || 0;
+
+            // Aggregate dimensions (multiply by count for total space used)
+            totalLength += length * count;
+            totalWidth += width * count;
+            totalHeight += height * count;
+            totalVolume += length * width * height * count;
+        });
+
+        // Update aggregated dimension fields
+        document.getElementById('length_ft').value = totalLength.toFixed(2);
+        document.getElementById('width_ft').value = totalWidth.toFixed(2);
+        document.getElementById('height_ft').value = totalHeight.toFixed(2);
+        document.getElementById('total_dfc').value = totalVolume.toFixed(2);
+    }
+}
+
+// Existing Customer Autocomplete Class (keeping as is)
+class CustomerAutocomplete {
+    constructor(searchInputId, suggestionsId, clearBtnId, fieldPrefix) {
+        this.searchInput = document.getElementById(searchInputId);
+        this.suggestions = document.getElementById(suggestionsId);
+        this.clearBtn = document.getElementById(clearBtnId);
+        this.fieldPrefix = fieldPrefix;
+        this.selectedCustomer = null;
+        this.searchTimeout = null;
+
+        this.init();
+    }
+
+    init() {
+        if (!this.searchInput) return;
+
+        this.searchInput.addEventListener('input', (e) => this.handleSearch(e));
+        this.searchInput.addEventListener('focus', () => this.showSuggestions());
+        this.searchInput.addEventListener('blur', () => {
+            setTimeout(() => this.hideSuggestions(), 200);
+        });
+
+        if (this.clearBtn) {
+            this.clearBtn.addEventListener('click', () => this.clearSelection());
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.autocomplete-container')) {
+                this.hideSuggestions();
+            }
+        });
+    }
+
+    handleSearch(e) {
+        const query = e.target.value.trim();
+
+        if (this.searchTimeout) {
+            clearTimeout(this.searchTimeout);
+        }
+
+        if (query.length < 2) {
+            this.hideSuggestions();
+            return;
+        }
+
+        this.searchInput.classList.add('loading');
+
+        this.searchTimeout = setTimeout(() => {
+            this.searchCustomers(query);
+        }, 300);
+    }
+
+    async searchCustomers(query) {
+        try {
+            const response = await fetch(`/api/customer-autocomplete/?term=${encodeURIComponent(query)}`);
+            const data = await response.json();
+
+            this.searchInput.classList.remove('loading');
+            this.displaySuggestions(data.results);
+
+        } catch (error) {
+            console.error('Error searching customers:', error);
+            this.searchInput.classList.remove('loading');
+        }
+    }
+
+    displaySuggestions(results) {
+        if (!results || results.length === 0) {
+            this.hideSuggestions();
+            return;
+        }
+
+        this.suggestions.innerHTML = '';
+
+        results.forEach(customer => {
+            const item = document.createElement('div');
+            item.className = 'suggestion-item';
+            item.innerHTML = `
+                <div class="suggestion-company">${customer.company_name}</div>
+                <div class="suggestion-contact">Contact: ${customer.contact_person} | ${customer.contact_number}</div>
+                <div class="suggestion-id">ID: ${customer.customer_id}</div>
+            `;
+
+            item.addEventListener('click', () => this.selectCustomer(customer));
+            this.suggestions.appendChild(item);
+        });
+
+        this.showSuggestions();
+    }
+
+    selectCustomer(customer) {
+        this.selectedCustomer = customer;
+        this.searchInput.value = customer.company_name;
+        this.populateFields(customer);
+        this.hideSuggestions();
+
+        if (this.clearBtn) {
+            this.clearBtn.style.display = 'inline-block';
+        }
+    }
+
+    populateFields(customer) {
+        const fields = [
+            { id: `id_${this.fieldPrefix}_name`, value: customer.company_name },
+            { id: `id_${this.fieldPrefix}_address`, value: `${customer.address}, ${customer.city}, ${customer.state} - ${customer.pin_code}` },
+            { id: `id_${this.fieldPrefix}_gst`, value: customer.gstn },
+            { id: `id_${this.fieldPrefix}_contact`, value: customer.contact_number }
+        ];
+
+        fields.forEach(field => {
+            const element = document.getElementById(field.id);
+            if (element) {
+                element.value = field.value || '';
+                element.classList.add('auto-filled');
+
+                element.addEventListener('input', function() {
+                    this.classList.remove('auto-filled');
+                }, { once: true });
+            }
+        });
+    }
+
+    clearSelection() {
+        this.selectedCustomer = null;
+        this.searchInput.value = '';
+
+        const fields = [
+            `id_${this.fieldPrefix}_name`,
+            `id_${this.fieldPrefix}_address`,
+            `id_${this.fieldPrefix}_gst`,
+            `id_${this.fieldPrefix}_contact`
+        ];
+
+        fields.forEach(fieldId => {
+            const element = document.getElementById(fieldId);
+            if (element) {
+                element.value = '';
+                element.classList.remove('auto-filled');
+            }
+        });
+
+        if (this.clearBtn) {
+            this.clearBtn.style.display = 'none';
+        }
+
+        this.searchInput.focus();
+    }
+
+    showSuggestions() {
+        if (this.suggestions.children.length > 0) {
+            this.suggestions.style.display = 'block';
+        }
+    }
+
+    hideSuggestions() {
+        this.suggestions.style.display = 'none';
+    }
+}
+
+// Form Validation
+function validateForm() {
+    const dimensionItems = document.querySelectorAll('.dimension-item');
+    let isValid = true;
+
+    dimensionItems.forEach((item, index) => {
+        const countInput = item.querySelector('input[name*="[count_of_box]"]');
+        if (!dimensionManager.validateBoxCount(countInput, item.getAttribute('data-index'))) {
+            isValid = false;
+        }
+    });
+
+    if (!isValid) {
+        alert('Please fix the validation errors before submitting.');
+        return false;
+    }
+
+    return true;
+}
+
+// Initialize everything when DOM is loaded
+let dimensionManager;
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Initialize dimension manager
+    dimensionManager = new DimensionManager();
+
+    // Initialize autocomplete for consignor and consignee
+    new CustomerAutocomplete('consignor_search', 'consignor_suggestions', 'clear_consignor', 'consignor');
+    new CustomerAutocomplete('consignee_search', 'consignee_suggestions', 'clear_consignee', 'consignee');
+
+    // Add form validation
+    const form = document.getElementById('shipment-form');
+    form.addEventListener('submit', function(e) {
+        if (!validateForm()) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+
 {% endblock %}

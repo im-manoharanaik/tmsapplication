@@ -5,7 +5,7 @@ from .models import Shipment, Manifest, CustomUser
 class ShipmentForm(forms.ModelForm):
     class Meta:
         model = Shipment
-        exclude = ['delivery_date', 'pod_scan']
+        exclude = ['delivery_date', 'pod_scan','pickedup_date']
 
 
 class ShipmentUpdateForm(forms.ModelForm):
@@ -17,8 +17,21 @@ class ShipmentUpdateForm(forms.ModelForm):
             'delivery_date': forms.DateInput(attrs={'type': 'date'}),
         }
 
-
 from django import forms
+from .models import Content
+
+class ContentForm(forms.ModelForm):
+    class Meta:
+        model = Content
+        fields = ["box_weight", "box_height", "box_length", "box_width", "box_type", "remark"]
+        widgets = {
+            'remark': forms.Textarea(attrs={'rows': 1}),
+        }
+
+from django.forms import modelformset_factory
+ContentFormSet = modelformset_factory(Content, form=ContentForm, extra=0)
+
+
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser
 
@@ -52,7 +65,6 @@ class CustomUserCreationForm(UserCreationForm):
 
 
 from django import forms
-from .models import Manifest, Shipment, VendorMaster
 
 class ManifestForm(forms.ModelForm):
     class Meta:
@@ -89,18 +101,11 @@ class ManifestForm(forms.ModelForm):
 class PODUploadForm(forms.ModelForm):
     class Meta:
         model = Shipment
-        fields = ['pod_scan', 'delivery_date']  # ✅ REMOVE 'status' from fields!
+        fields = ['pod_scan', 'delivery_date']
         widgets = {
             'pod_scan': forms.FileInput(attrs={'accept': '.pdf,.jpg,.jpeg,.png'}),
             'delivery_date': forms.DateInput(attrs={'type': 'date'}),
         }
-
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-        instance.status = 'Delivered'  # ✅ FORCE status to Delivered
-        if commit:
-            instance.save()
-        return instance
 
 # forms.py
 from django import forms
@@ -113,7 +118,6 @@ class VendorMasterForm(forms.ModelForm):
             'vendor_name', 'billing_address', 'city', 'state', 'country',
             'gstn', 'pan', 'short_intro', 'active_till', 'status'
         ]
-
 
 class TripOutToVendorForm(forms.ModelForm):
     class Meta:

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<!--<div class="container" style="max-width: 400px; margin: 50px auto; padding: 1.5rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">-->
+<!--  <h2 style="color:#2c3e50; margin-bottom: 1.5rem; font-weight: 700;">Find Shipment by Consignment No</h2>-->
+  <form id="searchForm" method="GET" action="">
+    <label for="consignment_no" style="font-weight: 600; margin-bottom: 8px; display: block; color: #34495e;">Consignment Number</label>
+    <input id="consignment_no" name="consignment_no" type="text" required placeholder="Enter consignment number"
+           style="width: 100%; padding: 10px 12px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px;"
+           aria-required="true" aria-describedby="consignmentHelp" />
+    <div id="consignmentHelp" style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">Please enter the consignment number to find your shipment.</div>
+    <button type="submit" style="background: #ff6f61; color: white; padding: 12px; border: none; border-radius: 6px; font-size: 16px; font-weight: 700; width: 100%; cursor: pointer; transition: background-color 0.3s ease;">
+      Search
+    </button>
+  </form>
+</div>
+
+<script>
+  document.getElementById('searchForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const consignmentNo = document.getElementById('consignment_no').value.trim();
+    if (consignmentNo) {
+      // Replace 'dummy' with the actual consignment number in the URL
+      const urlTemplate = "{% url 'update_content' 'dummy' %}";
+      const targetUrl = urlTemplate.replace('dummy', encodeURIComponent(consignmentNo));
+      window.location.href = targetUrl;
+    }
+  });
+</script>
+
+<style>
+  @media (max-width: 480px) {
+    .container {
+      margin: 20px 10px;
+      padding: 1rem 0.75rem;
+    }
+    input#consignment_no {
+      font-size: 13px;
+      padding: 9px 10px;
+    }
+    button[type="submit"] {
+      font-size: 15px;
+      padding: 11px;
+    }
+  }
+  input#consignment_no:focus, button[type="submit"]:hover {
+    outline: none;
+    box-shadow: 0 0 5px 2px #ff6f61cc;
+  }
+</style>
+{% endblock %}

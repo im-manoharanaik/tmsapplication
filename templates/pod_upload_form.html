@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
 
-    <h3>Upload POD for: {{ shipment.consignment_no }}</h3>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button class="back-button" type="submit">Upload POD</button>
-    </form>
+<h3>Upload POD for: {{ shipment.consignment_no }}</h3>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="fullpod_button" type="submit" name="action" value="full">Upload POD</button>
+    <button class="partial_button" type="submit" name="action" value="partial">Partially Delivered</button>
+</form>
 
 <style>
       .container {
@@ -46,7 +47,19 @@
         grid-column: 1 / -1;
     }
 
-    .back-button {
+    .fullpod_button {
+        background-color: #ff6f61;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 5px;
+        margin-right: 10px;
+    }
+
+        .partial_button {
         background-color: #ff6f61;
         color: white;
         border: none;

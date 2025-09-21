@@ -27,9 +27,13 @@ urlpatterns = [
     path('logout/', views.user_logout, name='logout'),
     path('register/', views.register_user, name='register'),
     path('dashboard/', views.dashboard, name='dashboard'),
+    path('api/dashboard/<str:data_type>/', views.dashboard_data_api, name='dashboard_api'),
+
     
     # Shipment URLs
     path('shipment/create/', views.shipment_create, name='shipment_create'),
+    path('search-consignment/', views.search_consignment, name='search_consignment'),
+    path('update_content/<str:consignment_no>/', views.update_content, name='update_content'),
     path('shipments/', views.shipment_list, name='shipment_list'),
     path('shipment/<int:pk>/', views.shipment_detail, name='shipment_detail'),
     path('shipment/<int:pk>/update/', views.shipment_update, name='shipment_update'),
@@ -71,6 +75,13 @@ urlpatterns = [
     path("trips/<int:pk>/status/", views.update_trip_status, name="trip-status-update"),
     path("trips/<int:pk>/", views.trip_detail, name="trip-detail"),
     path("trips/<int:pk>/edit/", views.trip_update, name="trip-update"),
+    path('shipment/consignment-note/', views.generate_consignment_notes, name='download_consignment_note'),
+    path('qrcode/<str:consignment_no>/', views.generate_qr_code_url, name='generate_qr_code'),
+    path('barcode/<str:consignment_no>/', views.generate_qr_code_url, name='generate_barcode'),
+    path('api/customer-autocomplete/', views.customer_autocomplete, name='customer_autocomplete'),
+    path('api/customer-details/', views.get_customer_details, name='customer_details'),
+    path('shipments/bulk-update/', views.bulk_update_shipments, name='bulk_update_shipments'),
+
 
 ]
 

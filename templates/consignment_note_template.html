@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Consignment Note - {{ shipment.consignment_no }}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      margin: 0;
+      padding: 20px;
+    }
+    .header, .footer {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .header img {
+      height: 40px;
+      margin-bottom: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 15px;
+    }
+    th, td {
+      border: 1px solid black;
+      padding: 5px 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #e0e0e0;
+    }
+    .barcode {
+      text-align: center;
+      margin-top: 15px;
+    }
+    .content-block {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="{{ logo_url }}" alt="SVE TRANSPORT">
+    <p>#26, KrishnaSagar Layout, Nagadasanahalli, Rajanukunte Post, Bangalore North-560064</p>
+    <p>GSTIN: 29CYGPS4918H1ZV | MOB NO.: +91-9164993830, +91-9108663747</p>
+    <p>Email: info@svetransport.com | Website: www.svetransport.com</p>
+  </div>
+
+  <div class="content-block">
+    <table>
+      <tr>
+        <th>Shipped By:</th>
+        <td>{{ shipment.consignor_name }} <br> {{ shipment.consignor_address }} <br> GST: {{ shipment.consignor_gst }} <br> Contact: {{ shipment.consignor_contact }}</td>
+        <th>Shipped To:</th>
+        <td>{{ shipment.consignee_name }} <br> {{ shipment.consignee_address }} <br> GST: {{ shipment.consignee_gst }} <br> Contact: {{ shipment.consignee_contact }}</td>
+        <th>Pickup Date:</th>
+        <td>{{ shipment.date }}</td>
+        <th>Shipment Mode:</th>
+        <td>{{ shipment.shipment_mode }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="content-block">
+    <table>
+      <tr>
+        <th>Origin</th>
+        <td>{{ shipment.origin }}</td>
+        <th>Destination</th>
+        <td>{{ shipment.destination }}</td>
+        <th>Veh No</th>
+        <td>{{ shipment.vehicle_no }}</td>
+        <th>Service Mode</th>
+        <td>{{ shipment.shipment_type }}</td>
+      </tr>
+      <tr>
+        <th>Veh Type</th>
+        <td>{{ shipment.vehicle_type }}</td>
+        <th>Freight</th>
+        <td>{{ shipment.payment_mode }}</td>
+        <th>INV No</th>
+        <td>{{ shipment.invoice_ref_number }}</td>
+        <th>SO No</th>
+        <td>{{ shipment.so_number }}</td>
+      </tr>
+      <tr>
+        <th>INV Value</th>
+        <td>{{ shipment.value }}</td>
+        <th>RO No</th>
+        <td>{{ shipment.ro_number }}</td>
+        <th>EWB No</th>
+        <td>{{ shipment.ewaybill_number }}</td>
+        <td colspan="2"></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="content-block">
+    <p><strong>{{ shipment.consignment_no }}</strong></p>
+    <hr>
+    <p><strong>No. of Pkgs:</strong> {{ shipment.no_article }}</p>
+    <p><strong>Dimensions:</strong> 1*1*1</p>
+    <p><strong>Chargeable Weight (Kgs):</strong> {{ shipment.charged_weight }}</p>
+    <p><strong>Total Number of Pkgs:</strong> {{ shipment.no_article }}</p>
+    <p><strong>Total Chargeable Weight:</strong> {{ shipment.charged_weight }}</p>
+    <hr>
+    <p><strong>Total Qty:</strong> {{ shipment.item_count }}</p>
+    <p>Date Of Received: __________________  Received By: ______________  Seal/Stamp:</p>
+    <p><strong>Remarks:</strong> If any damages or Short.</p>
+  </div>
+
+  <div class="barcode">
+    <!-- Barcode image generated dynamically -->
+    <img src="{{ barcode_url }}" alt="Barcode for {{ shipment.consignment_no }}">
+  </div>
+
+  <div class="footer">
+    <p>SVE TRANSPORT - Thank you for your business!</p>
+  </div>
+</body>
+</html>

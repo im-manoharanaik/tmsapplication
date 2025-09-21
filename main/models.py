@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 import uuid
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password
+from django.db.models import Sum
 
 class CustomerMaster(models.Model):
     STATUS_CHOICES = [
@@ -174,16 +175,49 @@ class Shipment(models.Model):
     ]
 
     STATUS_CHOICES = [
+        # Initial/Booking Statuses
         ('Booked', 'Booked'),
-        ('Picked-Up', 'Picked-Up'),
+        ('Confirmed', 'Confirmed'),
+
+        # Pickup/Collection Statuses
+        ('Ready for Pickup', 'Ready for Pickup'),
+        ('Pickup Scheduled', 'Pickup Scheduled'),
+        ('Picked Up', 'Picked Up'),
         ('Arrived', 'Arrived'),
         ('Accepted at Hub', 'Accepted at Hub'),
+
+        # Transit Statuses
         ('In Transit', 'In Transit'),
+        ('Reached Origin Hub', 'Reached Origin Hub'),
+        ('Departed Origin Hub', 'Departed Origin Hub'),
+        ('In Transit to Destination', 'In Transit to Destination'),
+        ('Reached Destination Hub', 'Reached Destination Hub'),
+
+        # Delivery Statuses
         ('Out For Delivery', 'Out For Delivery'),
+        ('Delivery Attempted', 'Delivery Attempted'),
         ('Delivered', 'Delivered'),
-        ('Cancelled', 'Cancelled'),
         ('Partial Delivered', 'Partial Delivered'),
-        ('RTO', 'Return to Origin'),
+
+        # Exception/Problem Statuses
+        ('Failed Delivery', 'Failed Delivery'),
+        ('Customer Not Available', 'Customer Not Available'),
+        ('Address Issue', 'Address Issue'),
+        ('Refused by Customer', 'Refused by Customer'),
+        ('Damaged', 'Damaged'),
+        ('Lost', 'Lost'),
+
+        # Hold/Delay Statuses
+        ('On Hold', 'On Hold'),
+        ('Delayed', 'Delayed'),
+        ('Under Investigation', 'Under Investigation'),
+
+        # Return/Cancellation Statuses
+        ('RTO', 'RTO'),
+        ('RTO In Transit', 'RTO In Transit'),
+        ('RTO Delivered', 'RTO Delivered'),
+        ('Cancelled', 'Cancelled'),
+        ('Returned to Sender', 'Returned to Sender'),
     ]
 
     SHIPMENT_TYPES = [
@@ -203,6 +237,19 @@ class Shipment(models.Model):
         ('By_Train', 'By Train'),
     ]
 
+    VEHICLE_TYPE = [
+        ('LCV','LCV'),
+        ('TATA-ACE', 'TATA-ACE'),
+        ('Truck-9ft', 'Truck-9ft'),
+        ('Truck-14ft', 'Truck-14ft'),
+        ('Truck-17ft', 'Truck-17ft'),
+        ('Truck-19ft', 'Truck-19ft'),
+        ('Truck-20ft', 'Truck-20ft'),
+        ('Truck-22ft', 'Truck-22ft'),
+        ('Truck-24ft', 'Truck-24ft'),
+        ('Truck-28ft', 'Truck-28ft'),
+        ('Truck-32ft', 'Truck-32ft'),
+    ]
     consignment_no = models.CharField(max_length=50, unique=True, editable=False)
     date = models.DateField(default=timezone.now)
     freight = models.DecimalField(max_digits=10, decimal_places=2)
@@ -218,6 +265,8 @@ class Shipment(models.Model):
     vehicle_no = models.CharField(max_length=50)
     driver_details = models.CharField(max_length=100)
 
+    vehicle_type = models.CharField(max_length=30, choices=VEHICLE_TYPE,default='LCV')
+    vendor = models.ForeignKey("VendorMaster", on_delete=models.CASCADE, related_name="shipments", null=True, blank=True)
     billto_customer = models.ForeignKey(
         "CustomerMaster",
         on_delete=models.CASCADE,
@@ -250,13 +299,21 @@ class Shipment(models.Model):
 
     # Cargo details
     value = models.DecimalField(max_digits=12, decimal_places=2)
+    item_count = models.IntegerField(default=0)
     no_article = models.IntegerField(default=0)
     actual_weight = models.DecimalField(max_digits=12, decimal_places=2, default=0.0)
     charged_weight = models.DecimalField(max_digits=12, decimal_places=2, default=0.0)
     pack_type = models.CharField(max_length=50)
 
+    #dimension
+    length_ft = models.IntegerField(default=0)
+    width_ft = models.IntegerField(default=0)
+    height = models.IntegerField(default=0)
+    total_dfc = models.IntegerField(default=0)
+
     # Status & tracking
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='Booked')
+    pickedup_date = models.DateField(default=timezone.now, null=True)
     estimated_delivery_date = models.DateField(null=True, blank=True)
     delivery_date = models.DateField(blank=True, null=True)
 
@@ -277,7 +334,7 @@ class Shipment(models.Model):
             year_prefix = str(current_year)[2:4]
 
             last_shipment = Shipment.objects.filter(
-                consignment_no__startswith=f"CN-{year_prefix}"
+                consignment_no__startswith=f"SVE-{year_prefix}"
             ).order_by('-id').first()
 
             if last_shipment and last_shipment.consignment_no[-3:].isdigit():
@@ -286,12 +343,69 @@ class Shipment(models.Model):
             else:
                 new_number = 1
 
-            self.consignment_no = f"CN-{year_prefix}{new_number:03d}"
+            self.consignment_no = f"SVE-{year_prefix}{new_number:03d}"
+            self.total_dfc = self.width_ft *self.length_ft
 
         super().save(*args, **kwargs)
 
     def __str__(self):
         return self.consignment_no
+
+    def update_weights_and_articles(self):
+        """
+        Recalculate shipment weight and article count based on Content.
+        """
+        contents = self.boxes.all()  # 'boxes' is related_name in Content
+        total_weight = contents.aggregate(Sum("box_weight"))["box_weight__sum"] or 0
+        article_count = contents.count()
+
+        # update shipment fields
+        self.actual_weight = total_weight
+        self.item_count = article_count
+        self.no_article = article_count
+        self.save(update_fields=["actual_weight", "item_count", "no_article"])
+
+from django.db import models
+
+class Content(models.Model):
+    shipment = models.ForeignKey(
+        'Shipment',
+        on_delete=models.CASCADE,
+        related_name='boxes'
+    )
+    batch_id = models.CharField(max_length=60, unique=True, editable=False)
+    count_of_box = models.IntegerField(default=0)
+    box_weight = models.DecimalField(max_digits=10, decimal_places=2)
+    box_height = models.DecimalField(max_digits=8, decimal_places=2)
+    box_length = models.DecimalField(max_digits=8, decimal_places=2)
+    box_width = models.DecimalField(max_digits=8, decimal_places=2)
+    box_type = models.CharField(max_length=50)
+    remark = models.TextField(blank=True, null=True)
+    total_volumetric = models.DecimalField(
+        max_digits=12, decimal_places=2, editable=False, null=True, blank=True
+    )
+
+    def save(self, *args, **kwargs):
+        # Calculate volumetric: (L x W x H)
+        self.total_volumetric = self.box_length * self.box_width * self.box_height
+
+        # Generate batch_id
+        if not self.batch_id and self.shipment:
+            existing_count = Content.objects.filter(shipment=self.shipment).count()
+            line_number = existing_count + 1
+            self.batch_id = f"{self.shipment.consignment_no}-{line_number}"
+
+        super().save(*args, **kwargs)
+
+        # After saving, update shipment weights/articles
+        if hasattr(self.shipment, 'update_weights_and_articles'):
+            self.shipment.update_weights_and_articles()
+
+    def delete(self, *args, **kwargs):
+        shipment = self.shipment
+        super().delete(*args, **kwargs)
+        if hasattr(shipment, 'update_weights_and_articles'):
+            shipment.update_weights_and_articles()
 
 
 from django.db import models
@@ -308,6 +422,7 @@ class Manifest(models.Model):
     # Newly added fields
     advance_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     additional_freight = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    balance_freight = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     vendor_name = models.ForeignKey(
         "VendorMaster",
@@ -324,7 +439,6 @@ class Manifest(models.Model):
     vehicle_no = models.CharField(max_length=50, null=True)
     driver_name = models.CharField(max_length=100, blank=True)
     driver_contact = models.CharField(max_length=20, blank=True)
-
     document = models.FileField(upload_to='manifest_documents/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

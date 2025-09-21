@@ -1,171 +1,455 @@
 {% extends "base.html" %}
-{% block content %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Shipment Details</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
+{% block content %}
 
-        h2 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
-
-        .details {
-            display: grid;
-            grid-template-columns: 0.5fr 0.5fr;
-            gap: 20px;
-        }
-
-        label {
-            font-weight: bold;
-            font-size: 9px;
-            margin-bottom: 5px;
-            display: block;
-        }
-
-        .value {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background: #f9f9f9;
-        }
-
-        .full-width {
-            grid-column: 1 / -1;
-        }
-
-        .back-button {
-            background-color: #ff6f61;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-
-        .back-button:hover {
-            background-color: #e65b50;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-
-    <div class="details">
-        <!-- Consignment Info -->
-        <div>
-            <label>Date</label>
-            <div class="value">{{ shipment.date }}</div>
-        </div>
-        <div>
-            <label>Freight</label>
-            <div class="value">{{ shipment.freight }}</div>
-        </div>
-        <div>
-            <label>Payment Mode</label>
-            <div class="value">{{ shipment.payment_mode }}</div>
-        </div>
-        <div>
-            <label>Vehicle No</label>
-            <div class="value">{{ shipment.vehicle_no }}</div>
-        </div>
-        <div>
-            <label>Origin</label>
-            <div class="value">{{ shipment.origin }}</div>
-        </div>
-        <div>
-            <label>Origin Pincode</label>
-            <div class="value">{{ shipment.origin_pin }}</div>
-        </div>
-        <div>
-            <label>Destination</label>
-            <div class="value">{{ shipment.destination }}</div>
-        </div>
-        <div>
-            <label>Destination Pincode</label>
-            <div class="value">{{ shipment.destination_pin }}</div>
-        </div>
-        <div>
-            <label>Driver Details</label>
-            <div class="value">{{ shipment.driver_details }}</div>
-        </div>
-
-        <!-- Consignor -->
-        <div class="full-width"><strong>Consignor Details</strong></div>
-        <div>
-            <label>Consignor Name</label>
-            <div class="value">{{ shipment.consignor_name }}</div>
-        </div>
-        <div class="full-width">
-            <label>Consignor Address</label>
-            <div class="value">{{ shipment.consignor_address }}</div>
-        </div>
-        <div>
-            <label>Consignor GST</label>
-            <div class="value">{{ shipment.consignor_gst }}</div>
-        </div>
-        <div>
-            <label>Consignor Contact</label>
-            <div class="value">{{ shipment.consignor_contact }}</div>
-        </div>
-
-        <!-- Consignee -->
-        <div class="full-width"><strong>Consignee Details</strong></div>
-        <div>
-            <label>Consignee Name</label>
-            <div class="value">{{ shipment.consignee_name }}</div>
-        </div>
-        <div class="full-width">
-            <label>Consignee Address</label>
-            <div class="value">{{ shipment.consignee_address }}</div>
-        </div>
-        <div>
-            <label>Consignee GST</label>
-            <div class="value">{{ shipment.consignee_gst }}</div>
-        </div>
-        <div>
-            <label>Consignee Contact</label>
-            <div class="value">{{ shipment.consignee_contact }}</div>
-        </div>
-
-        <!-- Invoice -->
-        <div>
-            <label>Invoice Ref No</label>
-            <div class="value">{{ shipment.invoice_ref_number }}</div>
-        </div>
-        <div>
-            <label>E-Waybill Number</label>
-            <div class="value">{{ shipment.ewaybill_number }}</div>
-        </div>
-        <div>
-            <label>Value</label>
-            <div class="value">{{ shipment.value }}</div>
-        </div>
-        <div>
-            <label>Pack Type</label>
-            <div class="value">{{ shipment.pack_type }}</div>
-        </div>
-        <div>
-            <label>Status</label>
-            <div class="value">{{ shipment.status }}</div>
-        </div>
-        <div>
-            <label>Estimated Delivery Date</label>
-            <div class="value">{{ shipment.estimated_delivery_date }}</div>
+    <!-- Basic Information -->
+    <div class="section">
+        <h3>Basic Information</h3>
+        <div class="details">
+            <div class="detail-item">
+                <label>Date</label>
+                <div class="value">{{ shipment.date|date:"d-M-Y" }}</div>
+            </div>
+            <div class="detail-item">
+                <label>Status</label>
+                <div class="value status-{{ shipment.status|lower }}">{{ shipment.status }}</div>
+            </div>
+            <div class="detail-item">
+                <label>Payment Mode</label>
+                <div class="value">{{ shipment.payment_mode }}</div>
+            </div>
+            <div class="detail-item">
+                <label>Shipment Type</label>
+                <div class="value">{{ shipment.shipment_type }}</div>
+            </div>
+            <div class="detail-item">
+                <label>Vehicle No</label>
+                <div class="value">{{ shipment.vehicle_no|default:"-" }}</div>
+            </div>
+            <div class="detail-item">
+                <label>Vehicle Type</label>
+                <div class="value">{{ shipment.vehicle_type|default:"-" }}</div>
+            </div>
         </div>
     </div>
 
-    <!-- Back Button -->
-    <button class="back-button" onclick="window.history.back();">Back</button>
+    <!-- Route Information -->
+    <div class="section">
+        <h3>Route & Transportation</h3>
+        <div class="details">
+            <div class="detail-item">
+                <label>Origin</label>
+                <div class="value">{{ shipment.origin }}</div>
+            </div>
+            <div class="detail-item">
+                <label>Origin PIN</label>
+                <div class="value">{{ shipment.origin_pin }}</div>
+            </div>
+            <div class="detail-item">
+                <label>Destination</label>
+                <div class="value">{{ shipment.destination }}</div>
+            </div>
+            <div class="detail-item">
+                <label>Destination PIN</label>
+                <div class="value">{{ shipment.destination_pin }}</div>
+            </div>
+            <div class="detail-item full-width">
+                <label>Driver Details</label>
+                <div class="value">{{ shipment.driver_details|default:"-" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Consignor Information -->
+    <div class="section">
+        <h3>Consignor Details</h3>
+        <div class="details">
+            <div class="detail-item">
+                <label>Name</label>
+                <div class="value">{{ shipment.consignor_name }}</div>
+            </div>
+            <div class="detail-item">
+                <label>Contact</label>
+                <div class="value">{{ shipment.consignor_contact }}</div>
+            </div>
+            <div class="detail-item full-width">
+                <label>Address</label>
+                <div class="value">{{ shipment.consignor_address }}</div>
+            </div>
+            <div class="detail-item">
+                <label>GST</label>
+                <div class="value">{{ shipment.consignor_gst|default:"-" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Consignee Information -->
+    <div class="section">
+        <h3>Consignee Details</h3>
+        <div class="details">
+            <div class="detail-item">
+                <label>Name</label>
+                <div class="value">{{ shipment.consignee_name }}</div>
+            </div>
+            <div class="detail-item">
+                <label>Contact</label>
+                <div class="value">{{ shipment.consignee_contact }}</div>
+            </div>
+            <div class="detail-item full-width">
+                <label>Address</label>
+                <div class="value">{{ shipment.consignee_address }}</div>
+            </div>
+            <div class="detail-item">
+                <label>GST</label>
+                <div class="value">{{ shipment.consignee_gst|default:"-" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cargo Information -->
+    <div class="section">
+        <h3>Cargo Details</h3>
+        <div class="details">
+            <div class="detail-item">
+                <label>Value (₹)</label>
+                <div class="value">{{ shipment.value|floatformat:0|default:"-" }}</div>
+            </div>
+            <div class="detail-item">
+                <label>Pack Type</label>
+                <div class="value">{{ shipment.pack_type|default:"-" }}</div>
+            </div>
+            <div class="detail-item">
+                <label>No of Articles</label>
+                <div class="value">{{ shipment.no_article }}</div>
+            </div>
+            <div class="detail-item">
+                <label>Actual Weight (kg)</label>
+                <div class="value">{{ shipment.actual_weight|floatformat:1 }}</div>
+            </div>
+            <div class="detail-item">
+                <label>Charged Weight (kg)</label>
+                <div class="value">{{ shipment.charged_weight|floatformat:1 }}</div>
+            </div>
+            <div class="detail-item">
+                <label>Total Volume (CFT)</label>
+                <div class="value">{{ shipment.total_dfc|floatformat:2|default:"-" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Details -->
+    {% if shipment.boxes.exists %}
+    <div class="section">
+        <h3>Box/Package Details</h3>
+        <div class="content-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Box Type</th>
+                        <th>Count</th>
+                        <th>Weight (kg)</th>
+                        <th>Dimensions (L×W×H)</th>
+                        <th>Volume (CFT)</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for content in shipment.boxes.all %}
+                    <tr>
+                        <td>{{ content.box_type|default:"-" }}</td>
+                        <td>{{ content.count_of_box }}</td>
+                        <td>{{ content.box_weight|floatformat:1 }}</td>
+                        <td>{{ content.box_length|floatformat:1 }}×{{ content.box_width|floatformat:1 }}×{{ content.box_height|floatformat:1 }}</td>
+                        <td>{{ content.total_volumetric|floatformat:2 }}</td>
+                        <td>{{ content.remark|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Document References -->
+    <div class="section">
+        <h3>Document References</h3>
+        <div class="details">
+            <div class="detail-item">
+                <label>Invoice Ref No</label>
+                <div class="value">{{ shipment.invoice_ref_number|default:"-" }}</div>
+            </div>
+            <div class="detail-item">
+                <label>E-Waybill Number</label>
+                <div class="value">{{ shipment.ewaybill_number|default:"-" }}</div>
+            </div>
+            <div class="detail-item">
+                <label>SO Number</label>
+                <div class="value">{{ shipment.so_number|default:"-" }}</div>
+            </div>
+            <div class="detail-item">
+                <label>RO Number</label>
+                <div class="value">{{ shipment.ro_number|default:"-" }}</div>
+            </div>
+            <div class="detail-item">
+                <label>BOE Number</label>
+                <div class="value">{{ shipment.boe_num|default:"-" }}</div>
+            </div>
+            <div class="detail-item">
+                <label>Additional Ref</label>
+                <div class="value">{{ shipment.additional_ref_number|default:"-" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Information -->
+    <div class="section">
+        <h3>Delivery Information</h3>
+        <div class="details">
+            <div class="detail-item">
+                <label>Estimated Delivery</label>
+                <div class="value">{{ shipment.estimated_delivery_date|date:"d-M-Y"|default:"-" }}</div>
+            </div>
+            <div class="detail-item">
+                <label>Appointment Delivery</label>
+                <div class="value">{{ shipment.appointment_delivery|yesno:"Yes,No" }}</div>
+            </div>
+            <div class="detail-item">
+                <label>Appointment Date</label>
+                <div class="value">{{ shipment.appointment_date|date:"d-M-Y"|default:"-" }}</div>
+            </div>
+            <div class="detail-item full-width">
+                <label>Remarks</label>
+                <div class="value">{{ shipment.remark|default:"-" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="actions">
+        <button class="btn btn-edit" onclick="window.location.href='{% url 'shipment_update' shipment.pk %}'">
+            <i class="fas fa-edit"></i> Edit
+        </button>
+        <button class="btn btn-print" onclick="window.open('{% url 'download_consignment_note' %}?consignments={{ shipment.consignment_no }}', '_blank')">
+    <i class="fas fa-print"></i> Print
+</button>
+        <button class="btn btn-back" onclick="window.history.back();">
+            <i class="fas fa-arrow-left"></i> Back
+        </button>
+    </div>
 </div>
 
-</body>
-</html>
+<style>
+    .container {
+        max-width: 900px;
+        margin: 20px auto;
+        padding: 20px;
+        font-family: 'Arial', sans-serif;
+        background-color: #fff;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border-radius: 8px;
+    }
+
+    h2 {
+        color: #2c3e50;
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 24px;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 10px;
+    }
+
+    .section {
+        margin-bottom: 25px;
+        border: 1px solid #e1e8ed;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .section h3 {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+        margin: 0;
+        padding: 12px 20px;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        padding: 20px;
+        background-color: #f8f9fa;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .detail-item.full-width {
+        grid-column: 1 / -1;
+    }
+
+    label {
+        font-weight: 600;
+        font-size: 12px;
+        color: #495057;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .value {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 8px 12px;
+        font-size: 14px;
+        color: #212529;
+        min-height: 20px;
+        word-wrap: break-word;
+    }
+
+    .status-booked { background-color: #cce5ff; color: #0056b3; }
+    .status-in-transit { background-color: #fff3cd; color: #856404; }
+    .status-delivered { background-color: #d4edda; color: #155724; }
+    .status-cancelled { background-color: #f8d7da; color: #721c24; }
+
+    /* Content Table */
+    .content-table {
+        padding: 20px;
+        background-color: #f8f9fa;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 4px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+        padding: 10px 12px;
+        text-align: left;
+        border-bottom: 1px solid #dee2e6;
+        font-size: 13px;
+    }
+
+    th {
+        background-color: #e9ecef;
+        font-weight: 600;
+        color: #495057;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    /* Action Buttons */
+    .actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-edit {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+    }
+
+    .btn-edit:hover {
+        background: linear-gradient(135deg, #218838, #1ea085);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-print {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+    }
+
+    .btn-print:hover {
+        background: linear-gradient(135deg, #0056b3, #004085);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    }
+
+    .btn-back {
+        background: linear-gradient(135deg, #6c757d, #5a6268);
+        color: white;
+    }
+
+    .btn-back:hover {
+        background: linear-gradient(135deg, #5a6268, #545b62);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .container {
+            margin: 10px;
+            padding: 15px;
+        }
+
+        .details {
+            grid-template-columns: 1fr;
+            gap: 10px;
+            padding: 15px;
+        }
+
+        .actions {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn {
+            width: 200px;
+            justify-content: center;
+        }
+
+        h2 {
+            font-size: 20px;
+        }
+
+        .section h3 {
+            font-size: 14px;
+            padding: 10px 15px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .content-table {
+            overflow-x: auto;
+        }
+
+        table {
+            min-width: 600px;
+        }
+    }
+</style>
+
 {% endblock %}

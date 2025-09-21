@@ -3,208 +3,379 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>SVE TRANSPORT - Your Transport Partner</title>
+  <title>{% block title %}SVE TRANSPORT - Your Transport Partner{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- Font Awesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-    }
-
-    header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 1000;
-      color: #ff6f61;
-      padding: 0 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background-color: #c9c9c9;
-      height: 60px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    * {
       box-sizing: border-box;
     }
 
-    header img {
-      max-height: 40px;
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #2c3e50;
+      min-height: 100vh;
     }
 
-    .hamburger {
-      display: none;
-      font-size: 24px;
-      cursor: pointer;
-      color: #000;
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      border-bottom: 3px solid #ff6f61;
     }
 
-    nav {
+    .header-left {
       display: flex;
       align-items: center;
       gap: 1rem;
     }
 
-    .track_form {
+    .header img {
+      height: 45px;
+      width: auto;
+      user-select: none;
+      filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));
+    }
+
+    .company-info h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ff6f61;
+      margin: 0;
+    }
+
+    .company-info p {
+      font-size: 0.85rem;
+      color: #7f8c8d;
+      margin: 0;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .user-info {
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      background: rgba(255, 111, 97, 0.1);
+      padding: 8px 16px;
+      border-radius: 25px;
+      border: 2px solid #ff6f61;
+      font-weight: 600;
+      color: #2c3e50;
     }
 
-    .searchbox {
-      padding: 6px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 1rem;
-    }
-
-    .track_button {
-      background-color: dimgrey;
-      color: white;
+    .hamburger {
+      display: none;
+      background: none;
       border: none;
-      padding: 6px 10px;
-      border-radius: 5px;
+      font-size: 1.5rem;
+      color: #2c3e50;
       cursor: pointer;
-      font-size: 1rem;
+      padding: 8px;
+      border-radius: 4px;
+      transition: background 0.3s ease;
     }
 
-    .track_button:hover {
-      background-color: #e65a50;
+    .hamburger:hover {
+      background: rgba(44, 62, 80, 0.1);
     }
 
-    .username {
-      font-weight: bold;
-      color: #000;
-      max-width: 150px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .sidebar {
-      height: 100vh;
-      width: 70px; /* collapsed by default on desktop */
+    /* Sidebar */
+    nav.sidebar {
       position: fixed;
-      top: 60px;
+      top: 70px;
       left: 0;
-      background-color: #1ABCFE;
-      padding-top: 10px;
+      width: 280px;
+      height: calc(100vh - 70px);
+      background: linear-gradient(180deg, #1ABCFE 0%, #0ea5e9 50%, #0369a1 100%);
       color: white;
       overflow-y: auto;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), left 0.4s ease;
+      box-shadow: 4px 0 15px rgba(0, 0, 0, 0.15);
+      z-index: 900;
+    }
+
+    nav.sidebar.collapsed {
+      width: 80px;
+    }
+
+    nav.sidebar.mobile-hidden {
+      left: -280px;
+    }
+
+    .sidebar-header {
+      padding: 1.5rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .sidebar-toggle {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 1rem;
       transition: all 0.3s ease;
-      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
 
-    .sidebar.expanded {
-      width: 250px;
+    .sidebar-toggle:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
     }
 
-    .sidebar.mobile-show {
-      left: 0;
-      width: 220px;
-    }
-
-    .sidebar .dropdown-btn,
-    .sidebar a {
-      padding: 12px 20px;
+    .dropdown-btn {
+      padding: 15px 20px;
       display: flex;
       align-items: center;
       color: white;
-      text-decoration: none;
       background: none;
       border: none;
-      text-align: left;
       width: 100%;
-      font-size: 16px;
+      text-align: left;
+      font-size: 1rem;
       cursor: pointer;
       transition: all 0.3s ease;
+      border-left: 4px solid transparent;
+      position: relative;
     }
 
-    .sidebar:not(.expanded) .dropdown-btn {
-      justify-content: center;
-      padding: 12px 0;
+    .dropdown-btn:hover,
+    .dropdown-btn.active {
+      background: rgba(255, 255, 255, 0.15);
+      border-left-color: #ffffff;
+      transform: translateX(2px);
     }
 
-    .sidebar:not(.expanded) .label {
+    .dropdown-btn::after {
+      content: '';
+      position: absolute;
+      right: 20px;
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 6px solid white;
+      transition: transform 0.3s ease;
+      opacity: 0;
+    }
+
+    .dropdown-btn[aria-haspopup="true"]::after {
+      opacity: 1;
+    }
+
+    .dropdown-btn.active::after {
+      transform: rotate(180deg);
+    }
+
+    .icon {
+      margin-right: 15px;
+      width: 24px;
+      text-align: center;
+      font-size: 1.2rem;
+      min-width: 24px;
+    }
+
+    nav.sidebar.collapsed .label {
       display: none;
     }
 
-    .sidebar a:hover,
-    .dropdown-btn:hover {
-      background-color: #34495e;
+    nav.sidebar.collapsed .dropdown-btn {
+      justify-content: center;
+      padding: 15px 10px;
+    }
+
+    nav.sidebar.collapsed .icon {
+      margin-right: 0;
+    }
+
+    nav.sidebar.collapsed .dropdown-btn::after {
+      display: none;
     }
 
     .dropdown-container {
       display: none;
-      background-color: #34495e;
-      padding-left: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      animation: slideDown 0.3s ease-out;
     }
 
-    .sidebar .icon {
+    .dropdown-container.show {
+      display: block;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        max-height: 0;
+      }
+      to {
+        opacity: 1;
+        max-height: 500px;
+      }
+    }
+
+    .dropdown-container a {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px 12px 50px;
+      color: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
+    }
+
+    .dropdown-container a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border-left-color: rgba(255, 255, 255, 0.5);
+      transform: translateX(2px);
+    }
+
+    .dropdown-container a i {
       margin-right: 10px;
-      width: 20px;
+      width: 16px;
       text-align: center;
     }
 
-    .main-content {
-      margin-left: 70px; /* collapsed by default */
-      padding: 20px;
-      margin-top: 80px;
-      transition: margin-left 0.3s ease;
+    .sub-btn {
+      padding-left: 50px;
+      font-size: 0.9rem;
+      background: rgba(0, 0, 0, 0.2);
     }
 
-    .main-content.shift {
-      margin-left: 250px;
+    .sub-container {
+      background: rgba(0, 0, 0, 0.4);
     }
 
-    .main-content.mobile-shift {
-      margin-left: 220px;
+    .sub-container a {
+      padding-left: 70px;
+      font-size: 0.85rem;
     }
 
-    footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      text-align: center;
-      background-color: #c9c9c9;
-      color: #fff;
-      z-index: 999;
-      padding: 5px 0; /* Reduced padding */
-      font-size: 14px; /* Optional: Adjust font size if needed */
+    /* Scrollbar */
+    nav.sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    nav.sidebar::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    nav.sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+    }
+
+    nav.sidebar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Main Content */
+    main.main-content {
+      margin-top: 70px;
+      margin-left: 280px;
+      padding: 0;
+      min-height: calc(100vh - 70px);
+      transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px 0 0 0;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    main.main-content.collapsed {
+      margin-left: 80px;
+    }
+
+    main.main-content.mobile-shift {
+      margin-left: 0;
+      transform: translateX(280px);
     }
 
     .page-header {
-      background-color: #e0e0e0;
-      padding: 15px 20px;
-      border-radius: 6px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 2rem 2.5rem;
+      margin: 0;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       position: sticky;
-      top: 80px;
-      z-index: 60;
+      top: 0;
+      z-index: 100;
     }
 
     .page-title {
+      font-size: 2rem;
+      font-weight: 700;
       margin: 0;
-      font-size: 24px;
-      color: #333;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .page-title::before {
+      {% block page_icon %}content: '📊';{% endblock %}
+      font-size: 1.5rem;
+    }
+
+    .breadcrumb {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      opacity: 0.9;
     }
 
     .page-body {
-      background: white;
-      padding: 20px;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      margin-bottom: 60px;
+      flex: 1;
+      padding: 2rem;
+      background: #ffffff;
+      min-height: calc(100vh - 200px);
     }
 
-    .hide-on-mobile {
-      display: block;
+    /* Footer */
+    .main-footer {
+      margin-top: auto;
+      text-align: center;
+      color: #7f8c8d;
+      font-size: 0.9rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.8);
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .page-body {
+        padding: 1.5rem;
+      }
     }
 
     @media (max-width: 768px) {
@@ -212,192 +383,396 @@
         display: block;
       }
 
-      .hide-on-mobile {
+      .company-info {
         display: none;
       }
 
-      .sidebar {
-        left: -220px; /* hidden by default */
-        width: 220px;
+      nav.sidebar {
+        left: -280px;
       }
 
-      .sidebar.mobile-show {
+      nav.sidebar.mobile-show {
         left: 0;
       }
 
-      .main-content {
+      main.main-content {
         margin-left: 0;
+        padding: 0;
+        border-radius: 0;
       }
 
-      .main-content.mobile-shift {
-        margin-left: 220px;
+      main.main-content.mobile-shift {
+        transform: translateX(280px);
+      }
+
+      .page-title {
+        font-size: 1.5rem;
+      }
+
+      .page-body {
+        padding: 1rem;
       }
     }
+
+    @media (max-width: 480px) {
+      .header {
+        padding: 0 1rem;
+      }
+
+      .page-title {
+        font-size: 1.25rem;
+      }
+
+      .page-body {
+        padding: 0.75rem;
+      }
+
+      .page-header {
+        padding: 1.5rem 1rem;
+      }
+    }
+
+    /* Animation for page transitions */
+    .page-body {
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Loading state */
+    .loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    /* Focus states for accessibility */
+    .dropdown-btn:focus,
+    .sidebar-toggle:focus {
+      outline: 2px solid #ffffff;
+      outline-offset: -2px;
+    }
+
+    /* Mobile overlay */
+    .mobile-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 850;
+      display: none;
+    }
+
+    .mobile-overlay.show {
+      display: block;
+    }
+
+    /* Additional styles for specific pages */
+    {% block extra_css %}{% endblock %}
   </style>
 </head>
 <body>
 
-<header>
-  <img src="{% static 'logo.png' %}" alt="SVE TRANSPORT" />
-  <div class="hamburger" onclick="toggleSidebarMobile()" aria-label="Toggle sidebar">
-    <i class="fas fa-bars"></i>
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <img src="{% static 'logo.png' %}" alt="SVE TRANSPORT logo" />
+    <div class="company-info">
+      <h1>SVE TRANSPORT</h1>
+      <p>Your Trusted Transport Partner</p>
+    </div>
   </div>
-  <nav>
-    {% if user.is_authenticated %}
-      <span class="username">{{ user.first_name }} {{ user.last_name }}</span>
-    {% endif %}
-  </nav>
-</header>
 
-<aside class="sidebar" id="sidebar" aria-label="Sidebar Navigation">
-  <button class="dropdown-btn" onclick="toggleSidebar()">
-    <span class="icon"><i class="fas fa-bars"></i></span>
-    <span class="label">Toggle</span>
+  <button class="hamburger" onclick="toggleMobileSidebar()" aria-label="Toggle mobile menu">
+    <i class="fas fa-bars"></i>
   </button>
 
-  <button class="dropdown-btn" onclick="location.href='{% url 'dashboard' %}'">
+  <div class="header-right">
+    {% if user.is_authenticated %}
+      <div class="user-info">
+        <i class="fas fa-user-circle"></i>
+        <span>{{ user.get_full_name|default:user.username }}</span>
+      </div>
+    {% endif %}
+  </div>
+</header>
+
+<!-- Mobile Overlay -->
+<div class="mobile-overlay" id="mobile-overlay" onclick="closeMobileSidebar()"></div>
+
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar" aria-label="Main Navigation">
+  <div class="sidebar-header">
+    <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+      <i class="fas fa-bars"></i>
+      <span class="label">Menu</span>
+    </button>
+  </div>
+
+  <button class="dropdown-btn" onclick="location.href='{% url 'dashboard' %}'" aria-label="Go to Dashboard">
     <span class="icon"><i class="fas fa-tachometer-alt"></i></span>
     <span class="label">Dashboard</span>
   </button>
 
-  <button class="dropdown-btn">
+  <button class="dropdown-btn" aria-expanded="false" aria-haspopup="true" aria-label="Toggle Shipment menu">
     <span class="icon"><i class="fas fa-truck"></i></span>
-    <span class="label">Shipment ▾</span>
+    <span class="label">Shipment</span>
   </button>
   <div class="dropdown-container">
     {% if user.usertype == 'Internal' %}
-      <a href="{% url 'shipment_create' %}">Create Shipment</a>
-      <a href="{% url 'shipment_bulk_upload' %}">Bulk Upload</a>
-      <a href="{% url 'consignment_note' %}">Consignment Notes</a>
-      <a href="{% url 'print_label' %}">Label Download</a>
-      <a href="{% url 'pod_upload_search' %}">Upload POD</a>
+      <a href="{% url 'shipment_create' %}"><i class="fas fa-plus"></i> Create Shipment</a>
+      <a href="{% url 'search_consignment' %}"><i class="fas fa-edit"></i> Update Content</a>
+      <a href="{% url 'shipment_bulk_upload' %}"><i class="fas fa-upload"></i> Bulk Upload</a>
+      <a href="{% url 'consignment_note' %}"><i class="fas fa-file-alt"></i> Consignment Notes</a>
+      <a href="{% url 'print_label' %}"><i class="fas fa-tags"></i> Label Download</a>
+      <a href="{% url 'pod_upload_search' %}"><i class="fas fa-cloud-upload-alt"></i> Upload POD</a>
     {% endif %}
-    <a href="{% url 'shipment_list' %}">Shipment List</a>
-    <a href="{% url 'bulk_tracking' %}">Track Shipments</a>
+    <a href="{% url 'shipment_list' %}"><i class="fas fa-list"></i> Shipment List</a>
+    <a href="{% url 'bulk_tracking' %}"><i class="fas fa-search-location"></i> Track Shipments</a>
   </div>
 
-  <button class="dropdown-btn">
+  <button class="dropdown-btn" aria-expanded="false" aria-haspopup="true" aria-label="Toggle Manifest menu">
     <span class="icon"><i class="fas fa-file-invoice"></i></span>
-    <span class="label">Manifest ▾</span>
+    <span class="label">Manifest</span>
   </button>
   <div class="dropdown-container">
     {% if user.usertype == 'Internal' %}
-      <a href="{% url 'create_manifest' %}">Create Manifest</a>
-      <a href="#">Update by Manifest</a>
+      <a href="{% url 'create_manifest' %}"><i class="fas fa-plus"></i> Create Manifest</a>
+      <a href="#"><i class="fas fa-edit"></i> Update by Manifest</a>
+      <a href="#"><i class="fas fa-print"></i> Print Manifest</a>
+      <a href="{% url 'trip-create' %}"><i class="fas fa-route"></i> Create Trip to Vendor</a>
+      <a href="#"><i class="fas fa-edit"></i> Update Trip-Vendor</a>
+      <a href="#"><i class="fas fa-cogs"></i> Manage Trips - Vendor</a>
     {% endif %}
-    <a href="{% url 'manifest_list' %}">Manifest List</a>
-    {% if user.usertype == 'Internal' %}
-      <a href="#">Print Manifest</a>
-    {% endif %}
-    {% if user.usertype == 'Internal' %}
-    <a href="{% url 'trip-create' %}">Create Trip-Vendor</a>
-    <a href="#">Update Trip</a>
-  {% endif %}
-  <a href="{% url 'trip-list' %}">Trip List Trip-Vendor</a>
-  {% if user.usertype == 'Internal' %}
-    <a href="#">Manage Trips - Trip-Vendor</a>
-  {% endif %}
+    <a href="{% url 'manifest_list' %}"><i class="fas fa-list"></i> Manifest List</a>
+    <a href="{% url 'trip-list' %}"><i class="fas fa-list-alt"></i> Trip List -Vendor</a>
   </div>
 
   {% if user.usertype == 'Internal' %}
-    <button class="dropdown-btn">
-      <span class="icon"><i class="fas fa-money-bill"></i></span>
-      <span class="label">Billing ▾</span>
-    </button>
-    <div class="dropdown-container">
-      <a href="#">Generate Bill</a>
-      <a href="#">Bill History</a>
-    </div>
-
-  <button class="dropdown-btn" aria-expanded="false">
-    <span class="icon"><i class="fas fa-cogs"></i></span>
-    <span class="label">Masters ▾</span>
+  <button class="dropdown-btn" aria-expanded="false" aria-haspopup="true" aria-label="Toggle Billing menu">
+    <span class="icon"><i class="fas fa-money-bill"></i></span>
+    <span class="label">Billing</span>
   </button>
   <div class="dropdown-container">
+    <a href="#"><i class="fas fa-file-invoice-dollar"></i> Generate Bill</a>
+    <a href="#"><i class="fas fa-history"></i> Bill History</a>
+  </div>
 
-    <!-- Users Submenu -->
-    <button class="dropdown-btn sub-btn" aria-expanded="false">Users ▾</button>
+  <button class="dropdown-btn" aria-expanded="false" aria-haspopup="true" aria-label="Toggle Masters menu">
+    <span class="icon"><i class="fas fa-cogs"></i></span>
+    <span class="label">Masters</span>
+  </button>
+  <div class="dropdown-container">
+    <button class="dropdown-btn sub-btn" aria-expanded="false" aria-haspopup="true" aria-label="Toggle Users submenu">
+      <i class="fas fa-users"></i> Users
+    </button>
     <div class="dropdown-container sub-container">
-      <a href="{% url 'user_add' %}">➕ Add User</a>
-      <a href="{% url 'user_manage' %}">📋 Manage Users</a>
+      <a href="{% url 'user_add' %}"><i class="fas fa-user-plus"></i> Add User</a>
+      <a href="{% url 'user_manage' %}"><i class="fas fa-users-cog"></i> Manage Users</a>
     </div>
 
-    <!-- Branch Submenu -->
-    <button class="dropdown-btn sub-btn" aria-expanded="false">Branch ▾</button>
+    <button class="dropdown-btn sub-btn" aria-expanded="false" aria-haspopup="true" aria-label="Toggle Branch submenu">
+      <i class="fas fa-building"></i> Branch
+    </button>
     <div class="dropdown-container sub-container">
-      <a href="{% url 'branch_add' %}">➕ Add Branch</a>
-      <a href="{% url 'branch_manage' %}">📋 Manage Branches</a>
+      <a href="{% url 'branch_add' %}"><i class="fas fa-plus"></i> Add Branch</a>
+      <a href="{% url 'branch_manage' %}"><i class="fas fa-list"></i> Manage Branches</a>
     </div>
 
-    <!-- Fleets Submenu -->
-    <button class="dropdown-btn sub-btn" aria-expanded="false">Fleets ▾</button>
+    <button class="dropdown-btn sub-btn" aria-expanded="false" aria-haspopup="true" aria-label="Toggle Fleets submenu">
+      <i class="fas fa-truck-loading"></i> Fleets
+    </button>
     <div class="dropdown-container sub-container">
-      <a href="{% url 'fleet_add' %}">➕ Add Fleet</a>
-      <a href="{% url 'fleet_manage' %}">📋 Manage Fleets</a>
+      <a href="{% url 'fleet_add' %}"><i class="fas fa-plus"></i> Add Fleet</a>
+      <a href="{% url 'fleet_manage' %}"><i class="fas fa-list"></i> Manage Fleets</a>
     </div>
-
-    <button class="dropdown-btn sub-btn" aria-expanded="false">Vendors ▾</button>
-    <div class="dropdown-container sub-container">
-      <a href="{% url 'fleet_add' %}">➕ Add Vendors</a>
-      <a href="{% url 'fleet_manage' %}">📋 Manage Vendors</a>
-    </div>
-
   </div>
   {% endif %}
 
   {% if user.is_authenticated %}
-    <button class="dropdown-btn" onclick="location.href='{% url 'logout' %}'">
+    <button class="dropdown-btn" onclick="location.href='{% url 'logout' %}'" aria-label="Logout" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.2);">
       <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
       <span class="label">Logout</span>
     </button>
   {% endif %}
-</aside>
+</nav>
 
+<!-- Main Content -->
 <main class="main-content" id="main-content">
-  <div class="page-header">
-    <h1 class="page-title">{{ pagename }}</h1>
-  </div>
-  <div class="page-body">
+  <header class="page-header">
+    <h1 class="page-title">{% block page_title %}{{ pagename|default:"Dashboard" }}{% endblock %}</h1>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <span>Home</span> / <span>{% block breadcrumb %}{{ pagename|default:"Dashboard" }}{% endblock %}</span>
+    </nav>
+  </header>
+
+  <section class="page-body">
     {% block content %}
-    <!-- Page content here -->
+    <div style="text-align: center; padding: 3rem; color: #7f8c8d;">
+      <i class="fas fa-box-open" style="font-size: 4rem; margin-bottom: 1rem; color: #ff6f61;"></i>
+      <h2>Welcome to SVE Transport</h2>
+      <p>Select an option from the sidebar to get started.</p>
+    </div>
     {% endblock %}
-  </div>
+  </section>
+
+  <footer class="main-footer">
+    <p>&copy; 2025 SVE TRANSPORT. All Rights Reserved. | <i class="fas fa-phone"></i> +91-9164993830 | <i class="fas fa-envelope"></i> info@svetransport.com</p>
+  </footer>
 </main>
 
-<footer>
-  <p>&copy; 2025 SVE TRANSPORT All Rights Reserved.</p>
-</footer>
-
 <script>
+  let isMobile = window.innerWidth <= 768;
+
+  // Toggle desktop sidebar
   function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const content = document.getElementById('main-content');
-    if (window.innerWidth > 768) {
-      sidebar.classList.toggle('expanded');
-      content.classList.toggle('shift');
+
+    if (!isMobile) {
+      sidebar.classList.toggle('collapsed');
+      content.classList.toggle('collapsed');
     }
   }
 
-  function toggleSidebarMobile() {
+  // Toggle mobile sidebar
+  function toggleMobileSidebar() {
     const sidebar = document.getElementById('sidebar');
     const content = document.getElementById('main-content');
+    const overlay = document.getElementById('mobile-overlay');
+
     sidebar.classList.toggle('mobile-show');
     content.classList.toggle('mobile-shift');
+    overlay.classList.toggle('show');
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
-    const dropdowns = document.querySelectorAll(".dropdown-btn");
-    dropdowns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const container = btn.nextElementSibling;
-        const isShown = container && container.style.display === "block";
-        document.querySelectorAll(".dropdown-container").forEach(dc => dc.style.display = "none");
-        if (container && container.classList.contains("dropdown-container")) {
-          container.style.display = isShown ? "none" : "block";
+  // Close mobile sidebar
+  function closeMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const content = document.getElementById('main-content');
+    const overlay = document.getElementById('mobile-overlay');
+
+    sidebar.classList.remove('mobile-show');
+    content.classList.remove('mobile-shift');
+    overlay.classList.remove('show');
+  }
+
+  // Enhanced dropdown functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const dropdownButtons = document.querySelectorAll('.dropdown-btn[aria-haspopup="true"]');
+
+    dropdownButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const container = button.nextElementSibling;
+        if (container && container.classList.contains('dropdown-container')) {
+          // Close other dropdowns at same level
+          const parent = button.closest('.sidebar, .dropdown-container');
+          const siblings = parent.querySelectorAll(':scope > .dropdown-btn[aria-haspopup="true"]');
+
+          siblings.forEach(sibling => {
+            if (sibling !== button) {
+              const siblingContainer = sibling.nextElementSibling;
+              if (siblingContainer) {
+                siblingContainer.classList.remove('show');
+                sibling.classList.remove('active');
+                sibling.setAttribute('aria-expanded', 'false');
+              }
+            }
+          });
+
+          // Toggle current dropdown
+          const isOpen = container.classList.contains('show');
+          container.classList.toggle('show', !isOpen);
+          button.classList.toggle('active', !isOpen);
+          button.setAttribute('aria-expanded', !isOpen);
+        }
+      });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.sidebar')) {
+        const openDropdowns = document.querySelectorAll('.dropdown-container.show');
+        const activeButtons = document.querySelectorAll('.dropdown-btn.active');
+
+        openDropdowns.forEach(dropdown => dropdown.classList.remove('show'));
+        activeButtons.forEach(button => {
+          button.classList.remove('active');
+          button.setAttribute('aria-expanded', 'false');
+        });
+      }
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', function() {
+      const prevIsMobile = isMobile;
+      isMobile = window.innerWidth <= 768;
+
+      const sidebar = document.getElementById('sidebar');
+      const content = document.getElementById('main-content');
+      const overlay = document.getElementById('mobile-overlay');
+
+      if (!isMobile && prevIsMobile) {
+        // Switching from mobile to desktop
+        sidebar.classList.remove('mobile-show');
+        content.classList.remove('mobile-shift');
+        overlay.classList.remove('show');
+      } else if (isMobile && !prevIsMobile) {
+        // Switching from desktop to mobile
+        sidebar.classList.remove('collapsed');
+        content.classList.remove('collapsed');
+      }
+    });
+
+    // Keyboard accessibility
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        // Close mobile sidebar
+        if (isMobile) {
+          closeMobileSidebar();
+        }
+
+        // Close all dropdowns
+        const openDropdowns = document.querySelectorAll('.dropdown-container.show');
+        const activeButtons = document.querySelectorAll('.dropdown-btn.active');
+
+        openDropdowns.forEach(dropdown => dropdown.classList.remove('show'));
+        activeButtons.forEach(button => {
+          button.classList.remove('active');
+          button.setAttribute('aria-expanded', 'false');
+        });
+      }
+    });
+  });
+
+  // Add loading state for page transitions
+  document.addEventListener('DOMContentLoaded', function() {
+    const links = document.querySelectorAll('a[href]:not([href^="#"]):not([href^="javascript:"])');
+
+    links.forEach(link => {
+      link.addEventListener('click', function() {
+        if (!link.target || link.target === '_self') {
+          document.body.classList.add('loading');
         }
       });
     });
   });
+
+  // Page-specific JavaScript
+  {% block extra_js %}{% endblock %}
 </script>
 
 </body>

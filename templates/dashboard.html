@@ -5,253 +5,795 @@
   <meta charset="UTF-8" />
   <title>Dashboard - SVE TRANSPORT</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
+    * {
+      box-sizing: border-box;
     }
 
-    nav.sidebar {
-      height: 100vh;
-      width: 250px;
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #2c3e50;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
       position: fixed;
-      background-color: #1ABCFE;
-      padding-top: 20px;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      border-bottom: 3px solid #ff6f61;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .header img {
+      height: 45px;
+      width: auto;
+      user-select: none;
+      filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));
+    }
+
+    .company-info h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ff6f61;
+      margin: 0;
+    }
+
+    .company-info p {
+      font-size: 0.85rem;
+      color: #7f8c8d;
+      margin: 0;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 111, 97, 0.1);
+      padding: 8px 16px;
+      border-radius: 25px;
+      border: 2px solid #ff6f61;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .hamburger {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: #2c3e50;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 4px;
+      transition: background 0.3s ease;
+    }
+
+    .hamburger:hover {
+      background: rgba(44, 62, 80, 0.1);
+    }
+
+    /* Sidebar */
+    nav.sidebar {
+      position: fixed;
+      top: 70px;
+      left: 0;
+      width: 280px;
+      height: calc(100vh - 70px);
+      background: linear-gradient(180deg, #1ABCFE 0%, #0ea5e9 50%, #0369a1 100%);
       color: white;
       overflow-y: auto;
-      transition: width 0.3s ease;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), left 0.4s ease;
+      box-shadow: 4px 0 15px rgba(0, 0, 0, 0.15);
+      z-index: 900;
     }
 
     nav.sidebar.collapsed {
-      width: 70px;
+      width: 80px;
     }
 
-    nav.sidebar img {
-      padding: 10px;
-      max-width: 80%;
-      height: auto;
-      display: block;
-      margin: 0 auto 20px auto;
+    nav.sidebar.mobile-hidden {
+      left: -280px;
+    }
+
+    .sidebar-header {
+      padding: 1.5rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .sidebar-toggle {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .sidebar-toggle:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
     }
 
     .dropdown-btn {
-      padding: 12px 20px;
+      padding: 15px 20px;
       display: flex;
       align-items: center;
       color: white;
-      text-decoration: none;
-      transition: background-color 0.3s;
-      border: none;
       background: none;
+      border: none;
       width: 100%;
       text-align: left;
-      font-size: 16px;
+      font-size: 1rem;
       cursor: pointer;
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
+      position: relative;
+    }
+
+    .dropdown-btn:hover,
+    .dropdown-btn.active {
+      background: rgba(255, 255, 255, 0.15);
+      border-left-color: #ffffff;
+      transform: translateX(2px);
+    }
+
+    .dropdown-btn::after {
+      content: '';
+      position: absolute;
+      right: 20px;
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 6px solid white;
+      transition: transform 0.3s ease;
+      opacity: 0;
+    }
+
+    .dropdown-btn[aria-haspopup="true"]::after {
+      opacity: 1;
+    }
+
+    .dropdown-btn.active::after {
+      transform: rotate(180deg);
+    }
+
+    .icon {
+      margin-right: 15px;
+      width: 24px;
+      text-align: center;
+      font-size: 1.2rem;
+      min-width: 24px;
     }
 
     nav.sidebar.collapsed .label {
       display: none;
     }
 
+    nav.sidebar.collapsed .dropdown-btn {
+      justify-content: center;
+      padding: 15px 10px;
+    }
+
     nav.sidebar.collapsed .icon {
-      margin: 0 auto;
+      margin-right: 0;
     }
 
-    .icon {
-      margin-right: 10px;
-      width: 20px;
-      text-align: center;
-    }
-
-    .dropdown-btn:hover {
-      background-color: #34495e;
+    nav.sidebar.collapsed .dropdown-btn::after {
+      display: none;
     }
 
     .dropdown-container {
       display: none;
-      background-color: #34495e;
-      padding-left: 40px;
+      background: rgba(0, 0, 0, 0.3);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .dropdown-container.show {
+      display: block;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        max-height: 0;
+      }
+      to {
+        opacity: 1;
+        max-height: 500px;
+      }
     }
 
     .dropdown-container a {
-      display: block;
-      padding: 10px 0;
-      color: white;
+      display: flex;
+      align-items: center;
+      padding: 12px 20px 12px 50px;
+      color: rgba(255, 255, 255, 0.9);
       text-decoration: none;
-      font-size: 14px;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
     }
 
+    .dropdown-container a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border-left-color: rgba(255, 255, 255, 0.5);
+      transform: translateX(2px);
+    }
+
+    .dropdown-container a i {
+      margin-right: 10px;
+      width: 16px;
+      text-align: center;
+    }
+
+    .sub-btn {
+      padding-left: 50px;
+      font-size: 0.9rem;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .sub-container {
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    .sub-container a {
+      padding-left: 70px;
+      font-size: 0.85rem;
+    }
+
+    /* Scrollbar */
+    nav.sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    nav.sidebar::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    nav.sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+    }
+
+    nav.sidebar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Main Content */
     main.main-content {
-      margin-left: 250px;
-      padding: 20px;
-      min-height: calc(100vh - 60px);
-      transition: margin-left 0.3s;
+      margin-top: 70px;
+      margin-left: 280px;
+      padding: 2rem;
+      min-height: calc(100vh - 70px);
+      transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px 0 0 0;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     }
 
     main.main-content.collapsed {
-      margin-left: 70px;
+      margin-left: 80px;
+    }
+
+    main.main-content.mobile-shift {
+      margin-left: 0;
+      transform: translateX(280px);
+    }
+
+    .dashboard-header {
+      margin-bottom: 2rem;
+      text-align: center;
+      padding: 2rem;
+      background: linear-gradient(135deg, #ff6f61, #ff8a50);
+      color: white;
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(255, 111, 97, 0.3);
     }
 
     .dashboard-title {
-      font-size: 24px;
-      margin-bottom: 20px;
-      color: #333;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem 0;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .dashboard-subtitle {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      margin: 0;
     }
 
     .dashboard-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
     }
 
     .card {
-      background-color: #ffffff;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      transition: transform 0.3s;
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      border-radius: 15px;
+      padding: 1.5rem;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #1ABCFE, #667eea, #764ba2);
+    }
+
+    .card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
     }
 
     .card h3 {
       margin: 0;
-      font-size: 18px;
-      color: #555;
+      font-size: 1rem;
+      color: #7f8c8d;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
-    .card p {
-      font-size: 28px;
-      font-weight: bold;
-      margin-top: 10px;
-      color: #1abc9c;
+    .card-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
     }
 
-    .card:hover {
-      transform: translateY(-3px);
+    .card-icon.shipments {
+      background: linear-gradient(135deg, #1ABCFE, #0ea5e9);
     }
 
-    footer {
-      margin-top: 40px;
-      text-align: center;
-      color: #999;
+    .card-icon.delivered {
+      background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .card-icon.transit {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    .card-icon.pending {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    .card-icon.utilization {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+
+    .card-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 0.5rem 0;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .card-change {
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .card-change.positive {
+      color: #10b981;
+    }
+
+    .card-change.negative {
+      color: #ef4444;
+    }
+
+    /* Recent Shipments Section */
+    .recent-shipments {
+      background: white;
+      border-radius: 15px;
+      padding: 1.5rem;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+    }
+
+    .recent-shipments h3 {
+      margin: 0 0 1rem 0;
+      color: #2c3e50;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .shipment-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      margin-bottom: 8px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .shipment-item:hover {
+      background: #e9ecef;
+      transform: translateX(5px);
+    }
+
+    .shipment-info {
+      flex: 1;
+    }
+
+    .shipment-no {
+      font-weight: 600;
+      color: #2c3e50;
       font-size: 14px;
     }
 
+    .shipment-route {
+      font-size: 12px;
+      color: #6c757d;
+      margin-top: 2px;
+    }
+
+    .shipment-status {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-delivered { background: #d4edda; color: #155724; }
+    .status-in-transit { background: #fff3cd; color: #856404; }
+    .status-booked { background: #cce5ff; color: #0056b3; }
+
+    .quick-actions {
+      margin-top: 2rem;
+      background: white;
+      border-radius: 15px;
+      padding: 1.5rem;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .quick-actions h3 {
+      margin: 0 0 1rem 0;
+      color: #2c3e50;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .action-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .action-btn {
+      padding: 1rem;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+      text-align: center;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-weight: 600;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    footer {
+      margin-top: 2rem;
+      text-align: center;
+      color: #7f8c8d;
+      font-size: 0.9rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 10px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .dashboard-title {
+        font-size: 2rem;
+      }
+
+      .card-value {
+        font-size: 2rem;
+      }
+    }
+
     @media (max-width: 768px) {
-      main.main-content {
-        margin-left: 0;
-        padding: 10px;
+      .hamburger {
+        display: block;
+      }
+
+      .company-info {
+        display: none;
       }
 
       nav.sidebar {
-        position: relative;
-        width: 100%;
-        height: auto;
+        left: -280px;
       }
 
-      nav.sidebar.collapsed {
-        width: 100%;
+      nav.sidebar.mobile-show {
+        left: 0;
       }
+
+      main.main-content {
+        margin-left: 0;
+        padding: 1rem;
+        border-radius: 0;
+      }
+
+      main.main-content.mobile-shift {
+        transform: translateX(280px);
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .dashboard-header {
+        padding: 1.5rem;
+      }
+
+      .dashboard-title {
+        font-size: 1.75rem;
+      }
+
+      .action-buttons {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header {
+        padding: 0 1rem;
+      }
+
+      .dashboard-title {
+        font-size: 1.5rem;
+      }
+
+      .card {
+        padding: 1rem;
+      }
+
+      .card-value {
+        font-size: 1.75rem;
+      }
+    }
+
+    /* Animation for page load */
+    .main-content {
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Loading state */
+    .card.loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .card.loading .card-value::after {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
 <body>
-<nav class="sidebar" id="sidebar">
-  <img src="{% static 'logo.png' %}" alt="SVE TRANSPORT">
 
-  <!-- Sidebar Toggle Button -->
-  <button class="dropdown-btn" onclick="toggleSidebar()" aria-expanded="false">
-    <span class="icon"><i class="fas fa-bars"></i></span>
-    <span class="label">Toggle</span>
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <img src="{% static 'logo.png' %}" alt="SVE TRANSPORT logo" />
+    <div class="company-info">
+      <h1>SVE TRANSPORT</h1>
+      <p>Your Trusted Transport Partner</p>
+    </div>
+  </div>
+
+  <button class="hamburger" onclick="toggleMobileSidebar()" aria-label="Toggle mobile menu">
+    <i class="fas fa-bars"></i>
   </button>
 
-  <button class="dropdown-btn" onclick="location.href='{% url 'dashboard' %}'">
+  <div class="header-right">
+    {% if user.is_authenticated %}
+      <div class="user-info">
+        <i class="fas fa-user-circle"></i>
+        <span>{{ user.get_full_name|default:user.username }}</span>
+      </div>
+    {% endif %}
+  </div>
+</header>
+
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar" aria-label="Main Navigation">
+  <div class="sidebar-header">
+    <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+      <i class="fas fa-bars"></i>
+      <span class="label">Menu</span>
+    </button>
+  </div>
+
+  <button class="dropdown-btn" onclick="location.href='{% url 'dashboard' %}'" aria-label="Go to Dashboard">
     <span class="icon"><i class="fas fa-tachometer-alt"></i></span>
     <span class="label">Dashboard</span>
   </button>
 
-  <button class="dropdown-btn" aria-expanded="false">
+  <button class="dropdown-btn" aria-expanded="false" aria-haspopup="true" aria-label="Toggle Shipment menu">
     <span class="icon"><i class="fas fa-truck"></i></span>
-    <span class="label">Shipment ▾</span>
+    <span class="label">Shipment</span>
   </button>
   <div class="dropdown-container">
-    {% if user.usertype == 'Internal' %}
-      <a href="{% url 'shipment_create' %}">Create Shipment</a>
-      <a href="{% url 'shipment_bulk_upload' %}">Bulk Upload</a>
-      <a href="{% url 'consignment_note' %}">Consignment Notes</a>
-      <a href="{% url 'print_label' %}">Label Download</a>
-      <a href="{% url 'pod_upload_search' %}">Upload POD</a>
+    {% if user_permissions.can_create_shipment %}
+      <a href="{% url 'shipment_create' %}"><i class="fas fa-plus"></i> Create Shipment</a>
+      <a href="{% url 'search_consignment' %}"><i class="fas fa-edit"></i> Update Content</a>
+      <a href="{% url 'shipment_bulk_upload' %}"><i class="fas fa-upload"></i> Bulk Upload</a>
+      <a href="{% url 'consignment_note' %}"><i class="fas fa-file-alt"></i> Consignment Notes</a>
+      <a href="{% url 'print_label' %}"><i class="fas fa-tags"></i> Label Download</a>
+      <a href="{% url 'pod_upload_search' %}"><i class="fas fa-cloud-upload-alt"></i> Upload POD</a>
     {% endif %}
-    <a href="{% url 'shipment_list' %}">Shipment List</a>
-    <a href="{% url 'bulk_tracking' %}">Track Shipments</a>
+    <a href="{% url 'shipment_list' %}"><i class="fas fa-list"></i> Shipment List</a>
+    <a href="{% url 'bulk_tracking' %}"><i class="fas fa-search-location"></i> Track Shipments</a>
   </div>
 
-  <button class="dropdown-btn">
+  <button class="dropdown-btn" aria-expanded="false" aria-haspopup="true" aria-label="Toggle Manifest menu">
     <span class="icon"><i class="fas fa-file-invoice"></i></span>
-    <span class="label">Manifest ▾</span>
+    <span class="label">Manifest</span>
   </button>
   <div class="dropdown-container">
-    {% if user.usertype == 'Internal' %}
-      <a href="{% url 'create_manifest' %}">Create Manifest</a>
-      <a href="#">Update by Manifest</a>
+    {% if user_permissions.can_create_manifest %}
+      <a href="{% url 'create_manifest' %}"><i class="fas fa-plus"></i> Create Manifest</a>
+      <a href="#"><i class="fas fa-edit"></i> Update by Manifest</a>
+      <a href="#"><i class="fas fa-print"></i> Print Manifest</a>
+      <a href="{% url 'trip-create' %}"><i class="fas fa-route"></i> Create Trip to Vendor</a>
+      <a href="#"><i class="fas fa-edit"></i> Update Trip-Vendor</a>
+      <a href="#"><i class="fas fa-cogs"></i> Manage Trips - Vendor</a>
     {% endif %}
-    <a href="{% url 'manifest_list' %}">Manifest List</a>
-    {% if user.usertype == 'Internal' %}
-      <a href="#">Print Manifest</a>
-    {% endif %}
-    {% if user.usertype == 'Internal' %}
-    <a href="{% url 'trip-create' %}">Create Trip to Vendor</a>
-    <a href="#">Update Trip-Vendor</a>
-  {% endif %}
-  <a href="{% url 'trip-list' %}">Trip List -Vendor</a>
-  {% if user.usertype == 'Internal' %}
-    <a href="#">Manage Trips - Vendor</a>
-  {% endif %}
+    <a href="{% url 'manifest_list' %}"><i class="fas fa-list"></i> Manifest List</a>
+    <a href="{% url 'trip-list' %}"><i class="fas fa-list-alt"></i> Trip List -Vendor</a>
   </div>
 
-  {% if user.usertype == 'Internal' %}
-  <button class="dropdown-btn" aria-expanded="false">
+  {% if user_permissions.can_view_billing %}
+  <button class="dropdown-btn" aria-expanded="false" aria-haspopup="true" aria-label="Toggle Billing menu">
     <span class="icon"><i class="fas fa-money-bill"></i></span>
-    <span class="label">Billing ▾</span>
+    <span class="label">Billing</span>
   </button>
   <div class="dropdown-container">
-    <a href="#">Generate Bill</a>
-    <a href="#">Bill History</a>
+    <a href="#"><i class="fas fa-file-invoice-dollar"></i> Generate Bill</a>
+    <a href="#"><i class="fas fa-history"></i> Bill History</a>
   </div>
 
-  <button class="dropdown-btn" aria-expanded="false">
+  <button class="dropdown-btn" aria-expanded="false" aria-haspopup="true" aria-label="Toggle Masters menu">
     <span class="icon"><i class="fas fa-cogs"></i></span>
-    <span class="label">Masters ▾</span>
+    <span class="label">Masters</span>
   </button>
   <div class="dropdown-container">
-
-    <!-- Users Submenu -->
-    <button class="dropdown-btn sub-btn" aria-expanded="false">Users ▾</button>
+    <button class="dropdown-btn sub-btn" aria-expanded="false" aria-haspopup="true" aria-label="Toggle Users submenu">
+      <i class="fas fa-users"></i> Users
+    </button>
     <div class="dropdown-container sub-container">
-      <a href="{% url 'user_add' %}">➕ Add User</a>
-      <a href="{% url 'user_manage' %}">📋 Manage Users</a>
+      <a href="{% url 'user_add' %}"><i class="fas fa-user-plus"></i> Add User</a>
+      <a href="{% url 'user_manage' %}"><i class="fas fa-users-cog"></i> Manage Users</a>
     </div>
 
-    <!-- Branch Submenu -->
-    <button class="dropdown-btn sub-btn" aria-expanded="false">Branch ▾</button>
+    <button class="dropdown-btn sub-btn" aria-expanded="false" aria-haspopup="true" aria-label="Toggle Branch submenu">
+      <i class="fas fa-building"></i> Branch
+    </button>
     <div class="dropdown-container sub-container">
-      <a href="{% url 'branch_add' %}">➕ Add Branch</a>
-      <a href="{% url 'branch_manage' %}">📋 Manage Branches</a>
+      <a href="{% url 'branch_add' %}"><i class="fas fa-plus"></i> Add Branch</a>
+      <a href="{% url 'branch_manage' %}"><i class="fas fa-list"></i> Manage Branches</a>
     </div>
 
-    <!-- Fleets Submenu -->
-    <button class="dropdown-btn sub-btn" aria-expanded="false">Fleets ▾</button>
+    <button class="dropdown-btn sub-btn" aria-expanded="false" aria-haspopup="true" aria-label="Toggle Fleets submenu">
+      <i class="fas fa-truck-loading"></i> Fleets
+    </button>
     <div class="dropdown-container sub-container">
-      <a href="{% url 'fleet_add' %}">➕ Add Fleet</a>
-      <a href="{% url 'fleet_manage' %}">📋 Manage Fleets</a>
+      <a href="{% url 'fleet_add' %}"><i class="fas fa-plus"></i> Add Fleet</a>
+      <a href="{% url 'fleet_manage' %}"><i class="fas fa-list"></i> Manage Fleets</a>
     </div>
-
   </div>
   {% endif %}
 
   {% if user.is_authenticated %}
-    <button class="dropdown-btn" onclick="location.href='{% url 'logout' %}'">
+    <button class="dropdown-btn" onclick="location.href='{% url 'logout' %}'" aria-label="Logout" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.2);">
       <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
       <span class="label">Logout</span>
     </button>
@@ -260,41 +802,264 @@
 
 <!-- Main Content -->
 <main class="main-content" id="main-content">
-  <div class="dashboard-title">Welcome, {{ user.first_name }} 👋</div>
-
-  <div class="dashboard-grid">
-    <div class="card"><h3>Total Shipments</h3><p>1,248</p></div>
-    <div class="card"><h3>Delivered</h3><p>1,120</p></div>
-    <div class="card"><h3>In Transit</h3><p>98</p></div>
-    <div class="card"><h3>Pending Pickup</h3><p>30</p></div>
-    <div class="card"><h3>Fleet Utilization</h3><p>87%</p></div>
+  <div class="dashboard-header">
+    <h1 class="dashboard-title">{{ user_greeting }}, {{ user.first_name|default:user.username }}! 👋</h1>
+    <p class="dashboard-subtitle">Here's what's happening with your transport operations today</p>
   </div>
 
-  <footer>&copy; 2025 SVE TRANSPORT</footer>
+  <div class="dashboard-grid">
+    <div class="card" onclick="loadCardData('shipments')">
+      <div class="card-header">
+        <h3>Total Shipments</h3>
+        <div class="card-icon shipments">
+          <i class="fas fa-shipping-fast"></i>
+        </div>
+      </div>
+      <div class="card-value" id="total-shipments">{{ shipment_stats.total_shipments.current|default:0 }}</div>
+      <div class="card-change {{ shipment_stats.total_shipments.trend|default:'positive' }}">
+        <i class="fas fa-arrow-{% if shipment_stats.total_shipments.trend == 'positive' %}up{% else %}down{% endif %}"></i>
+        <span>{% if shipment_stats.total_shipments.change >= 0 %}+{% endif %}{{ shipment_stats.total_shipments.change|floatformat:1 }}% from last month</span>
+      </div>
+    </div>
+
+    <div class="card" onclick="loadCardData('delivered')">
+      <div class="card-header">
+        <h3>Delivered</h3>
+        <div class="card-icon delivered">
+          <i class="fas fa-check-circle"></i>
+        </div>
+      </div>
+      <div class="card-value" id="delivered-count">{{ shipment_stats.delivered.current|default:0 }}</div>
+      <div class="card-change {{ shipment_stats.delivered.trend|default:'positive' }}">
+        <i class="fas fa-arrow-{% if shipment_stats.delivered.trend == 'positive' %}up{% else %}down{% endif %}"></i>
+        <span>{% if shipment_stats.delivered.change >= 0 %}+{% endif %}{{ shipment_stats.delivered.change|floatformat:1 }}% from last month</span>
+      </div>
+    </div>
+
+    <div class="card" onclick="loadCardData('transit')">
+      <div class="card-header">
+        <h3>In Transit</h3>
+        <div class="card-icon transit">
+          <i class="fas fa-truck-moving"></i>
+        </div>
+      </div>
+      <div class="card-value" id="transit-count">{{ shipment_stats.in_transit.current|default:0 }}</div>
+      <div class="card-change {{ shipment_stats.in_transit.trend|default:'positive' }}">
+        <i class="fas fa-arrow-{% if shipment_stats.in_transit.trend == 'positive' %}up{% else %}down{% endif %}"></i>
+        <span>{% if shipment_stats.in_transit.change >= 0 %}+{% endif %}{{ shipment_stats.in_transit.change|floatformat:1 }}% from last month</span>
+      </div>
+    </div>
+
+    <div class="card" onclick="loadCardData('pending')">
+      <div class="card-header">
+        <h3>Pending Pickup</h3>
+        <div class="card-icon pending">
+          <i class="fas fa-clock"></i>
+        </div>
+      </div>
+      <div class="card-value" id="pending-count">{{ shipment_stats.pending.current|default:0 }}</div>
+      <div class="card-change {{ shipment_stats.pending.trend|default:'positive' }}">
+        <i class="fas fa-arrow-{% if shipment_stats.pending.trend == 'positive' %}up{% else %}down{% endif %}"></i>
+        <span>{% if shipment_stats.pending.change >= 0 %}+{% endif %}{{ shipment_stats.pending.change|floatformat:1 }}% from last month</span>
+      </div>
+    </div>
+
+    <div class="card" onclick="loadCardData('utilization')">
+      <div class="card-header">
+        <h3>Fleet Utilization</h3>
+        <div class="card-icon utilization">
+          <i class="fas fa-tachometer-alt"></i>
+        </div>
+      </div>
+      <div class="card-value" id="utilization-rate">{{ fleet_utilization.rate|default:0 }}%</div>
+      <div class="card-change positive">
+        <i class="fas fa-info-circle"></i>
+        <span>{{ fleet_utilization.active_vehicles }}/{{ fleet_utilization.total_vehicles }} vehicles active</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Shipments Section -->
+  {% if recent_shipments %}
+  <div class="recent-shipments">
+    <h3><i class="fas fa-clock"></i> Recent Shipments</h3>
+    {% for shipment in recent_shipments %}
+    <div class="shipment-item" onclick="window.location.href='{% url 'shipment_detail' shipment.pk %}'">
+      <div class="shipment-info">
+        <div class="shipment-no">{{ shipment.consignment_no }}</div>
+        <div class="shipment-route">{{ shipment.origin }} → {{ shipment.destination }}</div>
+      </div>
+      <div class="shipment-status status-{{ shipment.status|lower }}">
+        {{ shipment.status|default:"Booked" }}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="quick-actions">
+    <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+    <div class="action-buttons">
+      {% for action in quick_actions %}
+        {% if action.available %}
+        <a href="{% url action.url %}" class="action-btn">
+          <i class="{{ action.icon }}"></i>
+          {{ action.name }}
+        </a>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 SVE TRANSPORT. All Rights Reserved. | <i class="fas fa-phone"></i> +91-9164993830 | <i class="fas fa-envelope"></i> info@svetransport.com</p>
+  </footer>
 </main>
 
-<!-- Script -->
 <script>
+  let isMobile = window.innerWidth <= 768;
+
+  // Toggle desktop sidebar
   function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const content = document.getElementById('main-content');
-    sidebar.classList.toggle('collapsed');
-    content.classList.toggle('collapsed');
-    const isCollapsed = sidebar.classList.contains('collapsed');
-    document.querySelectorAll('.dropdown-btn[aria-expanded]').forEach(btn => {
-      btn.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
-    });
+
+    if (!isMobile) {
+      sidebar.classList.toggle('collapsed');
+      content.classList.toggle('collapsed');
+    }
   }
 
-  // Dropdown open/close
-  document.querySelectorAll(".dropdown-btn").forEach(btn => {
-    btn.addEventListener("click", function () {
-      const container = btn.nextElementSibling;
-      if (container && container.classList.contains('dropdown-container')) {
-        container.style.display = container.style.display === "block" ? "none" : "block";
+  // Toggle mobile sidebar
+  function toggleMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const content = document.getElementById('main-content');
+
+    sidebar.classList.toggle('mobile-show');
+    content.classList.toggle('mobile-shift');
+  }
+
+  // Enhanced dropdown functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const dropdownButtons = document.querySelectorAll('.dropdown-btn[aria-haspopup="true"]');
+
+    dropdownButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const container = button.nextElementSibling;
+        if (container && container.classList.contains('dropdown-container')) {
+          // Close other dropdowns at same level
+          const parent = button.closest('.sidebar, .dropdown-container');
+          const siblings = parent.querySelectorAll(':scope > .dropdown-btn[aria-haspopup="true"]');
+
+          siblings.forEach(sibling => {
+            if (sibling !== button) {
+              const siblingContainer = sibling.nextElementSibling;
+              if (siblingContainer) {
+                siblingContainer.classList.remove('show');
+                sibling.classList.remove('active');
+                sibling.setAttribute('aria-expanded', 'false');
+              }
+            }
+          });
+
+          // Toggle current dropdown
+          const isOpen = container.classList.contains('show');
+          container.classList.toggle('show', !isOpen);
+          button.classList.toggle('active', !isOpen);
+          button.setAttribute('aria-expanded', !isOpen);
+        }
+      });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.sidebar')) {
+        const openDropdowns = document.querySelectorAll('.dropdown-container.show');
+        const activeButtons = document.querySelectorAll('.dropdown-btn.active');
+
+        openDropdowns.forEach(dropdown => dropdown.classList.remove('show'));
+        activeButtons.forEach(button => {
+          button.classList.remove('active');
+          button.setAttribute('aria-expanded', 'false');
+        });
+      }
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', function() {
+      isMobile = window.innerWidth <= 768;
+      const sidebar = document.getElementById('sidebar');
+      const content = document.getElementById('main-content');
+
+      if (!isMobile) {
+        sidebar.classList.remove('mobile-show');
+        content.classList.remove('mobile-shift');
+      } else {
+        sidebar.classList.remove('collapsed');
+        content.classList.remove('collapsed');
+      }
+    });
+
+    // Keyboard accessibility
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const sidebar = document.getElementById('sidebar');
+        const content = document.getElementById('main-content');
+
+        // Close mobile sidebar
+        if (sidebar.classList.contains('mobile-show')) {
+          sidebar.classList.remove('mobile-show');
+          content.classList.remove('mobile-shift');
+        }
+
+        // Close all dropdowns
+        const openDropdowns = document.querySelectorAll('.dropdown-container.show');
+        const activeButtons = document.querySelectorAll('.dropdown-btn.active');
+
+        openDropdowns.forEach(dropdown => dropdown.classList.remove('show'));
+        activeButtons.forEach(button => {
+          button.classList.remove('active');
+          button.setAttribute('aria-expanded', 'false');
+        });
       }
     });
   });
+
+  // Load card data (with real API integration)
+  function loadCardData(cardType) {
+    const card = event.currentTarget;
+    card.classList.add('loading');
+
+    // Make AJAX call to get real-time data
+    fetch(`/api/dashboard/${cardType}/`)
+      .then(response => response.json())
+      .then(data => {
+        card.classList.remove('loading');
+        updateCard(cardType, data);
+      })
+      .catch(error => {
+        console.error('Error loading data:', error);
+        card.classList.remove('loading');
+      });
+  }
+
+  // Update card with fresh data
+  function updateCard(cardType, data) {
+    const valueElement = document.getElementById(`${cardType}-count`) || document.getElementById(`total-${cardType}`) || document.getElementById(`${cardType}-rate`);
+    if (valueElement && data.value !== undefined) {
+      valueElement.textContent = data.value;
+    }
+  }
+
+  // Auto-refresh dashboard data every 5 minutes
+  setInterval(() => {
+    // Uncomment to enable auto-refresh
+    // window.location.reload();
+  }, 300000); // 5 minutes
 </script>
+
 </body>
 </html>

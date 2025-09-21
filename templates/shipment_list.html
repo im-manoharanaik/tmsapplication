@@ -2,166 +2,734 @@
 {% block content %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Shipment List</title>
-    <style>
+<style>
+  /* Container */
+  .container {
+    max-width: 100%;
+    margin: 20px auto 80px;
+    padding: 0 15px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
 
+  /* Headings */
+  h2 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    user-select: none;
+  }
 
-        h2 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
+  /* Filter Form */
+  form.filter-form {
+    margin-bottom: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  form.filter-form label {
+    font-weight: 600;
+    color: #34495e;
+    user-select: none;
+  }
+  form.filter-form input[type="date"],
+  form.filter-form input[type="text"] {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    min-width: 130px;
+  }
+  form.filter-form button, form.filter-form a.reset-btn {
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    color: white;
+    transition: background-color 0.3s ease;
+    user-select: none;
+  }
+  form.filter-form button {
+    background-color: #2980b9;
+  }
+  form.filter-form button:hover {
+    background-color: #2471a3;
+  }
+  form.filter-form a.reset-btn {
+    background-color: #7f8c8d;
+    line-height: 1.7;
+    display: inline-block;
+  }
+  form.filter-form a.reset-btn:hover {
+    background-color: #6c7a89;
+  }
 
-        .scrollable-table-container {
-            max-height: 400px;
-            overflow: auto;
-            position: relative;
-        }
+  /* Action Buttons Row */
+  .action-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
 
-        .shipment-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            font-size: 14px;
-            table-layout: auto; /* Allow dynamic width based on content */
-        }
+  .bulk-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
 
-        .shipment-table th,
-        .shipment-table td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: center;
-            background-color: white;
-            overflow-wrap: break-word;
-            word-wrap: break-word;
-            white-space: normal;
-        }
+  .save-changes-btn {
+    padding: 8px 18px;
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    user-select: none;
+    transition: all 0.3s ease;
+    display: none;
+  }
 
-        .shipment-table th {
-            background-color: #2c3e50;
-            color: white;
-            position: sticky;
-            top: 0;
-            z-index: 3;
-        }
+  .save-changes-btn:hover {
+    background: linear-gradient(135deg, #229954, #27ae60);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+  }
 
-        .shipment-table th:first-child {
-            position: sticky;
-            top: 0;
-            left: 0;
-            z-index: 4;
-            background-color: #2c3e50;
-            color: white;
-        }
+  .save-changes-btn.show {
+    display: inline-block;
+  }
 
-        .shipment-table td:first-child {
-            position: sticky;
-            left: 0;
-            z-index: 2;
-            background-color: #ffffff;
-        }
+  .download-report button {
+    padding: 8px 18px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    user-select: none;
+    transition: background-color 0.3s ease;
+  }
+  .download-report button:hover {
+    background-color: #c0392b;
+  }
 
-        .shipment-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
+  /* Table Container */
+  .scrollable-table-container {
+    max-height: 500px;
+    overflow: auto;
+    position: relative;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    background-color: white;
+  }
 
-        .shipment-table tr:hover {
-            background-color: #f1f1f1;
-        }
+  /* Table styles */
+  table.shipment-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 14px;
+    table-layout: auto;
+    min-width: 1200px;
+  }
+  table.shipment-table th,
+  table.shipment-table td {
+    border: 1px solid #ddd;
+    padding: 8px 10px;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    background-color: white;
+    vertical-align: middle;
+  }
+  table.shipment-table th {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    white-space: nowrap;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  table.shipment-table th:first-child {
+    left: 0;
+    position: sticky;
+    z-index: 4;
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    box-shadow: 2px 0 5px -1px rgba(0,0,0,0.3);
+  }
+  table.shipment-table td:first-child {
+    position: sticky;
+    left: 0;
+    background-color: #fff;
+    z-index: 2;
+    box-shadow: 2px 0 5px -1px rgba(0,0,0,0.1);
+    white-space: nowrap;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+    color: #2c3e50;
+  }
+  table.shipment-table tr:nth-child(even) {
+    background-color: #f8f9fa;
+  }
+  table.shipment-table tr:hover {
+    background-color: #e8f4f8;
+  }
 
-        .shipment-table a {
-            text-decoration: none;
-            color: white;
-            border-radius: 4px;
-            padding: 5px 10px;
-            font-size: 13px;
-        }
+  /* Editable Fields Styling */
+  .editable-field {
+    position: relative;
+  }
 
-        .shipment-table a.details-btn {
-            background-color: #3498db;
-        }
+  .editable-field input,
+  .editable-field select {
+    width: 100%;
+    padding: 4px 6px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 13px;
+    background: white;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    min-width: 120px;
+  }
 
-        .shipment-table a.update-btn {
-            background-color: #f39c12;
-        }
+  .editable-field input:focus,
+  .editable-field select:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    background: #f8f9ff;
+  }
 
-        .shipment-table a:hover {
-            opacity: 0.85;
-        }
+  .editable-field input.changed,
+  .editable-field select.changed {
+    border-color: #e67e22;
+    background: #fff5f0;
+  }
 
-        .shipment-table td.actions-cell {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-    <!-- Date filter form -->
-    <form method="get" action="" style="margin-bottom: 15px; display:flex; gap:10px; align-items:center;">
-        <label>From:</label>
-        <input type="date" name="start_date" value="{{ start_date }}" class="form-control" style="padding:5px;">
-        <label>To:</label>
-        <input type="date" name="end_date" value="{{ end_date }}" class="form-control" style="padding:5px;">
-        <button type="submit" class="details-btn" style="background-color:#2980b9;">Filter</button>
-        <a href="{% url 'shipment_list' %}" class="update-btn" style="background-color:#7f8c8d;">Reset</a>
-    </form>
+  .editable-field input.error,
+  .editable-field select.error {
+    border-color: #e74c3c;
+    background: #fdf2f2;
+  }
 
-    <!-- Download CSV -->
-    <div style="text-align: right; margin-bottom: 15px;">
-        <form method="get" action="{% url 'shipment_report_download' %}">
-            <button type="submit" class="details-btn" style="background-color: #27ae60;">
-                Download Report (CSV)
-            </button>
-        </form>
+  /* Status Badge Styling */
+  .status-select {
+    padding: 4px 6px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .status-booked { background: #e3f2fd; color: #1565c0; }
+  .status-in-transit { background: #fff3e0; color: #ef6c00; }
+  .status-delivered { background: #e8f5e9; color: #2e7d32; }
+  .status-partial-delivered { background: #fff8e1; color: #f57f17; }
+  .status-cancelled { background: #ffebee; color: #d32f2f; }
+
+  /* Date Input Styling */
+  .date-input {
+    color: #495057;
+    font-size: 12px;
+  }
+
+  .date-input:invalid {
+    border-color: #e74c3c;
+  }
+
+  /* Action buttons */
+  table.shipment-table a.details-btn,
+  table.shipment-table a.update-btn {
+    color: white;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    display: inline-block;
+    text-decoration: none;
+    user-select: none;
+    transition: all 0.3s ease;
+    margin: 1px;
+  }
+<!--  table.shipment-table a.details-btn {-->
+<!--    background: linear-gradient(135deg, #3498db, #2980b9);-->
+<!--  }-->
+<!--  table.shipment-table a.update-btn {-->
+<!--    background: linear-gradient(135deg, #f39c12, #e67e22);-->
+<!--  }-->
+  table.shipment-table a:hover,
+  table.shipment-table a:focus {
+    transform: translateY(-1px);
+    outline: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+
+  /* Actions cell */
+  td.actions-cell {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    min-width: 100px;
+  }
+
+  /* Loading State */
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+
+  .loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Success/Error Messages */
+  .message-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+  }
+
+  .alert {
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+
+  .alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+  }
+
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 1200px) {
+    table.shipment-table {
+      min-width: 1000px;
+      font-size: 13px;
+    }
+    .editable-field input,
+    .editable-field select {
+      min-width: 100px;
+      font-size: 12px;
+    }
+  }
+
+  @media (max-width: 900px) {
+    table.shipment-table {
+      min-width: 800px;
+      font-size: 12px;
+    }
+    form.filter-form input[type="date"],
+    form.filter-form input[type="text"] {
+      min-width: 90px;
+      font-size: 13px;
+    }
+    .action-buttons {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
+  @media (max-width: 600px) {
+    form.filter-form {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .bulk-actions {
+      justify-content: center;
+    }
+  }
+</style>
+
+<div class="container">
+  <!-- Date filter form -->
+  <form method="get" action="" class="filter-form" aria-label="Filter shipments">
+    <label for="start_date">From:</label>
+    <input id="start_date" type="date" name="start_date" value="{{ start_date }}">
+
+    <label for="end_date">To:</label>
+    <input id="end_date" type="date" name="end_date" value="{{ end_date }}">
+
+    <label for="consignment_no">Consignment No:</label>
+    <input id="consignment_no" type="text" name="consignment_no" value="{{ request.GET.consignment_no }}" placeholder="Enter Consignment No">
+
+    <button type="submit" aria-label="Filter shipments">Filter</button>
+    <a href="{% url 'shipment_list' %}" class="reset-btn" role="button" aria-label="Reset filters">Reset</a>
+  </form>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <div class="bulk-actions">
+      <button type="button" class="save-changes-btn" id="saveChangesBtn" onclick="saveChanges()">
+        💾 Save Changes
+      </button>
+      <span id="changesCounter" style="color: #666; font-size: 14px; display: none;">
+        0 changes pending
+      </span>
     </div>
 
-        <div class="scrollable-table-container">
-            <table class="shipment-table">
-                <thead>
-                    <tr>
-                        <th>Consignment No</th>
-                        <th>Date</th>
-                        <th>Consignor</th>
-                        <th>Origin</th>
-                        <th>Consignee</th>
-                        <th>Destination</th>
-                        <th>Vehicle No</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for shipment in shipments %}
-                    <tr>
-                        <td>{{ shipment.consignment_no }}</td>
-                        <td>{{ shipment.date }}</td>
-                        <td>{{ shipment.consignor_name }}</td>
-                        <td>{{ shipment.origin }}</td>
-                        <td>{{ shipment.consignee_name }}</td>
-                        <td>{{ shipment.destination }}</td>
-                        <td>{{ shipment.vehicle_no }}</td>
-                        <td>{{ shipment.status }}</td>
-                        <td class="actions-cell">
-                            <a href="{% url 'shipment_detail' shipment.pk %}" class="details-btn">Details</a>
-                            <a href="{% url 'shipment_update' shipment.pk %}" class="update-btn">Update</a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="9">No shipments available.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <div class="download-report">
+      <form method="get" action="{% url 'shipment_report_download' %}" style="display: inline;">
+        <button type="submit" aria-label="Download shipments report as CSV">📊 Download Report</button>
+      </form>
     </div>
-</body>
-</html>
+  </div>
+
+  <!-- Editable Shipments Table -->
+  <form id="bulkEditForm">
+    {% csrf_token %}
+    <div class="scrollable-table-container" role="region" aria-label="Editable List of Shipments">
+      <table class="shipment-table">
+        <thead>
+          <tr>
+            <th scope="col">Consignment No</th>
+            <th scope="col">Date</th>
+            <th scope="col">Consignor</th>
+            <th scope="col">Origin</th>
+            <th scope="col">Consignee</th>
+            <th scope="col">Destination</th>
+            <th scope="col">Vehicle No</th>
+            <th scope="col">Status ✏️</th>
+            <th scope="col">Est. Delivery ✏️</th>
+            <th scope="col">Delivery Date ✏️</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for shipment in shipments %}
+          <tr data-shipment-id="{{ shipment.pk }}">
+            <th scope="row">{{ shipment.consignment_no }}</th>
+            <td>{{ shipment.date|date:"d-m-Y" }}</td>
+            <td>{{ shipment.consignor_name|truncatechars:20 }}</td>
+            <td>{{ shipment.origin }}</td>
+            <td>{{ shipment.consignee_name|truncatechars:20 }}</td>
+            <td>{{ shipment.destination }}</td>
+            <td>{{ shipment.vehicle_no|default:"-" }}</td>
+
+            <!-- Editable Status -->
+           <td class="editable-field">
+  <select name="status_{{ shipment.pk }}" class="status-select status-{{ shipment.status|lower|slugify }}"
+          data-original="{{ shipment.status }}" data-field="status"
+          onchange="handleFieldChange(this)">
+
+    <!-- Initial/Booking Statuses -->
+    <option value="Booked" {% if shipment.status == 'Booked' %}selected{% endif %}>Booked</option>
+    <option value="Confirmed" {% if shipment.status == 'Confirmed' %}selected{% endif %}>Confirmed</option>
+
+    <!-- Pickup/Collection Statuses -->
+    <option value="Ready for Pickup" {% if shipment.status == 'Ready for Pickup' %}selected{% endif %}>Ready for Pickup</option>
+    <option value="Pickup Scheduled" {% if shipment.status == 'Pickup Scheduled' %}selected{% endif %}>Pickup Scheduled</option>
+    <option value="Picked Up" {% if shipment.status == 'Picked Up' %}selected{% endif %}>Picked Up</option>
+
+    <!-- Transit Statuses -->
+    <option value="In Transit" {% if shipment.status == 'In Transit' %}selected{% endif %}>In Transit</option>
+    <option value="Reached Origin Hub" {% if shipment.status == 'Reached Origin Hub' %}selected{% endif %}>Reached Origin Hub</option>
+    <option value="Departed Origin Hub" {% if shipment.status == 'Departed Origin Hub' %}selected{% endif %}>Departed Origin Hub</option>
+    <option value="In Transit to Destination" {% if shipment.status == 'In Transit to Destination' %}selected{% endif %}>In Transit to Destination</option>
+    <option value="Reached Destination Hub" {% if shipment.status == 'Reached Destination Hub' %}selected{% endif %}>Reached Destination Hub</option>
+
+    <!-- Delivery Statuses -->
+    <option value="Out For Delivery" {% if shipment.status == 'Out For Delivery' %}selected{% endif %}>Out for Delivery</option>
+    <option value="Delivery Attempted" {% if shipment.status == 'Delivery Attempted' %}selected{% endif %}>Delivery Attempted</option>
+    <option value="Delivered" {% if shipment.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+    <option value="Partial Delivered" {% if shipment.status == 'Partial Delivered' %}selected{% endif %}>Partial Delivered</option>
+
+    <!-- Exception/Problem Statuses -->
+    <option value="Failed Delivery" {% if shipment.status == 'Failed Delivery' %}selected{% endif %}>Failed Delivery</option>
+    <option value="Customer Not Available" {% if shipment.status == 'Customer Not Available' %}selected{% endif %}>Customer Not Available</option>
+    <option value="Address Issue" {% if shipment.status == 'Address Issue' %}selected{% endif %}>Address Issue</option>
+    <option value="Refused by Customer" {% if shipment.status == 'Refused by Customer' %}selected{% endif %}>Refused by Customer</option>
+    <option value="Damaged" {% if shipment.status == 'Damaged' %}selected{% endif %}>Damaged</option>
+    <option value="Lost" {% if shipment.status == 'Lost' %}selected{% endif %}>Lost</option>
+
+    <!-- Hold/Delay Statuses -->
+    <option value="On Hold" {% if shipment.status == 'On Hold' %}selected{% endif %}>On Hold</option>
+    <option value="Delayed" {% if shipment.status == 'Delayed' %}selected{% endif %}>Delayed</option>
+    <option value="Under Investigation" {% if shipment.status == 'Under Investigation' %}selected{% endif %}>Under Investigation</option>
+
+    <!-- Return/Cancellation Statuses -->
+    <option value="RTO" {% if shipment.status == 'RTO' %}selected{% endif %}>RTO (Return to Origin)</option>
+    <option value="RTO In Transit" {% if shipment.status == 'RTO In Transit' %}selected{% endif %}>RTO In Transit</option>
+    <option value="RTO Delivered" {% if shipment.status == 'RTO Delivered' %}selected{% endif %}>RTO Delivered</option>
+    <option value="Cancelled" {% if shipment.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+    <option value="Returned to Sender" {% if shipment.status == 'Returned to Sender' %}selected{% endif %}>Returned to Sender</option>
+
+  </select>
+</td>
+
+
+            <!-- Editable Estimated Delivery Date -->
+            <td class="editable-field">
+              <input type="date" name="estimated_delivery_date_{{ shipment.pk }}"
+                     class="date-input" value="{{ shipment.estimated_delivery_date|date:'Y-m-d' }}"
+                     data-original="{{ shipment.estimated_delivery_date|date:'Y-m-d' }}"
+                     data-field="estimated_delivery_date"
+                     onchange="handleFieldChange(this)">
+            </td>
+
+            <!-- Editable Delivery Date -->
+            <td class="editable-field">
+              <input type="date" name="delivery_date_{{ shipment.pk }}"
+                     class="date-input" value="{{ shipment.delivery_date|date:'Y-m-d' }}"
+                     data-original="{{ shipment.delivery_date|date:'Y-m-d' }}"
+                     data-field="delivery_date"
+                     onchange="handleFieldChange(this)">
+            </td>
+
+            <td class="actions-cell">
+              <a href="{% url 'shipment_detail' shipment.pk %}" class="details-btn"
+                 aria-label="View details for {{ shipment.consignment_no }}">📋 </a>
+              <a href="{% url 'shipment_update' shipment.pk %}" class="update-btn"
+                 aria-label="Update shipment {{ shipment.consignment_no }}">✏️ </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="11" style="text-align:center; padding: 20px; font-style: italic; color: #666;">
+              📦 No shipments available.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </form>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+</div>
+
+<!-- Message Container -->
+<div class="message-container" id="messageContainer"></div>
+
+<script>
+let pendingChanges = {};
+let changesCount = 0;
+
+// Handle field changes
+function handleFieldChange(element) {
+  const shipmentId = element.closest('tr').dataset.shipmentId;
+  const fieldName = element.dataset.field;
+  const originalValue = element.dataset.original;
+  const currentValue = element.value;
+
+  // Create unique key for this field
+  const changeKey = `${shipmentId}_${fieldName}`;
+
+  if (currentValue !== originalValue) {
+    // Mark as changed
+    element.classList.add('changed');
+
+    // Store the change
+    if (!pendingChanges[shipmentId]) {
+      pendingChanges[shipmentId] = {};
+    }
+    pendingChanges[shipmentId][fieldName] = currentValue;
+
+    // Update status class for status field
+    if (fieldName === 'status') {
+      element.className = element.className.replace(/status-\w+/g, '');
+      element.classList.add(`status-${currentValue.toLowerCase().replace(/\s+/g, '-')}`);
+    }
+
+  } else {
+    // Remove changed styling
+    element.classList.remove('changed');
+
+    // Remove from pending changes
+    if (pendingChanges[shipmentId] && pendingChanges[shipmentId][fieldName]) {
+      delete pendingChanges[shipmentId][fieldName];
+
+      // If no more changes for this shipment, remove the shipment entry
+      if (Object.keys(pendingChanges[shipmentId]).length === 0) {
+        delete pendingChanges[shipmentId];
+      }
+    }
+  }
+
+  updateChangesCounter();
+}
+
+// Update changes counter and show/hide save button
+function updateChangesCounter() {
+  changesCount = Object.keys(pendingChanges).reduce((total, shipmentId) => {
+    return total + Object.keys(pendingChanges[shipmentId]).length;
+  }, 0);
+
+  const counter = document.getElementById('changesCounter');
+  const saveBtn = document.getElementById('saveChangesBtn');
+
+  if (changesCount > 0) {
+    counter.textContent = `${changesCount} change${changesCount > 1 ? 's' : ''} pending`;
+    counter.style.display = 'inline';
+    saveBtn.classList.add('show');
+  } else {
+    counter.style.display = 'none';
+    saveBtn.classList.remove('show');
+  }
+}
+
+// Save changes via AJAX
+async function saveChanges() {
+  if (Object.keys(pendingChanges).length === 0) {
+    showMessage('No changes to save.', 'error');
+    return;
+  }
+
+  showLoading(true);
+
+  try {
+    const response = await fetch('{% url "bulk_update_shipments" %}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      },
+      body: JSON.stringify({
+        changes: pendingChanges
+      })
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      showMessage(`Successfully updated ${data.updated_count} shipment${data.updated_count > 1 ? 's' : ''}.`, 'success');
+
+      // Clear pending changes and update UI
+      pendingChanges = {};
+      changesCount = 0;
+      updateChangesCounter();
+
+      // Remove changed styling from all fields
+      document.querySelectorAll('.changed').forEach(element => {
+        element.classList.remove('changed');
+        // Update original value
+        element.dataset.original = element.value;
+      });
+
+    } else {
+      showMessage(data.error || 'Failed to save changes.', 'error');
+    }
+
+  } catch (error) {
+    console.error('Error saving changes:', error);
+    showMessage('An error occurred while saving changes.', 'error');
+  }
+
+  showLoading(false);
+}
+
+// Show loading overlay
+function showLoading(show) {
+  document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+}
+
+// Show message
+function showMessage(message, type) {
+  const messageContainer = document.getElementById('messageContainer');
+  const alertDiv = document.createElement('div');
+  alertDiv.className = `alert alert-${type}`;
+  alertDiv.textContent = message;
+
+  messageContainer.appendChild(alertDiv);
+
+  // Auto remove after 5 seconds
+  setTimeout(() => {
+    if (alertDiv.parentNode) {
+      alertDiv.parentNode.removeChild(alertDiv);
+    }
+  }, 5000);
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+  // Ctrl+S or Cmd+S to save
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    if (Object.keys(pendingChanges).length > 0) {
+      saveChanges();
+    }
+  }
+
+  // Escape to reset current field
+  if (e.key === 'Escape') {
+    const activeElement = document.activeElement;
+    if (activeElement.dataset && activeElement.dataset.original) {
+      activeElement.value = activeElement.dataset.original;
+      handleFieldChange(activeElement);
+    }
+  }
+});
+
+// Warn before leaving page with unsaved changes
+window.addEventListener('beforeunload', function(e) {
+  if (Object.keys(pendingChanges).length > 0) {
+    e.preventDefault();
+    e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    return e.returnValue;
+  }
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+  updateChangesCounter();
+
+  // Add tooltips for editable fields
+  document.querySelectorAll('.editable-field input, .editable-field select').forEach(element => {
+    element.title = 'Click to edit. Press Escape to reset. Ctrl+S to save all changes.';
+  });
+});
+</script>
 
 {% endblock %}

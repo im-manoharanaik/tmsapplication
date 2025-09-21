@@ -1,61 +1,631 @@
-{% extends "base.html" %}
-{% block content %}
 {% load static %}
+{% block content %}
 
-<div class="container">
-    <h2>Track Consignments</h2>
+<div class="tracking-container">
+    <div class="tracking-header">
+        <h2><i class="fas fa-search-location"></i> Shipment Tracking</h2>
+        <p>Enter your consignment numbers to track shipment status</p>
+    </div>
 
-    <form method="GET" action="{% url 'bulk_tracking' %}">
-        <label for="consignments">Enter Consignment Numbers (space-separated):</label>
-        <textarea name="consignments" id="consignments" rows="4" cols="50" placeholder="CN-25001 CN-25002 CN-25003" required></textarea><br><br>
-        <button type="submit" class="back-button">Track</button>
-    </form>
+    <!-- Search Form -->
+    <div class="search-section">
+        <form method="get" action="{% url 'public_tracking_status' %}" class="search-form">
+            <div class="form-group">
+                <label for="consignments">Consignment Numbers</label>
+                <textarea
+                    name="consignments"
+                    id="consignments"
+                    rows="3"
+                    placeholder="Enter consignment numbers (separated by space, comma, or new lines)&#10;Example: CN-25001 CN-25002 CN-25003">{{ request.GET.consignments }}</textarea>
+            </div>
+            <button type="submit" class="btn-track">
+                <i class="fas fa-search"></i> Track Shipments
+            </button>
+        </form>
+    </div>
+
+    <!-- Results Section -->
+    <div class="results-section">
+        {% for shipment in shipments %}
+        <div class="shipment-card">
+            <div class="card-header {% if shipment.status == 'Delivered' %}delivered{% elif shipment.status == 'In Transit' %}in-transit{% else %}default{% endif %}">
+                <div class="header-left">
+                    <h4>{{ shipment.consignment_no }}</h4>
+                    <span class="status-badge">{{ shipment.status }}</span>
+                </div>
+                <div class="header-right">
+                    {% if shipment.pod_scan %}
+                        <a href="{{ shipment.pod_scan.url }}" target="_blank" class="pod-link">
+                            <i class="fas fa-file-image"></i> POD
+                        </a>
+                    {% endif %}
+                    <button class="toggle-btn" data-target="details-{{ forloop.counter }}">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="details-{{ forloop.counter }}" class="card-body">
+                <!-- Quick Info -->
+                <div class="quick-info">
+                    <div class="info-item">
+                        <i class="fas fa-calendar"></i>
+                        <span>{{ shipment.date|date:"d M Y" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ shipment.origin }} → {{ shipment.destination }}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-truck"></i>
+                        <span>{{ shipment.vehicle_no|default:"Not Assigned" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-weight-hanging"></i>
+                        <span>{{ shipment.charged_weight }} kg</span>
+                    </div>
+                </div>
+
+                <!-- Detailed Tables -->
+                <div class="details-grid">
+                    <!-- Shipment Details -->
+                    <div class="detail-section">
+                        <h5>Shipment Information</h5>
+                        <table class="detail-table">
+                            <tr>
+                                <th>Date</th>
+                                <td>{{ shipment.date|date:"d M Y" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Type</th>
+                                <td>{{ shipment.shipment_type|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Pack Type</th>
+                                <td>{{ shipment.pack_type|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Payment Mode</th>
+                                <td>{{ shipment.payment_mode|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Invoice No</th>
+                                <td>{{ shipment.invoice_ref_number|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>E-Way Bill</th>
+                                <td>{{ shipment.ewaybill_number|default:"-" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Route Details -->
+                    <div class="detail-section">
+                        <h5>Route & Vehicle</h5>
+                        <table class="detail-table">
+                            <tr>
+                                <th>Origin</th>
+                                <td>{{ shipment.origin }} - {{ shipment.origin_pin }}</td>
+                            </tr>
+                            <tr>
+                                <th>Destination</th>
+                                <td>{{ shipment.destination }} - {{ shipment.destination_pin }}</td>
+                            </tr>
+                            <tr>
+                                <th>Vehicle No</th>
+                                <td>{{ shipment.vehicle_no|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Driver</th>
+                                <td>{{ shipment.driver_details|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Est. Delivery</th>
+                                <td>{{ shipment.estimated_delivery_date|date:"d M Y"|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Delivered On</th>
+                                <td>{{ shipment.delivery_date|date:"d M Y"|default:"-" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Party Details -->
+                <div class="party-section">
+                    <div class="party-details">
+                        <div class="party-card">
+                            <h6><i class="fas fa-user"></i> Consignor</h6>
+                            <div class="party-info">
+                                <p><strong>{{ shipment.consignor_name }}</strong></p>
+                                <p>{{ shipment.consignor_address }}</p>
+                                <p>GST: {{ shipment.consignor_gst|default:"Not Provided" }}</p>
+                                <p>Contact: {{ shipment.consignor_contact }}</p>
+                            </div>
+                        </div>
+                        <div class="party-card">
+                            <h6><i class="fas fa-user-check"></i> Consignee</h6>
+                            <div class="party-info">
+                                <p><strong>{{ shipment.consignee_name }}</strong></p>
+                                <p>{{ shipment.consignee_address }}</p>
+                                <p>GST: {{ shipment.consignee_gst|default:"Not Provided" }}</p>
+                                <p>Contact: {{ shipment.consignee_contact }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cargo Details -->
+                <div class="cargo-section">
+                    <h5>Cargo Information</h5>
+                    <div class="cargo-grid">
+                        <div class="cargo-item">
+                            <span class="cargo-label">Articles</span>
+                            <span class="cargo-value">{{ shipment.no_article }}</span>
+                        </div>
+                        <div class="cargo-item">
+                            <span class="cargo-label">Actual Weight</span>
+                            <span class="cargo-value">{{ shipment.actual_weight }} kg</span>
+                        </div>
+                        <div class="cargo-item">
+                            <span class="cargo-label">Charged Weight</span>
+                            <span class="cargo-value">{{ shipment.charged_weight }} kg</span>
+                        </div>
+                        <div class="cargo-item">
+                            <span class="cargo-label">Declared Value</span>
+                            <span class="cargo-value">₹{{ shipment.value|floatformat:0 }}</span>
+                        </div>
+                        <div class="cargo-item">
+                            <span class="cargo-label">Freight Charges</span>
+                            <span class="cargo-value">₹{{ shipment.freight|floatformat:0 }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="no-results">
+            <i class="fas fa-search"></i>
+            <h4>No Shipments Found</h4>
+            <p>Please check your consignment numbers and try again.</p>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 
 <style>
-    .container {
-        max-width: 800px;
-        margin: 80px auto;
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #f5f7fa;
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+    }
+
+    .tracking-container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .tracking-header {
         background: white;
-        padding: 30px;
+        padding: 2rem;
         border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    h2 {
-        color: #2c3e50;
-        margin-bottom: 20px;
-        font-size: 22px;
         text-align: center;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
-    label {
-        font-weight: bold;
-        font-size: 12px;
-        margin-bottom: 5px;
+    .tracking-header h2 {
+        color: #2c3e50;
+        margin: 0 0 0.5rem 0;
+        font-size: 1.8rem;
+        font-weight: 600;
+    }
+
+    .tracking-header p {
+        color: #666;
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .search-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e1e5e9;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        resize: vertical;
+        transition: border-color 0.3s;
+    }
+
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #ff6f61;
+        box-shadow: 0 0 0 3px rgba(255,111,97,0.1);
+    }
+
+    .btn-track {
+        background: #ff6f61;
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0 auto;
+    }
+
+    .btn-track:hover {
+        background: #e55a4c;
+        transform: translateY(-1px);
+    }
+
+    .results-section {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .shipment-card {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border: 1px solid #e1e5e9;
+    }
+
+    .card-header {
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+        font-weight: 500;
+    }
+
+    .card-header.delivered {
+        background: #28a745;
+    }
+
+    .card-header.in-transit {
+        background: #ffc107;
+        color: #333;
+    }
+
+    .card-header.default {
+        background: #6c757d;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .header-left h4 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .status-badge {
+        font-size: 0.85rem;
+        padding: 0.25rem 0.5rem;
+        background: rgba(255,255,255,0.2);
+        border-radius: 4px;
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .pod-link {
+        color: white;
+        text-decoration: none;
+        font-size: 0.85rem;
+        padding: 0.25rem 0.5rem;
+        background: rgba(255,255,255,0.2);
+        border-radius: 4px;
+        transition: background 0.3s;
+    }
+
+    .pod-link:hover {
+        background: rgba(255,255,255,0.3);
+        color: white;
+    }
+
+    .toggle-btn {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: none;
+        padding: 0.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .toggle-btn:hover {
+        background: rgba(255,255,255,0.3);
+    }
+
+    .card-body {
+        padding: 1.5rem;
+        display: none;
+    }
+
+    .card-body.show {
         display: block;
     }
 
-    textarea {
-        padding: 8px;
+    .quick-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .info-item i {
+        color: #ff6f61;
+        width: 16px;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .detail-section h5 {
+        color: #2c3e50;
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+    }
+
+    .detail-table {
         width: 100%;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        font-size: 14px;
+        border-collapse: collapse;
+        font-size: 0.9rem;
     }
 
-    .back-button {
-        background-color: #ff6f61;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        font-size: 16px;
-        border-radius: 4px;
-        cursor: pointer;
+    .detail-table th {
+        background: #f8f9fa;
+        padding: 0.5rem 0.75rem;
+        text-align: left;
+        font-weight: 500;
+        color: #555;
+        border: 1px solid #e1e5e9;
+        width: 35%;
     }
 
-    .back-button:hover {
-        background-color: #e65b50;
+    .detail-table td {
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #e1e5e9;
+        color: #333;
+    }
+
+    .party-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .party-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+
+    .party-card {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 6px;
+        border: 1px solid #e1e5e9;
+    }
+
+    .party-card h6 {
+        color: #2c3e50;
+        font-size: 0.95rem;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .party-info p {
+        margin: 0.25rem 0;
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    .cargo-section h5 {
+        color: #2c3e50;
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+    }
+
+    .cargo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .cargo-item {
+        background: #f8f9fa;
+        padding: 0.75rem;
+        border-radius: 6px;
+        text-align: center;
+        border: 1px solid #e1e5e9;
+    }
+
+    .cargo-label {
+        display: block;
+        font-size: 0.8rem;
+        color: #666;
+        margin-bottom: 0.25rem;
+    }
+
+    .cargo-value {
+        display: block;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .no-results {
+        text-align: center;
+        padding: 3rem;
+        color: #666;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .no-results i {
+        font-size: 3rem;
+        color: #ccc;
+        margin-bottom: 1rem;
+    }
+
+    .no-results h4 {
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .tracking-container {
+            margin: 1rem auto;
+        }
+
+        .tracking-header {
+            padding: 1.5rem;
+        }
+
+        .search-section {
+            padding: 1rem;
+        }
+
+        .card-header {
+            padding: 1rem;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .quick-info {
+            grid-template-columns: 1fr;
+        }
+
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .party-details {
+            grid-template-columns: 1fr;
+        }
+
+        .cargo-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .header-left {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .cargo-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .btn-track {
+            width: 100%;
+            justify-content: center;
+        }
     }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle functionality
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const target = document.getElementById(btn.dataset.target);
+                const icon = btn.querySelector('i');
+
+                if (target.classList.contains('show')) {
+                    target.classList.remove('show');
+                    target.style.display = 'none';
+                    icon.className = 'fas fa-plus';
+                } else {
+                    target.classList.add('show');
+                    target.style.display = 'block';
+                    icon.className = 'fas fa-minus';
+                }
+            });
+        });
+
+        // Auto-expand if only one result
+        const shipmentCards = document.querySelectorAll('.shipment-card');
+        if (shipmentCards.length === 1) {
+            const toggleBtn = shipmentCards[0].querySelector('.toggle-btn');
+            if (toggleBtn) {
+                toggleBtn.click();
+            }
+        }
+    });
+</script>
+
 {% endblock %}
