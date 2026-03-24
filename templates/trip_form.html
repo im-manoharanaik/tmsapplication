@@ -1,119 +1,469 @@
 {% extends "base.html" %}
-{% block content %}
+{% load static %}
+
+{% block page_title %}Create Trip{% endblock %}
+{% block page_icon %}content: '🚛';{% endblock %}
+{% block breadcrumb %}Trips / Create{% endblock %}
+
+{% block extra_css %}
 <style>
-    h2 {
-        color: #2c3e50;
-        margin-bottom: 20px;
+    .container {
+        max-width: 1000px;
+        margin: 30px auto 80px;
+        padding: 0 15px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
+    /* Trip Header */
+    .trip-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+    }
+
+    .trip-header h2 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .trip-header p {
+        margin: 0.5rem 0 0;
+        opacity: 0.9;
+        font-size: 1rem;
+    }
+
+    /* Form Styling */
     form {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e9ecef;
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        align-items: start;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
     }
 
     label {
-        font-weight: bold;
-        font-size: 12px;
-        margin-bottom: 5px;
-        display: block;
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 8px;
+        color: #34495e;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     input, select, textarea {
         width: 100%;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        padding: 12px 16px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 14px;
         box-sizing: border-box;
+        transition: all 0.3s ease;
+        background-color: #fff;
+        font-family: inherit;
+    }
+
+    input:focus, select:focus, textarea:focus {
+        border-color: #667eea;
+        outline: none;
+        background-color: #fcfdff;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    select {
+        background: linear-gradient(135deg, #f8f9ff, #e6f3ff);
+        cursor: pointer;
+        appearance: none;
+        background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23666" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 12px;
+        padding-right: 40px;
     }
 
     textarea {
-        height: 40px;
+        min-height: 80px;
+        resize: vertical;
+        background: linear-gradient(135deg, #fff8e1, #fff3c4);
     }
 
+    /* Section Titles */
+    .section-title {
+        grid-column: 1 / -1;
+        font-weight: 700;
+        font-size: 18px;
+        color: #2c3e50;
+        padding: 15px 0;
+        border-bottom: 2px solid #667eea;
+        margin-top: 20px;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-title:first-of-type {
+        margin-top: 0;
+    }
+
+    .section-title i {
+        color: #667eea;
+    }
+
+    /* Full Width Fields */
     .full-width {
         grid-column: 1 / -1;
     }
 
+    /* Financial Summary Box */
+    .financial-summary {
+        grid-column: 1 / -1;
+        background: linear-gradient(135deg, #e8f5e8, #f0f8ff);
+        padding: 20px;
+        border-radius: 12px;
+        border: 2px solid #c3e6cb;
+        margin: 20px 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+
+    .summary-item {
+        text-align: center;
+        padding: 15px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .summary-item label {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 8px;
+        justify-content: center;
+    }
+
+    .summary-item .value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #27ae60;
+        display: block;
+    }
+
+    /* Calculated Fields */
+    .calculated-field {
+        background: linear-gradient(135deg, #e8f5e8, #f0f8ff) !important;
+        border-color: #27ae60 !important;
+        color: #155724 !important;
+        font-weight: 600 !important;
+        cursor: not-allowed !important;
+    }
+
+    /* Action Buttons */
     .actions {
         grid-column: 1 / -1;
         display: flex;
-        gap: 10px;
-        justify-content: flex-start; /* align to left */
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e9ecef;
     }
 
-    .actions button {
-        background-color: #ff6f61;
+    .btn {
+        background: linear-gradient(135deg, #667eea, #764ba2);
         color: white;
         border: none;
-        padding: 8px 16px;  /* smaller size */
-        font-size: 14px;    /* reduced text size */
-        border-radius: 4px;
+        padding: 12px 30px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 8px;
         cursor: pointer;
-        width: auto;        /* no full stretch */
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        min-width: 160px;
+        justify-content: center;
     }
 
-    .actions button:hover {
-        background-color: #e65b50;
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, #28a745, #20c997);
+    }
+
+    .btn-secondary:hover {
+        box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+    }
+
+    /* Status Indicator */
+    .status-field {
+        position: relative;
+    }
+
+    .status-field select {
+        background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+        border-color: #ffc107;
+        font-weight: 600;
+    }
+
+    /* Required Field Indicators */
+    .required::after {
+        content: " *";
+        color: #e74c3c;
+        font-weight: bold;
+    }
+
+    /* Form Validation Styling */
+    .error-field {
+        border-color: #e74c3c !important;
+        background-color: #fdf2f2 !important;
+    }
+
+    .error-message {
+        color: #e74c3c;
+        font-size: 12px;
+        margin-top: 5px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    /* Loading State */
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn.loading {
+        position: relative;
+    }
+
+    .btn.loading::after {
+        content: "";
+        width: 16px;
+        height: 16px;
+        border: 2px solid transparent;
+        border-top: 2px solid currentColor;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 8px;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        form {
+            grid-template-columns: 1fr;
+            padding: 1.5rem;
+        }
+
+        .financial-summary {
+            grid-template-columns: 1fr;
+        }
+
+        .actions {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn {
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .trip-header {
+            padding: 1.5rem;
+        }
+
+        .trip-header h2 {
+            font-size: 1.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .container {
+            padding: 0 10px;
+        }
+
+        form {
+            padding: 1rem;
+        }
     }
 </style>
-
-<form method="post">
-    {% csrf_token %}
-
-    <div>
-        <label for="id_vendor">Vendor</label>
-        {{ form.vendor }}
-    </div>
-
-    <div>
-        <label for="id_vehicle_type">Vehicle Type</label>
-        {{ form.vehicle_type }}
-    </div>
-
-    <div>
-        <label for="id_vehicle_capacity">Vehicle Capacity (MT)</label>
-        {{ form.vehicle_capacity }}
-    </div>
-
-    <div>
-        <label for="id_from_location">From Location</label>
-        {{ form.from_location }}
-    </div>
-
-    <div>
-        <label for="id_destination">Destination</label>
-        {{ form.destination }}
-    </div>
-
-    <div>
-        <label for="id_kilometer">Kilometer</label>
-        {{ form.kilometer }}
-    </div>
-
-    <div>
-        <label for="id_trip_charge">Trip Charge</label>
-        {{ form.trip_charge }}
-    </div>
-
-    <div>
-        <label for="id_additional_charge">Additional Charge</label>
-        {{ form.additional_charge }}
-    </div>
-
-    <div>
-        <label for="id_total_bill_amount">Total Bill Amount</label>
-        {{ form.total_bill_amount }}
-    </div>
-
-    <div>
-        <label for="id_status">Status</label>
-        {{ form.status }}
-    </div>
-
-    <div class="actions">
-        <button type="submit" name="save">Save Trip</button>
-        <button type="submit" name="save_add_another">Save & Add Another</button>
-    </div>
-</form>
 {% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <!-- Trip Form -->
+    <form method="post" id="trip-form">
+        {% csrf_token %}
+
+        <!-- Vendor & Vehicle Details -->
+        <div class="section-title">
+            <i class="fas fa-building"></i>
+            Vendor & Vehicle Information
+        </div>
+
+        <div class="form-group">
+            <label for="id_vendor" class="required">
+                <i class="fas fa-handshake"></i>
+                Vendor
+            </label>
+            {{ form.vendor }}
+        </div>
+
+        <div class="form-group">
+            <label for="id_vehicle_type" class="required">
+                <i class="fas fa-truck"></i>
+                Vehicle Type
+            </label>
+            {{ form.vehicle_type }}
+        </div>
+
+        <div class="form-group">
+            <label for="id_vehicle_capacity">
+                <i class="fas fa-weight-hanging"></i>
+                Vehicle Capacity (MT)
+            </label>
+            {{ form.vehicle_capacity }}
+        </div>
+
+        <!-- Route Details -->
+        <div class="section-title">
+            <i class="fas fa-route"></i>
+            Route Information
+        </div>
+
+        <div class="form-group">
+            <label for="id_from_location" class="required">
+                <i class="fas fa-map-marker-alt"></i>
+                From Location
+            </label>
+            {{ form.from_location }}
+        </div>
+
+        <div class="form-group">
+            <label for="id_destination" class="required">
+                <i class="fas fa-flag-checkered"></i>
+                Destination
+            </label>
+            {{ form.destination }}
+        </div>
+
+        <div class="form-group">
+            <label for="id_kilometer">
+                <i class="fas fa-road"></i>
+                Distance (KM)
+            </label>
+            {{ form.kilometer }}
+        </div>
+
+        <!-- Financial Details -->
+        <div class="section-title">
+            <i class="fas fa-rupee-sign"></i>
+            Financial Information
+        </div>
+
+        <div class="form-group">
+            <label for="id_trip_charge">
+                <i class="fas fa-money-bill-wave"></i>
+                Base Trip Charge (₹)
+            </label>
+            {{ form.trip_charge }}
+        </div>
+
+        <div class="form-group">
+            <label for="id_additional_charge">
+                <i class="fas fa-plus-circle"></i>
+                Additional Charges (₹)
+            </label>
+            {{ form.additional_charge }}
+        </div>
+
+        <div class="form-group">
+            <label for="id_total_bill_amount">
+                <i class="fas fa-calculator"></i>
+                Total Bill Amount (₹)
+            </label>
+            {{ form.total_bill_amount }}
+        </div>
+
+        <!-- Financial Summary -->
+        <div class="financial-summary">
+            <div class="summary-item">
+                <label>Base Charge</label>
+                <span class="value" id="base-charge-display">₹0.00</span>
+            </div>
+            <div class="summary-item">
+                <label>Additional Charge</label>
+                <span class="value" id="additional-charge-display">₹0.00</span>
+            </div>
+            <div class="summary-item">
+                <label>Total Amount</label>
+                <span class="value" id="total-amount-display">₹0.00</span>
+            </div>
+        </div>
+
+        <!-- Status & Tracking -->
+        <div class="section-title">
+            <i class="fas fa-clipboard-check"></i>
+            Status & Tracking
+        </div>
+
+        <div class="form-group status-field">
+            <label for="id_status">
+                <i class="fas fa-info-circle"></i>
+                Trip Status
+            </label>
+            {{ form.status }}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="actions">
+            <button type="submit" name="save" class="btn" id="save-btn">
+                <i class="fas fa-save"></i>
+                Save Trip
+            </button>
+            <button type="submit" name="save_add_another" class="btn btn-secondary" id="save-add-btn">
+                <i class="fas fa-plus"></i>
+                Save & Add Another
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+

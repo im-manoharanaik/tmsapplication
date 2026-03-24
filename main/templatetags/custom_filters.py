@@ -23,3 +23,11 @@ def sum_volume(queryset):
         if hasattr(obj, 'total_volumetric') and hasattr(obj, 'count_of_box'):
             total += (obj.total_volumetric or 0) * (obj.count_of_box or 0)
     return total
+
+from django import template
+
+register = template.Library()
+
+@register.filter(name='add_class')
+def add_class(field, css_class):
+    return field.as_widget(attrs={'class': css_class})

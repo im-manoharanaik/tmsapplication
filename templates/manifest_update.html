@@ -1,0 +1,1061 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+-->
+
+{% block extra_css %}
+<style>
+    .manifest-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    /* Header Section */
+    .update-header {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(243, 156, 18, 0.2);
+    }
+
+    .update-header h2 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .update-header p {
+        margin: 0.5rem 0 0;
+        opacity: 0.9;
+        font-size: 1rem;
+    }
+
+    .manifest-id-display {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-family: 'Courier New', monospace;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-top: 1rem;
+        display: inline-block;
+    }
+
+    /* Form Sections */
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border: 1px solid #e9ecef;
+    }
+
+    .section-header {
+        margin-bottom: 30px;
+        border-bottom: 2px solid #f8f9fa;
+        padding-bottom: 20px;
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #343a40;
+        margin: 0 0 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-description {
+        color: #6c757d;
+        margin: 0;
+        font-size: 14px;
+    }
+
+    /* Form Grid */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-label.required::after {
+        content: '*';
+        color: #dc3545;
+        margin-left: 4px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        background: white;
+        font-family: inherit;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .readonly-field {
+        background-color: #f8f9fa !important;
+        cursor: not-allowed;
+        color: #6c757d;
+    }
+
+    /* Financial Section */
+    .financial-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 25px;
+    }
+
+    .financial-card {
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #f8f9fa;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px 20px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .financial-card .form-group {
+        padding: 20px;
+        margin: 0;
+        background: white;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .financial-card .form-group:last-child {
+        border-bottom: none;
+    }
+
+    .total-freight-amount {
+        background: linear-gradient(135deg, #17a2b8, #138496) !important;
+        color: white !important;
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    .balance-amount {
+        background: linear-gradient(135deg, #28a745, #20c997) !important;
+        color: white !important;
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    /* File Input */
+    .file-input-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+        width: 100%;
+    }
+
+    .file-input {
+        position: absolute;
+        left: -9999px;
+    }
+
+    .file-input-label {
+        display: block;
+        padding: 12px 16px;
+        border: 2px dashed #e9ecef;
+        border-radius: 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+        color: #6c757d;
+    }
+
+    .file-input-label:hover {
+        border-color: #667eea;
+        background: #f0f2ff;
+        color: #667eea;
+    }
+
+    .current-file {
+        background: #e8f5e8;
+        padding: 8px 12px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        border: 1px solid #c3e6cb;
+        font-size: 13px;
+        color: #155724;
+    }
+
+    /* Shipment Controls */
+    .shipment-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .search-box {
+        position: relative;
+        min-width: 250px;
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+
+    .search-box .form-control {
+        padding-left: 40px;
+    }
+
+    .bulk-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .selection-stats {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .selection-summary,
+    .articles-summary {
+        font-weight: 600;
+        color: #495057;
+        padding: 8px 16px;
+        border-radius: 20px;
+        border: 1px solid #b3d7ff;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        min-width: 140px;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .selection-summary {
+        background: #e7f1ff;
+        color: #0056b3;
+    }
+
+    .articles-summary {
+        background: #e8f5e8;
+        border-color: #c3e6cb;
+        color: #155724;
+    }
+
+    .selection-summary i,
+    .articles-summary i {
+        font-size: 12px;
+        opacity: 0.8;
+    }
+
+    /* Shipment Table */
+    .shipment-table-wrapper {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid #e9ecef;
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    .shipment-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        background: white;
+    }
+
+    .shipment-table thead {
+        background: linear-gradient(135deg, #495057, #6c757d);
+        color: white;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .shipment-table th,
+    .shipment-table td {
+        padding: 15px 12px;
+        text-align: left;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .shipment-table th {
+        font-weight: 700;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .checkbox-col {
+        width: 50px;
+        text-align: center !important;
+    }
+
+    .weight-col,
+    .articles-col {
+        text-align: center !important;
+        font-weight: 600;
+    }
+
+    .consignment-no {
+        font-family: 'Courier New', monospace;
+    }
+
+    .shipment-row:hover {
+        background-color: #f8f9fa;
+    }
+
+    .shipment-row.selected {
+        background-color: #e7f1ff;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-booked { background: #cce5ff; color: #0056b3; }
+    .status-in-transit { background: #fff3cd; color: #856404; }
+    .status-delivered { background: #d4edda; color: #155724; }
+
+    .empty-state {
+        text-align: center !important;
+        padding: 40px !important;
+        color: #6c757d;
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        text-align: center;
+        line-height: 1;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(243, 156, 18, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 2px solid #6c757d;
+        color: #6c757d;
+    }
+
+    .btn-outline:hover {
+        background: #6c757d;
+        color: white;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+        padding: 20px 0;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    /* Alerts */
+    .alert-container {
+        margin-bottom: 30px;
+    }
+
+    .alert {
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        position: relative;
+    }
+
+    .alert-info {
+        background: #d1ecf1;
+        border: 1px solid #bee5eb;
+        color: #0c5460;
+    }
+
+    .alert-danger {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+
+    .alert-success {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+    }
+
+    .alert-close {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        opacity: 0.7;
+    }
+
+    .error-list {
+        margin: 10px 0 0 0;
+        padding-left: 20px;
+    }
+
+    /* Change Indicators */
+    .changed-field {
+        border-color: #f39c12 !important;
+        background: rgba(243, 156, 18, 0.05) !important;
+    }
+
+    .changed-indicator {
+        color: #f39c12;
+        font-size: 12px;
+        margin-left: 8px;
+        opacity: 0.8;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .manifest-container {
+            padding: 10px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .financial-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .shipment-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-box {
+            min-width: auto;
+            order: 1;
+        }
+
+        .bulk-actions {
+            order: 3;
+            justify-content: center;
+        }
+
+        .selection-stats {
+            order: 2;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .selection-summary,
+        .articles-summary {
+            min-width: auto;
+            flex: 1;
+            max-width: 180px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .update-header h2 {
+            font-size: 1.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .selection-stats {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .selection-summary,
+        .articles-summary {
+            width: 100%;
+            max-width: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="manifest-container">
+    <!-- Messages Section -->
+    {% if messages %}
+    <div class="alert-container">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }}">
+                <i class="fas fa-info-circle"></i>
+                {{ message }}
+                <button type="button" class="alert-close">&times;</button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Form Errors -->
+    {% if form.errors %}
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle"></i>
+        <strong>Please fix the following errors:</strong>
+        <ul class="error-list">
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data" action="{% url 'manifest_update' manifest.pk %}" class="manifest-form">
+        {% csrf_token %}
+
+        <!-- Manifest Details Section -->
+        <section class="form-section manifest-details-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-info-circle"></i>
+                    Manifest Information
+                </h2>
+                <p class="section-description">Update the basic details for this manifest</p>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.vendor_name.id_for_label }}" class="form-label required">
+                        <i class="fas fa-truck"></i>
+                        Vendor Name
+                    </label>
+                    {{ form.vendor_name|add_class:"form-control" }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.origin_branch.id_for_label }}" class="form-label required">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Origin Branch
+                    </label>
+                    {{ form.origin_branch|add_class:"form-control" }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.destination_branch.id_for_label }}" class="form-label required">
+                        <i class="fas fa-flag-checkered"></i>
+                        Destination Branch
+                    </label>
+                    {{ form.destination_branch|add_class:"form-control" }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.vehicle_no.id_for_label }}" class="form-label required">
+                        <i class="fas fa-id-card"></i>
+                        Vehicle Number
+                    </label>
+                    {{ form.vehicle_no|add_class:"form-control"|attr:"placeholder:Enter vehicle number" }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.driver_name.id_for_label }}" class="form-label required">
+                        <i class="fas fa-user"></i>
+                        Driver Name
+                    </label>
+                    {{ form.driver_name|add_class:"form-control"|attr:"placeholder:Enter driver name" }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.driver_contact.id_for_label }}" class="form-label required">
+                        <i class="fas fa-phone"></i>
+                        Driver Contact
+                    </label>
+                    {{ form.driver_contact|add_class:"form-control"|attr:"placeholder:Enter contact number" }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.document.id_for_label }}" class="form-label">
+                        <i class="fas fa-file-upload"></i>
+                        Update Document
+                    </label>
+                    {% if manifest.document %}
+                    <div class="current-file">
+                        <i class="fas fa-file"></i>
+                        Current file: <a href="{{ manifest.document.url }}" target="_blank">{{ manifest.document.name|cut:"documents/" }}</a>
+                    </div>
+                    {% endif %}
+                    <div class="file-input-wrapper">
+                        {{ form.document|add_class:"form-control file-input" }}
+                        <span class="file-input-label">
+                            {% if manifest.document %}Replace file...{% else %}Choose file...{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Financial Details Section -->
+        <section class="form-section financial-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-calculator"></i>
+                    Financial Details
+                </h2>
+                <p class="section-description">Update freight and payment information</p>
+            </div>
+
+            <!-- Hidden field for total_articles to fix form validation -->
+            <input type="hidden" id="total_articles_hidden" name="total_articles" value="{{ form.total_articles.value|default:'0' }}">
+
+            <div class="financial-grid">
+                <div class="financial-card">
+                    <div class="card-header">
+                        <i class="fas fa-rupee-sign"></i>
+                        <span>Freight Calculation</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="base_freight" class="form-label">Base Freight (₹)</label>
+                        <input type="number" id="base_freight" name="base_freight"
+                               value="{{ form.base_freight.value|default:'0.00' }}"
+                               class="form-control" step="0.01" oninput="calculateTotalFreight()">
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.additional_freight.id_for_label }}" class="form-label">Additional Freight (₹)</label>
+                        {{ form.additional_freight|add_class:"form-control"|attr:"id:additional_freight"|attr:"oninput:calculateTotalFreight()"|attr:"step:0.01"|attr:"type:number" }}
+                    </div>
+                    <div class="form-group">
+                        <label for="total_freight" class="form-label">Total Freight (₹)</label>
+                        <input type="text" id="total_freight" name="total_freight"
+                               value="{{ form.total_freight.value|default:'0.00' }}"
+                               class="form-control readonly-field total-freight-amount" readonly>
+                    </div>
+                </div>
+
+                <div class="financial-card">
+                    <div class="card-header">
+                        <i class="fas fa-money-check-alt"></i>
+                        <span>Payment Details</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="advance_amount" class="form-label">Advance Amount (₹)</label>
+                        {{ form.advance_amount|add_class:"form-control"|attr:"id:advance_amount"|attr:"oninput:calculateBalance()"|attr:"step:0.01"|attr:"type:number" }}
+                    </div>
+                    <div class="form-group">
+                        <label for="balance_freight" class="form-label">Balance Freight (₹)</label>
+                        <input type="text" id="balance_freight" name="balance_freight"
+                               value="0.00" class="form-control readonly-field balance-amount" readonly>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Shipment Selection Section -->
+        <section class="form-section shipment-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-shipping-fast"></i>
+                    Update Shipment Selection
+                </h2>
+                <p class="section-description">Modify shipments included in this manifest</p>
+            </div>
+
+            <div class="shipment-controls">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="shipment-search" placeholder="Search shipments..." class="form-control">
+                </div>
+                <div class="bulk-actions">
+                    <button type="button" id="select-all" class="btn btn-outline">Select All</button>
+                    <button type="button" id="deselect-all" class="btn btn-outline">Deselect All</button>
+                </div>
+                <div class="selection-stats">
+                    <div class="selection-summary">
+                        <i class="fas fa-check-circle"></i>
+                        <span id="selected-count">0</span> shipments selected
+                    </div>
+                    <div class="articles-summary">
+                        <i class="fas fa-boxes"></i>
+                        <span id="total-articles">0</span> total articles
+                    </div>
+                </div>
+            </div>
+
+            <div class="shipment-table-wrapper">
+                <table class="shipment-table">
+                    <thead>
+                        <tr>
+                            <th class="checkbox-col">
+                                <input type="checkbox" id="select-all-checkbox">
+                            </th>
+                            <th>Consignment No</th>
+                            <th>Origin</th>
+                            <th>Destination</th>
+                            <th>Weight (kg)</th>
+                            <th>Articles</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for shipment in form.fields.shipments.queryset %}
+                        <tr class="shipment-row">
+                            <td class="checkbox-col">
+                                <input type="checkbox" name="shipments" value="{{ shipment.id }}"
+                                       class="shipment-checkbox"
+                                       data-weight="{{ shipment.charged_weight|default:0 }}"
+                                       data-articles="{{ shipment.no_article|default:0 }}"
+                                       {% if shipment.id in form.shipments.value %}checked{% endif %}>
+                            </td>
+                            <td class="consignment-no">
+                                <strong>{{ shipment.consignment_no }}</strong>
+                            </td>
+                            <td>{{ shipment.origin|default:"N/A" }}</td>
+                            <td>{{ shipment.destination|default:"N/A" }}</td>
+                            <td class="weight-col">{{ shipment.charged_weight|default:0|floatformat:2 }}</td>
+                            <td class="articles-col">{{ shipment.no_article|default:0 }}</td>
+                            <td>
+                                <span class="status-badge status-{{ shipment.status|lower|default:'booked' }}">
+                                    {{ shipment.status|default:"Booked" }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>No shipments available for selection.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <div class="action-left">
+                <a href="{% url 'manifest_detail' manifest.pk %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Cancel
+                </a>
+            </div>
+            <div class="action-right">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Update Manifest
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // Total freight calculation (Base + Additional)
+    function calculateTotalFreight() {
+        const baseFreight = parseFloat(document.getElementById("base_freight").value) || 0;
+        const additionalFreight = parseFloat(document.getElementById("additional_freight").value) || 0;
+        const totalFreight = baseFreight + additionalFreight;
+
+        const totalField = document.getElementById("total_freight");
+        totalField.value = totalFreight.toFixed(2);
+
+        // Recalculate balance whenever total changes
+        calculateBalance();
+    }
+
+    // Balance calculation (Total - Advance)
+    function calculateBalance() {
+        const totalFreight = parseFloat(document.getElementById("total_freight").value) || 0;
+        const advanceAmount = parseFloat(document.getElementById("advance_amount").value) || 0;
+        const balance = totalFreight - advanceAmount;
+
+        const balanceField = document.getElementById("balance_freight");
+        balanceField.value = balance.toFixed(2);
+
+        // Visual feedback for balance
+        if (balance < 0) {
+            balanceField.style.background = "linear-gradient(135deg, #dc3545, #c82333)";
+        } else if (balance === 0) {
+            balanceField.style.background = "linear-gradient(135deg, #28a745, #20c997)";
+        } else {
+            balanceField.style.background = "linear-gradient(135deg, #ffc107, #e0a800)";
+        }
+    }
+
+    // Shipment selection management - Updated to include articles and hidden field
+    function updateSelectionSummary() {
+        const checkboxes = document.querySelectorAll('.shipment-checkbox:checked');
+        const count = checkboxes.length;
+
+        // Update shipment count
+        document.getElementById('selected-count').textContent = count;
+
+        // Calculate total articles
+        let totalArticles = 0;
+        checkboxes.forEach(checkbox => {
+            totalArticles += parseInt(checkbox.dataset.articles) || 0;
+            checkbox.closest('.shipment-row').classList.add('selected');
+        });
+
+        // Update total articles display
+        document.getElementById('total-articles').textContent = totalArticles;
+
+        // Update hidden field for form submission
+        document.getElementById('total_articles_hidden').value = totalArticles;
+
+        // Remove selected class from unchecked rows
+        document.querySelectorAll('.shipment-checkbox:not(:checked)').forEach(checkbox => {
+            checkbox.closest('.shipment-row').classList.remove('selected');
+        });
+
+        // Visual feedback for counts
+        const summaryElement = document.querySelector('.selection-summary');
+        const articlesElement = document.querySelector('.articles-summary');
+
+        if (count > 0) {
+            summaryElement.style.background = '#d4edda';
+            summaryElement.style.borderColor = '#c3e6cb';
+            summaryElement.style.color = '#155724';
+        } else {
+            summaryElement.style.background = '#e7f1ff';
+            summaryElement.style.borderColor = '#b3d7ff';
+            summaryElement.style.color = '#0056b3';
+        }
+
+        if (totalArticles > 0) {
+            articlesElement.style.background = '#d4edda';
+            articlesElement.style.borderColor = '#c3e6cb';
+            articlesElement.style.color = '#155724';
+        } else {
+            articlesElement.style.background = '#e8f5e8';
+            articlesElement.style.borderColor = '#c3e6cb';
+            articlesElement.style.color = '#155724';
+        }
+    }
+
+    // Search functionality
+    function setupSearch() {
+        const searchInput = document.getElementById('shipment-search');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('.shipment-row');
+
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(searchTerm) ? '' : 'none';
+                });
+            });
+        }
+    }
+
+    // Bulk selection
+    function setupBulkActions() {
+        const selectAllBtn = document.getElementById('select-all');
+        const deselectAllBtn = document.getElementById('deselect-all');
+        const masterCheckbox = document.getElementById('select-all-checkbox');
+
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener('click', function() {
+                const checkboxes = document.querySelectorAll('.shipment-checkbox');
+                checkboxes.forEach(cb => {
+                    if (cb.closest('.shipment-row').style.display !== 'none') {
+                        cb.checked = true;
+                    }
+                });
+                if (masterCheckbox) masterCheckbox.checked = true;
+                updateSelectionSummary();
+            });
+        }
+
+        if (deselectAllBtn) {
+            deselectAllBtn.addEventListener('click', function() {
+                const checkboxes = document.querySelectorAll('.shipment-checkbox');
+                checkboxes.forEach(cb => cb.checked = false);
+                if (masterCheckbox) masterCheckbox.checked = false;
+                updateSelectionSummary();
+            });
+        }
+
+        if (masterCheckbox) {
+            masterCheckbox.addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.shipment-checkbox');
+                checkboxes.forEach(cb => {
+                    if (cb.closest('.shipment-row').style.display !== 'none') {
+                        cb.checked = this.checked;
+                    }
+                });
+                updateSelectionSummary();
+            });
+        }
+    }
+
+    // File input label update
+    function setupFileInput() {
+        const fileInput = document.querySelector('.file-input');
+        const fileLabel = document.querySelector('.file-input-label');
+
+        if (fileInput && fileLabel) {
+            const defaultLabel = {% if manifest.document %}'Replace file...'{% else %}'Choose file...'{% endif %};
+
+            fileInput.addEventListener('change', function() {
+                const fileName = this.files[0] ? this.files[0].name : defaultLabel;
+                fileLabel.textContent = fileName;
+            });
+        }
+    }
+
+    // Alert close functionality
+    function setupAlerts() {
+        document.querySelectorAll('.alert-close').forEach(button => {
+            button.addEventListener('click', function() {
+                this.closest('.alert').style.display = 'none';
+            });
+        });
+    }
+
+    // Form validation
+    function setupFormValidation() {
+        const form = document.querySelector('.manifest-form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const selectedShipments = document.querySelectorAll('.shipment-checkbox:checked');
+                if (selectedShipments.length === 0) {
+                    e.preventDefault();
+                    alert('Please select at least one shipment for the manifest.');
+                    return false;
+                }
+            });
+        }
+    }
+
+    // Initialize all functions
+    calculateTotalFreight();
+    calculateBalance();
+    updateSelectionSummary();
+    setupSearch();
+    setupBulkActions();
+    setupFileInput();
+    setupAlerts();
+    setupFormValidation();
+
+    // Event listeners for checkboxes
+    document.querySelectorAll('.shipment-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectionSummary);
+    });
+
+    // Event listeners for calculations
+    document.getElementById('base_freight').addEventListener('input', calculateTotalFreight);
+    document.getElementById('additional_freight').addEventListener('input', calculateTotalFreight);
+    document.getElementById('advance_amount').addEventListener('input', calculateBalance);
+
+    // Make calculation functions globally available
+    window.calculateTotalFreight = calculateTotalFreight;
+    window.calculateBalance = calculateBalance;
+});
+</script>
+
+{% endblock %}

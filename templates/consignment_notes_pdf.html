@@ -5,308 +5,61 @@
     <meta charset="UTF-8">
     <title>Consignment Notes</title>
     <style>
-        @page {
-            size: A4 portrait;
-            margin: 0.4cm;
-        }
-        body {
-            font-family: 'Arial', sans-serif;
-            font-size: 12px;
-            margin: 0;
-            padding: 0;
-            line-height: 1.4;
-        }
-        .page {
-            page-break-after: always;
-        }
-        .page:last-child {
-            page-break-after: auto;
-        }
-        .consignment-copy {
-            border: 1px solid #000; /* Reduced from 2px */
-            padding: 15px;
-            margin-bottom: 15px;
-            height: auto;
-            min-height: 95vh;
-            box-sizing: border-box;
-            page-break-inside: avoid;
-            position: relative;
-        }
-        .copy-label {
-            position: absolute;
-            top: 2px;
-            right: 14px;
-            font-size: 11px;
-            font-weight: bold;
-            font-style: italic;
-            color: #666;
-            background: white;
-            padding: 2px 7px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #000; /* Reduced from 2px */
-            padding-bottom: 10px;
-        }
-        .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .logo-section {
-            flex: 1;
-            text-align: left;
-        }
-        .logo-section img {
-            height: 50px;
-            max-width: 130px;
-        }
-        .consignment-info {
-            flex: 1;
-            text-align: right;
-            font-family: "Courier New", monospace;
-        }
-        .consignment-info strong {
-            font-size: 14px;
-            color: #000;
-        }
-        .company-details {
-            font-size: 10px;
-            line-height: 1.4;
-            color: #333;
-        }
-        .company-details strong {
-            font-size: 16px;
-            color: #000;
-            display: block;
-            margin-bottom: 3px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 10px;
-        }
-        th, td {
-            border: 1px solid #000; /* Reduced from 2px where applicable */
-            padding: 6px 8px;
-            text-align: left;
-            vertical-align: top;
-            font-size: 10px;
-        }
-        th {
-            background-color: #f0f0f0;
-            font-weight: bold;
-            text-align: center;
-            font-size: 10px;
-        }
-        .content-block {
-            margin-bottom: 12px;
-        }
-        .consignment-number {
-            font-size: 20px;
-            font-weight: bold;
-            text-align: center;
-            margin: 12px 0;
-            padding: 10px;
-            background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
-            border: 1px solid #000; /* Reduced from 2px */
-            letter-spacing: 1px;
-            font-family: "Courier New", monospace;
-        }
-        .package-details {
-            background-color: #f8f8f8;
-            border: 1px solid #000;
-            margin-bottom: 12px;
-        }
-        .package-details table {
-            margin-bottom: 0;
-        }
-        .package-details th {
-            background-color: #e0e0e0;
-            font-size: 9px;
-        }
-        .package-details td {
-            text-align: center;
-            font-weight: bold;
-            font-size: 11px;
-        }
+        @page { size: A4 portrait; margin: 0.4cm; }
+        body { font-family: Arial, sans-serif; font-size: 11px; margin:0; padding:0; line-height:1.35; color:#111; }
+        .page { page-break-after: always; }
+        .page:last-child { page-break-after: auto; }
+        .consignment-copy { border:1px solid #000; padding:12px; margin-bottom:12px; min-height:95vh; box-sizing:border-box; page-break-inside:avoid; position:relative; }
+        .copy-label { position:absolute; top:4px; right:8px; font-size:10px; font-weight:700; font-style:italic; color:#555; background:#fff; padding:2px 6px; border:1px solid #bbb; border-radius:3px; }
 
-        /* NEW: Content Details Section */
-        .content-details {
-            background-color: #f9f9f9;
-            border: 1px solid #000;
-            margin-bottom: 12px;
-        }
-        .content-details table {
-            margin-bottom: 0;
-        }
-        .content-details th {
-            background-color: #e8e8e8;
-            font-size: 9px;
-            text-align: center;
-        }
-        .content-details td {
-            text-align: center;
-            font-size: 9px;
-            padding: 4px 5px;
-        }
-        .content-details .content-title {
-            background-color: #d0d0d0;
-            font-weight: bold;
-            text-align: center;
-            padding: 8px;
-            font-size: 12px;
-            border-bottom: 1px solid #000;
-        }
-        .total-row {
-            background-color: #e8e8e8;
-            font-weight: bold;
-        }
+        /* Header */
+        .header { border-bottom:1px solid #000; padding-bottom:6px; margin-bottom:8px; }
+        .header-flex { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+        .logo-section img { height:46px; max-width:120px; }
+        .company-details { flex:1; text-align:center; font-size:10px; color:#222; }
+        .company-details strong { display:block; font-size:16px; margin-bottom:2px; letter-spacing:0.2px; }
+        .date-status { flex:0 0 170px; text-align:right;padding-top:15px; }
+        .date-status-main { font-size:12px; font-weight:700; }
+        .tracking-info { font-size:10px; margin-top:2px; }
+        .status-badge { display:inline-block; padding:3px 6px; border-radius:3px; color:#fff; font-size:9px; font-weight:700; margin-top:5px; }
+        .status-badge.booked { background:#2196F3; }
+        .status-badge.in-transit { background:#ff9800; }
+        .status-badge.delivered { background:#4CAF50; }
+        .status-badge.cancelled { background:#f44336; }
 
-        .qr-code-section {
-            margin: 12px 0;
-            padding: 12px;
-            background: linear-gradient(135deg, #f9f9f9, #f0f0f0);
-            border: 1px solid #000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            min-height: 60px;
-        }
-        .qr-code-left, .qr-code-right {
-            flex: 1;
-            font-size: 9px;
-            line-height: 1.3;
-        }
-        .qr-code-left {
-            text-align: left;
-        }
-        .qr-code-right {
-            text-align: right;
-        }
-        .qr-code-center {
-            flex: 0 0 auto;
-            margin: 0 12px;
-            text-align: center;
-        }
-        .qr-code-section img {
-            height: 50px;
-            width: 50px;
-            border: 1px solid #666;
-            border-radius: 3px;
-        }
-        .fallback-barcode {
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            background: #fff;
-            padding: 10px;
-            border: 1px solid #000; /* Reduced from 2px */
-            min-width: 50px;
-            text-align: center;
-        }
-        .tracking-info {
-            font-size: 8px;
-            color: #666;
-            margin-top: 3px;
-            font-weight: normal;
-        }
+        /* Blocks & tables */
+        .content-block { margin-bottom:8px; }
+        table { width:100%; border-collapse:collapse; }
+        th, td { border:1px solid #000; padding:5px 6px; vertical-align:top; font-size:10px; }
+        th { background:#f4f4f4; text-align:center; font-weight:700; }
+        .table-compact td { padding:4px 6px; }
 
-        /* ENHANCED: Signature section with much more space */
-        .signature-section {
-            margin-top: 15px;
-            border: 1px solid #000;
-        }
-        .signature-section table {
-            margin-bottom: 0;
-        }
-        .signature-section td {
-            height: 100px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 12px;
-            vertical-align: top;
-            padding-top: 10px;
-        }
-        .signature-section .signature-area {
-            margin-top: 60px;
-            font-size: 11px;
-            font-weight: normal;
-            border-top: 1px dotted #999;
-            padding-top: 8px;
-            line-height: 1.5;
-        }
+        .package-details { background:#fafafa; border:1px solid #000; margin-bottom:8px; }
+        .package-details table { margin:0; }
+        .package-details th { background:#e9e9e9; }
 
-        .terms-section {
-            font-size: 8px;
-            border-top: 1px solid #000;
-            padding-top: 8px;
-            margin-top: 10px;
-            color: #333;
-            line-height: 1.3;
-            background-color: #fafafa;
-            padding: 8px;
-        }
-        .terms-section strong {
-            font-size: 10px;
-            margin-bottom: 4px;
-            display: block;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            color: #000;
-            padding: 8px;
-            background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
-            border: 1px solid #000;
-        }
-        .highlight-text {
-            background-color: #ffff99;
-            padding: 2px 4px;
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 3px 6px;
-            background-color: #4CAF50;
-            color: white;
-            border-radius: 3px;
-            font-size: 8px;
-            font-weight: bold;
-        }
-        .status-badge.in-transit {
-            background-color: #ff9800;
-        }
-        .status-badge.delivered {
-            background-color: #4CAF50;
-        }
-        .status-badge.booked {
-            background-color: #2196F3;
-        }
+        /* Barcode section */
+        .shipment-barcode-section { margin:10px 0; padding:10px; background:linear-gradient(135deg,#fafafa,#f1f1f1); border:1px solid #000; display:flex; justify-content:center; align-items:center; gap:16px; }
+        .shipment-barcode-left { text-align:right; }
+        .consignment-display { font-family:"Courier New", monospace; font-size:30px; font-weight:700; letter-spacing:1px; }
+        .shipment-barcode-center img { height:70px; width:140px; border:1px solid #666; border-radius:2px; }
+        .fallback-barcode { font-family:"Courier New", monospace; font-size:14px; font-weight:700; letter-spacing:2px; background:#fff; padding:10px 12px; border:1px solid #000; }
 
-        /* Print optimizations */
+        /* Content details */
+        .content-details { background:#fcfcfc; border:1px solid #000; margin-bottom:8px; }
+        .content-title { background:#d9d9d9; font-weight:700; text-align:center; padding:6px; font-size:12px; border-bottom:1px solid #000; }
+        .content-details th { background:#ededed; font-size:9px; }
+        .content-details td { text-align:center; font-size:10px; }
+
+        /* Signatures & footer */
+        .signature-section { margin-top:10px; border:1px solid #000; }
+        .signature-section td { height:90px; text-align:center; font-weight:700; font-size:11px; vertical-align:top; padding-top:8px; }
+        .signature-area { margin-top:54px; font-size:10px; font-weight:400; border-top:1px dotted #999; padding-top:7px; line-height:1.4; }
+        .footer { text-align:center; margin-top:10px; font-size:11px; font-weight:700; color:#000; padding:7px; background:linear-gradient(135deg,#f4f4f4,#ececec); border:1px solid #000; }
+
         @media print {
-            body {
-                -webkit-print-color-adjust: exact;
-                font-size: 11px;
-            }
-            .consignment-copy {
-                height: auto;
-                min-height: 95vh;
-                page-break-inside: avoid;
-            }
-            .signature-section td {
-                height: 110px !important;
-            }
-            .signature-section .signature-area {
-                margin-top: 65px !important;
-            }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .consignment-copy { page-break-inside: avoid; }
         }
     </style>
 </head>
@@ -317,214 +70,183 @@
     <div class="consignment-copy">
         <div class="copy-label">{{ copy_label }}</div>
 
+        <!-- Header -->
         <div class="header">
-            <div class="header-row">
+            <div class="header-flex">
                 <div class="logo-section">
-                    <img src="{% static 'logo.png' %}" alt="SVE TRANSPORT" onerror="this.style.display='none'">
+                    <img src="{% static 'logo.png' %}" alt="VARSHA TRANSPORT">
                 </div>
-                <div class="consignment-info">
-                    <strong>Consignment #: {{ shipment.consignment_no }}</strong><br>
-                    <strong>Date: {{ shipment.date|date:"d-m-Y" }}</strong>
+                <div class="company-details">
+                    <strong>VARSHA TRANSPORT</strong>
+                    #26, Krishnasagar Layout, Nagadasanahalli, Rajankunte Post, Bangalore - 560064<br>
+                    GSTIN: 29CYGPS4918H1ZV | MOB: +91-9164993830, +91-9108663747<br>
+                    Email: <a href="mailto:info@varshatransport.com">info@varshatransport.com</a> | Website:
+                    <a href="https://www.varshatransport.com">www.varshatransport.com</a>
                 </div>
-            </div>
-            <div class="company-details">
-                <strong>SVE TRANSPORT</strong>
-                #26, KrishnaSagar Layout, Nagadasanahalli, Rajanukunte Post, Bangalore North-560064<br>
-                GSTIN: 29CYGPS4918H1ZV | MOB: +91-9164993830, +91-9108663747<br>
-                Email: info@svetransport.com | Website: www.svetransport.com
+                <div class="date-status">
+                    <div class="date-status-main">Date: {{ shipment.date|date:"d-m-Y" }}</div>
+                    <span class="status-badge {{ shipment.status|lower|slugify }}">
+                        {{ shipment.status|default:"BOOKED"|upper }}
+                    </span>
+                </div>
             </div>
         </div>
 
+        <!-- Parties -->
         <div class="content-block">
-            <table>
+            <table class="table-compact">
                 <tr>
-                    <th style="width: 12%;">Shipped By:</th>
-                    <td style="width: 38%;">
+                    <th style="width: 18%;">Shipped By</th>
+                    <td style="width: 32%;">
                         <strong>{{ shipment.consignor_name }}</strong><br>
-                        {{ shipment.consignor_address|truncatechars:80 }}<br>
-                        {% if shipment.consignor_gst %}GST: {{ shipment.consignor_gst }}<br>{% endif %}
-                        Ph: {{ shipment.consignor_contact }}
+                        {{ shipment.consignor_address|default:"-"|truncatechars:150 }}<br>
+                        {% if shipment.consignor_gst %}GST: {{ shipment.consignor_gst }} | {% endif %}
+                        Ph: {{ shipment.consignor_contact|default:"-" }}
                     </td>
-                    <th style="width: 12%;">Shipped To:</th>
-                    <td style="width: 38%;">
+                    <th style="width: 18%;">Shipped To</th>
+                    <td style="width: 32%;">
                         <strong>{{ shipment.consignee_name }}</strong><br>
-                        {{ shipment.consignee_address|truncatechars:80 }}<br>
-                        {% if shipment.consignee_gst %}GST: {{ shipment.consignee_gst }}<br>{% endif %}
-                        Ph: {{ shipment.consignee_contact }}
+                        {{ shipment.consignee_address|default:"-"|truncatechars:150 }}<br>
+                        {% if shipment.consignee_gst %}GST: {{ shipment.consignee_gst }} | {% endif %}
+                        Ph: {{ shipment.consignee_contact|default:"-" }}
                     </td>
                 </tr>
             </table>
         </div>
 
+        <!-- Route & Billing -->
         <div class="content-block">
-            <table>
+            <table class="table-compact">
                 <tr>
                     <th>Origin</th>
                     <th>Destination</th>
                     <th>Vehicle</th>
                     <th>Service</th>
+                    <th>Mode</th>
                     <th>Payment</th>
                 </tr>
                 <tr>
                     <td><strong>{{ shipment.origin }}</strong>{% if shipment.origin_pin %}<br>{{ shipment.origin_pin }}{% endif %}</td>
                     <td><strong>{{ shipment.destination }}</strong>{% if shipment.destination_pin %}<br>{{ shipment.destination_pin }}{% endif %}</td>
                     <td>{{ shipment.vehicle_no|default:"-" }}<br><small>{{ shipment.vehicle_type|default:"" }}</small></td>
-                    <td>{{ shipment.shipment_type }}</td>
-                    <td>{{ shipment.payment_mode }}</td>
+                    <td>{{ shipment.shipment_type|default:"-" }}</td>
+                    <td>{{ shipment.shipment_mode|default:"-" }}</td>
+                    <td>{{ shipment.payment_mode|default:"-" }}</td>
                 </tr>
             </table>
         </div>
 
+        <!-- References -->
         <div class="content-block">
-            <table>
+            <table class="table-compact">
                 <tr>
                     <th>Invoice No</th>
                     <th>SO No</th>
                     <th>RO No</th>
-                    <th>E-Way Bill</th>
+                    <th>BOE No</th>
+                    <th>E‑Way Bill</th>
                     <th>Value (₹)</th>
                 </tr>
                 <tr>
                     <td>{{ shipment.invoice_ref_number|default:"-" }}</td>
                     <td>{{ shipment.so_number|default:"-" }}</td>
                     <td>{{ shipment.ro_number|default:"-" }}</td>
+                    <td>{{ shipment.boe_number|default:"-" }}</td>
                     <td>{{ shipment.ewaybill_number|default:"-" }}</td>
-                    <td><strong>{{ shipment.value|default:"0"|floatformat:0 }}</strong></td>
+                    <td><strong>{{ shipment.value|default:0|floatformat:0 }}</strong></td>
                 </tr>
             </table>
         </div>
 
+        <!-- Summary -->
         <div class="package-details">
-            <table>
+            <table class="table-compact">
                 <tr>
-                    <th>Packages</th>
+                    <th>No. of Articles</th>
                     <th>Actual Wt (kg)</th>
                     <th>Charged Wt (kg)</th>
                     <th>Items</th>
                     <th>Pack Type</th>
                 </tr>
                 <tr>
-                    <td>{{ shipment.no_article }}</td>
+                    <td>{{ shipment.no_article|default:0 }}</td>
                     <td>{{ shipment.actual_weight|default:shipment.charged_weight|floatformat:1 }}</td>
-                    <td>{{ shipment.charged_weight|floatformat:1 }}</td>
-                    <td>{{ shipment.item_count|default:shipment.no_article }}</td>
+                    <td>{{ shipment.charged_weight|default:0|floatformat:1 }}</td>
+                    <td>{{ shipment.total_quantity|default:0 }}</td>
                     <td>{{ shipment.pack_type|default:"-" }}</td>
                 </tr>
             </table>
         </div>
 
-        <!-- NEW: Enhanced Content Details Section -->
+        <!-- Barcode -->
+        <div class="shipment-barcode-section">
+            <div class="shipment-barcode-left">
+                <div class="consignment-display">{{ shipment.consignment_no }}</div>
+            </div>
+            <!--<div class="shipment-barcode-center">-->
+            <!--    {% if shipment.barcode_image %}-->
+            <!--        <img src="{{ shipment.barcode_image }}" alt="Barcode - {{ shipment.consignment_no }}">-->
+            <!--    {% else %}-->
+            <!--        <div class="fallback-barcode">{{ shipment.consignment_no }}</div>-->
+            <!--    {% endif %}-->
+            <!--</div>-->
+        </div>
+
+        <!-- Content Details -->
         {% if shipment.boxes.exists %}
         <div class="content-details">
             <div class="content-title">SHIPMENT CONTENT DETAILS</div>
             <table>
-                <tr>
-                    <th style="width: 18%;">Box/Package Type</th>
-                    <th style="width: 10%;">Count</th>
-                    <th style="width: 12%;">Weight (kg)</th>
-                    <th style="width: 18%;">Dimensions (L×W×H ft)</th>
-                    <th style="width: 12%;">Volume (CFT)</th>
-                    <th style="width: 30%;">Remarks</th>
-                </tr>
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Batch ID</th>
+                        <th style="width: 16%;">Box/Package Type</th>
+                        <th style="width: 8%;">Count</th>
+                        <th style="width: 11%;">Weight (kg)</th>
+                        <th style="width: 18%;">Dimensions (L×W×H ft)</th>
+                        <th style="width: 32%;">Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
                 {% for content in shipment.boxes.all %}
-                <tr>
-                    <td>{{ content.box_type|default:"Package" }}</td>
-                    <td><strong>{{ content.count_of_box }}</strong></td>
-                    <td>{{ content.box_weight|floatformat:1 }}</td>
-                    <td>{{ content.box_length|floatformat:1 }}×{{ content.box_width|floatformat:1 }}×{{ content.box_height|floatformat:1 }}</td>
-                    <td>{{ content.total_volumetric|floatformat:2 }}</td>
-                    <td>{{ content.remark|default:"-"|truncatechars:40 }}</td>
-                </tr>
+                    <tr>
+                        <td><strong>{{ content.batch_id|default:content.id|stringformat:"s" }}</strong></td>
+                        <td>{{ content.box_type|default:"Package" }}</td>
+                        <td><strong>{{ content.count_of_box|default:0 }}</strong></td>
+                        <td>{{ content.box_weight|default:0|floatformat:1 }}</td>
+                        <td>{{ content.box_length|default:0|floatformat:1 }}×{{ content.box_width|default:0|floatformat:1 }}×{{ content.box_height|default:0|floatformat:1 }}</td>
+                        <td style="text-align:left;">{{ content.remark|default:"-"|truncatechars:90 }}</td>
+                    </tr>
                 {% endfor %}
-                <tr class="total-row">
-                    <td><strong>TOTAL</strong></td>
-                    <td><strong>{{ shipment.boxes.count }}</strong></td>
-                    <td><strong>{{ shipment.charged_weight|floatformat:1 }}</strong></td>
-                    <td>-</td>
-                    <td><strong>{% if shipment.total_dfc %}{{ shipment.total_dfc|floatformat:2 }}{% else %}-{% endif %}</strong></td>
-                    <td>{{ shipment.boxes.count }} Box Type(s)</td>
-                </tr>
+                </tbody>
             </table>
         </div>
         {% endif %}
 
-        <div class="qr-code-section">
-            <div class="qr-code-left">
-                <strong>TRACK ONLINE:</strong><br>
-                <small>Scan QR Code with<br>your mobile device</small>
-            </div>
-            <div class="qr-code-center">
-                {% if shipment.qr_code_data %}
-                    <img src="{{ shipment.qr_code_data }}" alt="QR Code for {{ shipment.consignment_no }}">
-                {% elif shipment.tracking_qr_code %}
-                    <img src="{{ shipment.tracking_qr_code }}" alt="Tracking QR Code">
-                {% elif shipment.public_qr_code %}
-                    <img src="{{ shipment.public_qr_code }}" alt="Public QR Code">
-                {% else %}
-                    <div class="fallback-barcode">
-                        {{ shipment.consignment_no }}
-                    </div>
-                {% endif %}
-            </div>
-            <div class="qr-code-right">
-                <strong>{{ shipment.consignment_no }}</strong><br>
-                <span class="status-badge {{ shipment.status|lower }}">
-                    {{ shipment.status|default:"BOOKED"|upper }}
-                </span>
-                <div class="tracking-info">
-                    Visit: www.svetransport.com
-                </div>
-            </div>
-        </div>
-
-        <!-- ENHANCED: Signature section with much larger fields -->
+        <!-- Signatures -->
         <div class="signature-section">
             <table>
                 <tr>
                     <td style="width: 33%;">
                         <strong>CONSIGNOR SIGNATURE</strong>
-                        <div class="signature-area">
-                            Name: ___________________<br>
-                            <br>
-                            Signature: _______________
-                        </div>
+                        <div class="signature-area"><br>Signature: ______________________</div>
                     </td>
                     <td style="width: 34%;">
                         <strong>DELIVERY CONFIRMATION</strong>
-                        <div class="signature-area">
-                            Date: ___________________<br>
-                            Time: ___________________<br>
-                            Received By: _____________<br>
-                            Condition: ☐ Good ☐ Damaged<br>
-                            Remarks: _________________<br>
-                        </div>
+                        <div class="signature-area">Received By: ____________________<br>Condition: ☐ Good &nbsp; ☐ Damaged</div>
                     </td>
                     <td style="width: 33%;">
                         <strong>CONSIGNEE SIGNATURE</strong>
-                        <div class="signature-area">
-                            <br><br>
-                            Company Seal/Stamp<br><br><br>
-                            _________________________<br>
-                            Authorized Signatory<br>
-                            Date: ___________________
-                        </div>
+                        <div class="signature-area">Authorized Signatory<br>Date: ______________________</div>
                     </td>
                 </tr>
             </table>
         </div>
 
-        <div class="terms-section">
-            <strong>TERMS & CONDITIONS:</strong>
-            1. Carrier is not liable for damage/loss unless reported within 24 hours with supporting documents.
-            2. Freight payable as per agreed terms. Detention charges applicable after free time.
-            3. Goods carried at consignee's risk unless specifically insured through us.
-            4. All disputes subject to Bangalore jurisdiction only.
-            5. Track your shipment: www.svetransport.com or scan QR code above.
-            6. Claims must be lodged in writing within 30 days of delivery.
-        </div>
-
+        <!-- Footer -->
         <div class="footer">
-            SVE TRANSPORT - Your Trusted Logistics Partner | +91-9164993830
+            VARSHA TRANSPORT — Your Trusted Logistics Partner | Track @
+            <a href="https://varshatransport.com/public_tracking/">varshatransport.com/public_tracking</a>
         </div>
     </div>
     {% endfor %}

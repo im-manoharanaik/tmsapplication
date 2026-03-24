@@ -39,7 +39,6 @@
     <form method="POST" enctype="multipart/form-data" action="{% url 'create_manifest' %}" class="manifest-form">
         {% csrf_token %}
 
-
         <!-- Manifest Details Section -->
         <section class="form-section manifest-details-section">
             <div class="section-header">
@@ -112,57 +111,56 @@
             </div>
         </section>
 
-        <!-- Financial Details Section -->
-        <section class="form-section financial-section">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <i class="fas fa-calculator"></i>
-                    Financial Details
-                </h2>
-                <p class="section-description">Freight and payment information</p>
-            </div>
+<!-- Financial Details Section -->
+<section class="form-section financial-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-calculator"></i>
+            Financial Details
+        </h2>
+        <p class="section-description">Freight and payment information</p>
+    </div>
 
-            <div class="financial-grid">
-                <div class="financial-card">
-                    <div class="card-header">
-                        <i class="fas fa-boxes"></i>
-                        <span>Articles Summary</span>
-                    </div>
-                    <div class="form-group">
-                        <label for="total_articles" class="form-label">Total Articles</label>
-                        <input type="text" id="total_articles" name="total_articles"
-                               value="{{ form.total_articles.value|default_if_none:'0' }}"
-                               class="form-control readonly-field" readonly>
-                    </div>
-                </div>
-
-                <div class="financial-card">
-                    <div class="card-header">
-                        <i class="fas fa-rupee-sign"></i>
-                        <span>Freight Details</span>
-                    </div>
-                    <div class="form-group">
-                        <label for="total_freight" class="form-label">Total Freight (₹)</label>
-                        <input type="number" id="total_freight" name="total_freight"
-                               value="{{ form.total_freight.value|default_if_none:'0.00' }}"
-                               class="form-control" step="0.01" oninput="calculateBalance()">
-                    </div>
-                    <div class="form-group">
-                        <label for="advance_amount" class="form-label">Advance Amount (₹)</label>
-                        {{ form.advance_amount|add_class:"form-control"|attr:"id:advance_amount"|attr:"oninput:calculateBalance()"|attr:"step:0.01"|attr:"type:number" }}
-                    </div>
-                    <div class="form-group">
-                        <label for="balance_freight" class="form-label">Balance Freight (₹)</label>
-                        <input type="text" id="balance_freight" name="balance_freight"
-                               value="0.00" class="form-control readonly-field balance-amount" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label for="{{ form.additional_freight.id_for_label }}" class="form-label">Additional Freight (₹)</label>
-                        {{ form.additional_freight|add_class:"form-control"|attr:"step:0.01"|attr:"type:number" }}
-                    </div>
-                </div>
+    <div class="financial-grid">
+        <div class="financial-card">
+            <div class="card-header">
+                <i class="fas fa-rupee-sign"></i>
+                <span>Freight Calculation</span>
             </div>
-        </section>
+            <div class="form-group">
+                <label for="{{ form.base_freight.id_for_label }}" class="form-label required">Base Freight (₹)</label>
+                {{ form.base_freight|add_class:"form-control" }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.additional_freight.id_for_label }}" class="form-label">Additional Freight (₹)</label>
+                {{ form.additional_freight|add_class:"form-control" }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Total Freight (₹)</label>
+                <input type="text" id="total_freight_display" class="form-control readonly-field total-freight-amount" readonly value="0.00">
+                <small class="form-text text-muted">Calculated as: Base + Additional Freight</small>
+            </div>
+        </div>
+
+        <div class="financial-card">
+            <div class="card-header">
+                <i class="fas fa-money-check-alt"></i>
+                <span>Payment Details</span>
+            </div>
+            <div class="form-group">
+                <label for="{{ form.advance_amount.id_for_label }}" class="form-label">Advance Amount (₹)</label>
+                {{ form.advance_amount|add_class:"form-control" }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Balance Freight (₹)</label>
+                <input type="text" id="balance_freight_display" class="form-control readonly-field balance-amount" readonly value="0.00">
+                <small class="form-text text-muted">Calculated as: Total - Advance</small>
+            </div>
+        </div>
+    </div>
+</section>
+
+
 
         <!-- Shipment Selection Section -->
         <section class="form-section shipment-section">
@@ -183,8 +181,15 @@
                     <button type="button" id="select-all" class="btn btn-outline">Select All</button>
                     <button type="button" id="deselect-all" class="btn btn-outline">Deselect All</button>
                 </div>
-                <div class="selection-summary">
-                    <span id="selected-count">0</span> shipments selected
+                <div class="selection-stats">
+                    <div class="selection-summary">
+                        <i class="fas fa-check-circle"></i>
+                        <span id="selected-count">0</span> shipments selected
+                    </div>
+                    <div class="articles-summary">
+                        <i class="fas fa-boxes"></i>
+                        <span id="total-articles">0</span> total articles
+                    </div>
                 </div>
             </div>
 
@@ -254,14 +259,13 @@
 </div>
 
 <style>
-
-
-
-    .step-label {
-        font-size: 12px;
-        font-weight: 600;
-        color: #6c757d;
-        text-align: center;
+    .manifest-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: #f8f9fa;
+        min-height: 100vh;
     }
 
     /* Form Sections */
@@ -383,6 +387,13 @@
         border-bottom: none;
     }
 
+    .total-freight-amount {
+        background: linear-gradient(135deg, #17a2b8, #138496) !important;
+        color: white !important;
+        font-weight: 700;
+        font-size: 16px;
+    }
+
     .balance-amount {
         background: linear-gradient(135deg, #28a745, #20c997) !important;
         color: white !important;
@@ -453,13 +464,43 @@
         gap: 10px;
     }
 
-    .selection-summary {
+    .selection-stats {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .selection-summary,
+    .articles-summary {
         font-weight: 600;
         color: #495057;
         padding: 8px 16px;
-        background: #e7f1ff;
         border-radius: 20px;
         border: 1px solid #b3d7ff;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        min-width: 140px;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .selection-summary {
+        background: #e7f1ff;
+        color: #0056b3;
+    }
+
+    .articles-summary {
+        background: #e8f5e8;
+        border-color: #c3e6cb;
+        color: #155724;
+    }
+
+    .selection-summary i,
+    .articles-summary i {
+        font-size: 12px;
+        opacity: 0.8;
     }
 
     /* Shipment Table */
@@ -668,14 +709,25 @@
 
         .search-box {
             min-width: auto;
+            order: 1;
         }
 
-        .progress-bar {
-            gap: 10px;
+        .bulk-actions {
+            order: 3;
+            justify-content: center;
         }
 
-        .step-label {
-            display: none;
+        .selection-stats {
+            order: 2;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .selection-summary,
+        .articles-summary {
+            min-width: auto;
+            flex: 1;
+            max-width: 180px;
         }
 
         .form-actions {
@@ -688,68 +740,165 @@
             justify-content: center;
         }
     }
+
+    @media (max-width: 480px) {
+        .selection-stats {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .selection-summary,
+        .articles-summary {
+            width: 100%;
+            max-width: none;
+        }
+    }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Balance calculation
+
+    // Total freight calculation (Base + Additional) - Using Django field IDs
+    function calculateTotalFreight() {
+        const baseFreight = parseFloat(document.getElementById("id_base_freight")?.value) || 0;
+        const additionalFreight = parseFloat(document.getElementById("id_additional_freight")?.value) || 0;
+        const totalFreight = baseFreight + additionalFreight;
+
+        // Update display field (readonly field for visual feedback only)
+        const totalField = document.getElementById("total_freight_display");
+        if (totalField) {
+            totalField.value = totalFreight.toFixed(2);
+        }
+
+        // Recalculate balance whenever total changes
+        calculateBalance();
+    }
+
+    // Balance calculation (Total - Advance) - Using Django field IDs
     function calculateBalance() {
-        const totalFreight = parseFloat(document.getElementById("total_freight").value) || 0;
-        const advanceAmount = parseFloat(document.getElementById("advance_amount").value) || 0;
+        const totalFreight = parseFloat(document.getElementById("total_freight_display")?.value) || 0;
+        const advanceAmount = parseFloat(document.getElementById("id_advance_amount")?.value) || 0;
         const balance = totalFreight - advanceAmount;
 
-        const balanceField = document.getElementById("balance_freight");
-        balanceField.value = balance.toFixed(2);
+        const balanceField = document.getElementById("balance_freight_display");
+        if (balanceField) {
+            balanceField.value = balance.toFixed(2);
 
-        // Visual feedback for balance
-        if (balance < 0) {
-            balanceField.style.background = "linear-gradient(135deg, #dc3545, #c82333)";
-        } else if (balance === 0) {
-            balanceField.style.background = "linear-gradient(135deg, #28a745, #20c997)";
-        } else {
-            balanceField.style.background = "linear-gradient(135deg, #ffc107, #e0a800)";
+            // Visual feedback for balance
+            if (balance < 0) {
+                balanceField.style.background = "linear-gradient(135deg, #dc3545, #c82333)";
+                balanceField.style.color = "white";
+            } else if (balance === 0) {
+                balanceField.style.background = "linear-gradient(135deg, #28a745, #20c997)";
+                balanceField.style.color = "white";
+            } else {
+                balanceField.style.background = "linear-gradient(135deg, #ffc107, #e0a800)";
+                balanceField.style.color = "white";
+            }
         }
     }
 
-    // Shipment selection management
+    // Shipment selection management - Enhanced with null checks
     function updateSelectionSummary() {
         const checkboxes = document.querySelectorAll('.shipment-checkbox:checked');
         const count = checkboxes.length;
-        document.getElementById('selected-count').textContent = count;
 
-        // Calculate totals
+        // Update shipment count with null check
+        const selectedCountEl = document.getElementById('selected-count');
+        if (selectedCountEl) {
+            selectedCountEl.textContent = count;
+        }
+
+        // Calculate total articles
         let totalArticles = 0;
         checkboxes.forEach(checkbox => {
             totalArticles += parseInt(checkbox.dataset.articles) || 0;
-            checkbox.closest('.shipment-row').classList.add('selected');
+            const row = checkbox.closest('.shipment-row');
+            if (row) {
+                row.classList.add('selected');
+            }
         });
 
-        // Update total articles
-        document.getElementById('total_articles').value = totalArticles;
+        // Update total articles display with null check
+        const totalArticlesEl = document.getElementById('total-articles');
+        if (totalArticlesEl) {
+            totalArticlesEl.textContent = totalArticles;
+        }
+
+        // Update hidden field for server submission
+        const hiddenArticlesField = document.getElementById('total_articles_hidden');
+        if (hiddenArticlesField) {
+            hiddenArticlesField.value = totalArticles;
+        }
 
         // Remove selected class from unchecked rows
         document.querySelectorAll('.shipment-checkbox:not(:checked)').forEach(checkbox => {
-            checkbox.closest('.shipment-row').classList.remove('selected');
+            const row = checkbox.closest('.shipment-row');
+            if (row) {
+                row.classList.remove('selected');
+            }
         });
+
+        // Visual feedback for counts with null checks
+        const summaryElement = document.querySelector('.selection-summary');
+        const articlesElement = document.querySelector('.articles-summary');
+
+        if (summaryElement) {
+            if (count > 0) {
+                summaryElement.style.background = '#d4edda';
+                summaryElement.style.borderColor = '#c3e6cb';
+                summaryElement.style.color = '#155724';
+            } else {
+                summaryElement.style.background = '#e7f1ff';
+                summaryElement.style.borderColor = '#b3d7ff';
+                summaryElement.style.color = '#0056b3';
+            }
+        }
+
+        if (articlesElement) {
+            if (totalArticles > 0) {
+                articlesElement.style.background = '#d4edda';
+                articlesElement.style.borderColor = '#c3e6cb';
+                articlesElement.style.color = '#155724';
+            } else {
+                articlesElement.style.background = '#e8f5e8';
+                articlesElement.style.borderColor = '#c3e6cb';
+                articlesElement.style.color = '#155724';
+            }
+        }
+
+        // Update master checkbox state
+        const masterCheckbox = document.getElementById('select-all-checkbox');
+        const totalCheckboxes = document.querySelectorAll('.shipment-checkbox').length;
+        if (masterCheckbox && totalCheckboxes > 0) {
+            masterCheckbox.checked = count === totalCheckboxes;
+            masterCheckbox.indeterminate = count > 0 && count < totalCheckboxes;
+        }
     }
 
-    // Search functionality
+    // Enhanced search functionality
     function setupSearch() {
         const searchInput = document.getElementById('shipment-search');
         if (searchInput) {
             searchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
+                const searchTerm = this.value.toLowerCase().trim();
                 const rows = document.querySelectorAll('.shipment-row');
+                let visibleCount = 0;
 
                 rows.forEach(row => {
                     const text = row.textContent.toLowerCase();
-                    row.style.display = text.includes(searchTerm) ? '' : 'none';
+                    const isVisible = text.includes(searchTerm);
+                    row.style.display = isVisible ? '' : 'none';
+                    if (isVisible) visibleCount++;
                 });
+
+                // Optional: Update search results count display
+                console.log(`Showing ${visibleCount} of ${rows.length} shipments`);
             });
         }
     }
 
-    // Bulk selection
+    // Enhanced bulk selection with better visibility handling
     function setupBulkActions() {
         const selectAllBtn = document.getElementById('select-all');
         const deselectAllBtn = document.getElementById('deselect-all');
@@ -757,13 +906,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (selectAllBtn) {
             selectAllBtn.addEventListener('click', function() {
-                const checkboxes = document.querySelectorAll('.shipment-checkbox');
-                checkboxes.forEach(cb => {
-                    if (cb.closest('.shipment-row').style.display !== 'none') {
-                        cb.checked = true;
-                    }
-                });
-                if (masterCheckbox) masterCheckbox.checked = true;
+                // Only select visible checkboxes
+                const visibleCheckboxes = Array.from(document.querySelectorAll('.shipment-checkbox'))
+                    .filter(cb => {
+                        const row = cb.closest('.shipment-row');
+                        return row && row.style.display !== 'none';
+                    });
+
+                visibleCheckboxes.forEach(cb => cb.checked = true);
+
+                if (masterCheckbox) {
+                    const allCheckboxes = document.querySelectorAll('.shipment-checkbox');
+                    masterCheckbox.checked = visibleCheckboxes.length === allCheckboxes.length;
+                }
                 updateSelectionSummary();
             });
         }
@@ -772,62 +927,139 @@ document.addEventListener('DOMContentLoaded', function() {
             deselectAllBtn.addEventListener('click', function() {
                 const checkboxes = document.querySelectorAll('.shipment-checkbox');
                 checkboxes.forEach(cb => cb.checked = false);
-                if (masterCheckbox) masterCheckbox.checked = false;
+                if (masterCheckbox) {
+                    masterCheckbox.checked = false;
+                    masterCheckbox.indeterminate = false;
+                }
                 updateSelectionSummary();
             });
         }
 
         if (masterCheckbox) {
             masterCheckbox.addEventListener('change', function() {
-                const checkboxes = document.querySelectorAll('.shipment-checkbox');
-                checkboxes.forEach(cb => {
-                    if (cb.closest('.shipment-row').style.display !== 'none') {
-                        cb.checked = this.checked;
-                    }
-                });
+                const visibleCheckboxes = Array.from(document.querySelectorAll('.shipment-checkbox'))
+                    .filter(cb => {
+                        const row = cb.closest('.shipment-row');
+                        return row && row.style.display !== 'none';
+                    });
+
+                visibleCheckboxes.forEach(cb => cb.checked = this.checked);
                 updateSelectionSummary();
             });
         }
     }
 
-    // File input label update
+    // Enhanced file input with size display
     function setupFileInput() {
         const fileInput = document.querySelector('.file-input');
         const fileLabel = document.querySelector('.file-input-label');
 
         if (fileInput && fileLabel) {
             fileInput.addEventListener('change', function() {
-                const fileName = this.files[0] ? this.files[0].name : 'Choose file...';
-                fileLabel.textContent = fileName;
-            });
-        }
-    }
-
-    // Alert close functionality
-    function setupAlerts() {
-        document.querySelectorAll('.alert-close').forEach(button => {
-            button.addEventListener('click', function() {
-                this.closest('.alert').style.display = 'none';
-            });
-        });
-    }
-
-    // Form validation
-    function setupFormValidation() {
-        const form = document.querySelector('.manifest-form');
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                const selectedShipments = document.querySelectorAll('.shipment-checkbox:checked');
-                if (selectedShipments.length === 0) {
-                    e.preventDefault();
-                    alert('Please select at least one shipment for the manifest.');
-                    return false;
+                if (this.files[0]) {
+                    const fileName = this.files[0].name;
+                    const fileSize = (this.files[0].size / 1024 / 1024).toFixed(2); // MB
+                    fileLabel.innerHTML = `${fileName} <small>(${fileSize} MB)</small>`;
+                    fileLabel.style.color = '#28a745';
+                } else {
+                    fileLabel.textContent = 'Choose file...';
+                    fileLabel.style.color = '#6c757d';
                 }
             });
         }
     }
 
+    // Enhanced alert functionality with animation
+    function setupAlerts() {
+        document.querySelectorAll('.alert-close').forEach(button => {
+            button.addEventListener('click', function() {
+                const alert = this.closest('.alert');
+                if (alert) {
+                    alert.style.transition = 'opacity 0.3s ease';
+                    alert.style.opacity = '0';
+                    setTimeout(() => {
+                        alert.style.display = 'none';
+                    }, 300);
+                }
+            });
+        });
+
+        // Auto-hide success messages after 5 seconds
+        document.querySelectorAll('.alert-success').forEach(alert => {
+            setTimeout(() => {
+                const closeBtn = alert.querySelector('.alert-close');
+                if (closeBtn) closeBtn.click();
+            }, 5000);
+        });
+    }
+
+    // Enhanced form validation with better error handling
+    function setupFormValidation() {
+        const form = document.querySelector('.manifest-form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const selectedShipments = document.querySelectorAll('.shipment-checkbox:checked');
+                const baseFreight = parseFloat(document.getElementById("id_base_freight")?.value) || 0;
+
+                // Check shipment selection
+                if (selectedShipments.length === 0) {
+                    e.preventDefault();
+                    alert('Please select at least one shipment for the manifest.');
+                    return false;
+                }
+
+                // Check base freight requirement
+                if (baseFreight <= 0) {
+                    e.preventDefault();
+                    alert('Base freight must be greater than zero.');
+                    const baseField = document.getElementById("id_base_freight");
+                    if (baseField) baseField.focus();
+                    return false;
+                }
+
+                // Show loading state
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Manifest...';
+                    submitBtn.disabled = true;
+
+                    // Re-enable button after 10 seconds (in case of network issues)
+                    setTimeout(() => {
+                        submitBtn.innerHTML = '<i class="fas fa-save"></i> Create Manifest';
+                        submitBtn.disabled = false;
+                    }, 10000);
+                }
+            });
+        }
+    }
+
+    // Input validation and formatting
+    function setupInputValidation() {
+        const numericFields = ['id_base_freight', 'id_additional_freight', 'id_advance_amount'];
+
+        numericFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                // Format on blur
+                field.addEventListener('blur', function() {
+                    if (this.value === '' || parseFloat(this.value) < 0) {
+                        this.value = '0.00';
+                    } else {
+                        this.value = parseFloat(this.value).toFixed(2);
+                    }
+                    // Recalculate after formatting
+                    if (fieldId.includes('freight')) {
+                        calculateTotalFreight();
+                    } else if (fieldId === 'id_advance_amount') {
+                        calculateBalance();
+                    }
+                });
+            }
+        });
+    }
+
     // Initialize all functions
+    calculateTotalFreight();
     calculateBalance();
     updateSelectionSummary();
     setupSearch();
@@ -835,15 +1067,49 @@ document.addEventListener('DOMContentLoaded', function() {
     setupFileInput();
     setupAlerts();
     setupFormValidation();
+    setupInputValidation();
 
     // Event listeners for checkboxes
     document.querySelectorAll('.shipment-checkbox').forEach(checkbox => {
         checkbox.addEventListener('change', updateSelectionSummary);
     });
 
-    // Event listeners for calculation
-    document.getElementById('total_freight').addEventListener('input', calculateBalance);
-    document.getElementById('advance_amount').addEventListener('input', calculateBalance);
+    // Event listeners for calculations - Fixed with Django field IDs
+    const baseFreightField = document.getElementById('id_base_freight');
+    const additionalFreightField = document.getElementById('id_additional_freight');
+    const advanceAmountField = document.getElementById('id_advance_amount');
+
+    if (baseFreightField) {
+        baseFreightField.addEventListener('input', calculateTotalFreight);
+    }
+
+    if (additionalFreightField) {
+        additionalFreightField.addEventListener('input', calculateTotalFreight);
+    }
+
+    if (advanceAmountField) {
+        advanceAmountField.addEventListener('input', calculateBalance);
+    }
+
+    // Keyboard shortcuts for better UX
+    document.addEventListener('keydown', function(e) {
+        // Ctrl + S to submit form
+        if (e.ctrlKey && e.key === 's') {
+            e.preventDefault();
+            const form = document.querySelector('.manifest-form');
+            if (form) {
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn && !submitBtn.disabled) {
+                    submitBtn.click();
+                }
+            }
+        }
+    });
+
+    // Make calculation functions globally available
+    window.calculateTotalFreight = calculateTotalFreight;
+    window.calculateBalance = calculateBalance;
+    window.updateSelectionSummary = updateSelectionSummary;
 });
 </script>
 

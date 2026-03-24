@@ -1,72 +1,728 @@
+{% extends "base.html" %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Manifest - {{ manifest.manifest_id }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 p-6 text-gray-800">
+{% block page_title %}Manifest Details - {{ manifest.manifest_id }}{% endblock %}
+{% block page_icon %}content: '📄';{% endblock %}
+{% block breadcrumb %}Manifest / {{ manifest.manifest_id }}{% endblock %}
 
-    <div class="max-w-5xl mx-auto bg-white shadow-lg rounded-lg p-6">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">Manifest: {{ manifest.manifest_id }}</h1>
-            <div class="flex space-x-2">
-                <a href="{% url 'manifest_pdf' manifest.pk %}"
-                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-                   target="_blank">
-                    Download PDF
-                </a>
-                <button onclick="window.print()"
-                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
-                    Print
-                </button>
+{% block extra_css %}
+<style>
+    .manifest-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .manifest-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="2" height="2" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="0.3" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .manifest-header .content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .manifest-id {
+        font-size: 2.5rem;
+        font-weight: 700;
+        font-family: 'Courier New', monospace;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .manifest-status {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .action-bar {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+    }
+
+    .btn-warning {
+        background: linear-gradient(135deg, #ffc107, #fd7e14);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, #6c757d, #495057);
+        color: white;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    .info-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .info-card-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #f8f9fa;
+    }
+
+    .info-card-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: white;
+        margin-right: 1rem;
+    }
+
+    .vehicle-icon { background: linear-gradient(135deg, #6f42c1, #007bff); }
+    .route-icon { background: linear-gradient(135deg, #28a745, #20c997); }
+    .financial-icon { background: linear-gradient(135deg, #ffc107, #fd7e14); }
+    .summary-icon { background: linear-gradient(135deg, #dc3545, #fd7e14); }
+
+    .info-card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f8f9fa;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 500;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .info-value {
+        font-weight: 600;
+        color: #2c3e50;
+        text-align: right;
+    }
+
+    .amount {
+        color: #28a745;
+        font-size: 1.1rem;
+    }
+
+    .shipments-section {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e9ecef;
+    }
+
+    .section-header {
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        color: white;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .shipment-count {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .shipments-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .shipments-table th {
+        background: linear-gradient(135deg, #34495e, #2c3e50);
+        color: white;
+        padding: 1rem 0.75rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .shipments-table td {
+        padding: 1rem 0.75rem;
+        border-bottom: 1px solid #e9ecef;
+        vertical-align: top;
+    }
+
+    .shipments-table tbody tr {
+        transition: all 0.3s ease;
+    }
+
+    .shipments-table tbody tr:hover {
+        background-color: #f8f9ff;
+        cursor: pointer;
+    }
+
+    .shipments-table tbody tr:nth-child(even) {
+        background-color: #fafbfc;
+    }
+
+    .consignment-no {
+        font-family: 'Courier New', monospace;
+        font-weight: 700;
+        color: #667eea;
+        font-size: 1rem;
+    }
+
+    .route-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .route-from, .route-to {
+        font-size: 0.9rem;
+    }
+
+    .route-from {
+        color: #28a745;
+        font-weight: 600;
+    }
+
+    .route-to {
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+    .route-arrow {
+        color: #6c757d;
+        font-size: 0.8rem;
+        text-align: center;
+    }
+
+    .weight-info {
+        text-align: center;
+    }
+
+    .weight-value {
+        font-weight: 600;
+        color: #6f42c1;
+        font-size: 1rem;
+    }
+
+    .weight-actual {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-booked { background: #e3f2fd; color: #1976d2; }
+    .status-in-transit { background: #fff3e0; color: #f57c00; }
+    .status-delivered { background: #e8f5e8; color: #388e3c; }
+    .status-picked-up { background: #f3e5f5; color: #7b1fa2; }
+
+    .totals-row {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        font-weight: 600;
+    }
+
+    .totals-row td {
+        border-top: 2px solid #667eea;
+        color: #2c3e50;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6c757d;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: #dee2e6;
+    }
+
+    .timeline {
+        margin-top: 2rem;
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e9ecef;
+    }
+
+    .timeline-header {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .timeline-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-left: 2px solid #e9ecef;
+        padding-left: 1rem;
+        margin-left: 0.5rem;
+        position: relative;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -6px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 10px;
+        height: 10px;
+        background: #667eea;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 0 0 2px #667eea;
+    }
+
+    .timeline-item.active::before {
+        background: #28a745;
+        box-shadow: 0 0 0 2px #28a745;
+    }
+
+    @media (max-width: 768px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .btn-group {
+            justify-content: center;
+        }
+
+        .shipments-table {
+            font-size: 0.8rem;
+        }
+
+        .shipments-table th,
+        .shipments-table td {
+            padding: 0.75rem 0.5rem;
+        }
+
+        .manifest-id {
+            font-size: 1.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Manifest Header -->
+
+<!-- Action Bar -->
+<!--<div class="action-bar">-->
+<!--    <div class="btn-group">-->
+<!--        <a href="{% url 'manifest_pdf' manifest.pk %}" class="btn btn-primary" target="_blank">-->
+<!--            <i class="fas fa-file-pdf"></i> Download PDF-->
+<!--        </a>-->
+<!--        <button onclick="window.print()" class="btn btn-success">-->
+<!--            <i class="fas fa-prin   t"></i> Print-->
+<!--        </button>-->
+<!--        {% comment %}-->
+<!--        <a href="{% url 'manifest_update' manifest.pk %}" class="btn btn-warning">-->
+<!--            <i class="fas fa-edit"></i> Edit Manifest-->
+<!--        </a>-->
+<!--        {% endcomment %}-->
+<!--        <a href="{% url 'manifest_list' %}" class="btn btn-secondary">-->
+<!--            <i class="fas fa-arrow-left"></i> Back to List-->
+<!--        </a>-->
+<!--    </div>-->
+
+<!--    <div style="font-size: 0.9rem; color: #6c757d;">-->
+<!--        Last updated: {{ manifest.created_at|date:"d M Y, H:i" }}-->
+<!--    </div>-->
+<!--</div>-->
+
+<!-- Information Cards -->
+<div class="info-grid">
+    <!-- Vehicle Information -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <div class="info-card-icon vehicle-icon">
+                <i class="fas fa-truck"></i>
             </div>
+            <h3 class="info-card-title">Vehicle Information</h3>
         </div>
-
-        <div class="grid grid-cols-2 gap-4 text-sm mb-6">
-            <p><strong>Vehicle No:</strong> {{ manifest.vehicle_no }}</p>
-            <p><strong>Driver Name:</strong> {{ manifest.driver_name }}</p>
-            <p><strong>Created At:</strong> {{ manifest.created_at }}</p>
+        <div class="info-item">
+            <span class="info-label">Vehicle Number</span>
+            <span class="info-value">{{ manifest.vehicle_no|default:"Not Assigned" }}</span>
         </div>
+        <div class="info-item">
+            <span class="info-label">Driver Name</span>
+            <span class="info-value">{{ manifest.driver_name|default:"Not Assigned" }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Driver Contact</span>
+            <span class="info-value">{{ manifest.driver_contact|default:"Not Available" }}</span>
+        </div>
+        {% if manifest.vendor_name %}
+        <div class="info-item">
+            <span class="info-label">Vendor</span>
+            <span class="info-value">{{ manifest.vendor_name }}</span>
+        </div>
+        {% endif %}
+    </div>
 
-        <hr class="my-4">
-
-        <h2 class="text-xl font-semibold mb-2">Shipments</h2>
-        <div class="overflow-x-auto">
-            <table class="w-full table-auto border border-gray-300">
-                <thead class="bg-gray-200">
-                    <tr>
-                        <th class="border px-3 py-2">Consignment No</th>
-                        <th class="border px-3 py-2">Origin</th>
-                        <th class="border px-3 py-2">Destination</th>
-                        <th class="border px-3 py-2">No. of Articles</th>
-                        <th class="border px-3 py-2">Charged Weight</th>
-                        <th class="border px-3 py-2">Freight</th>
-                        <th class="border px-3 py-2">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for s in manifest.shipments.all %}
-                    <tr class="hover:bg-gray-50">
-                        <td class="border px-3 py-2">{{ s.consignment_no }}</td>
-                        <td class="border px-3 py-2">{{ s.origin }}</td>
-                        <td class="border px-3 py-2">{{ s.destination }}</td>
-                        <td class="border px-3 py-2">{{ s.noa }}</td>
-                        <td class="border px-3 py-2">{{ s.charged_weight }} kg</td>
-                        <td class="border px-3 py-2">₹{{ s.freight }}</td>
-                        <td class="border px-3 py-2">{{ s.status }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" class="text-center text-gray-500 py-4">No shipments added.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <!-- Route Information -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <div class="info-card-icon route-icon">
+                <i class="fas fa-route"></i>
+            </div>
+            <h3 class="info-card-title">Route Information</h3>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Origin Branch</span>
+            <span class="info-value">{{ manifest.origin_branch|default:"Multiple Origins" }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Destination Branch</span>
+            <span class="info-value">{{ manifest.destination_branch|default:"Multiple Destinations" }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Total Distance</span>
+            <span class="info-value">{{ manifest.total_distance|default:"Calculated on delivery" }}</span>
         </div>
     </div>
 
-</body>
-</html>
+    <!-- Financial Information -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <div class="info-card-icon financial-icon">
+                <i class="fas fa-rupee-sign"></i>
+            </div>
+            <h3 class="info-card-title">Financial Summary</h3>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Total Freight</span>
+            <span class="info-value amount">₹{{ manifest.total_freight|floatformat:2 }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Advance Amount</span>
+            <span class="info-value">₹{{ manifest.advance_amount|floatformat:2 }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Additional Freight</span>
+            <span class="info-value">₹{{ manifest.additional_freight|floatformat:2 }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Balance Freight</span>
+            <span class="info-value amount">₹{{ manifest.balance_freight|floatformat:2 }}</span>
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    </div>
+
+<!-- Shipments Table -->
+<div class="shipments-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-shipping-fast"></i>
+            Loaded Shipments
+        </h2>
+        <span class="shipment-count">{{ manifest.shipments.count }} shipments</span>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table class="shipments-table">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-barcode mr-1"></i>Consignment No</th>
+                    <th><i class="fas fa-route mr-1"></i>Route</th>
+                    <th><i class="fas fa-boxes mr-1"></i>Articles</th>
+                    <th><i class="fas fa-weight mr-1"></i>Weight (kg)</th>
+                    <th><i class="fas fa-rupee-sign mr-1"></i>Freight</th>
+                    <th><i class="fas fa-user mr-1"></i>Consignee</th>
+                    <th><i class="fas fa-info-circle mr-1"></i>Status</th>
+                    <th><i class="fas fa-calendar mr-1"></i>Date</th>
+                </tr>
+            </thead>
+            <tbody id="shipments-tbody">
+                {% for shipment in manifest.shipments.all %}
+                <tr onclick="window.location.href='#'" style="cursor: pointer;" data-weight="{{ shipment.charged_weight }}">
+                    <td>
+                        <div class="consignment-no">{{ shipment.consignment_no }}</div>
+                        <small style="color: #6c757d;">{{ shipment.payment_mode }}</small>
+                    </td>
+                    <td>
+                        <div class="route-info">
+                            <span class="route-from">{{ shipment.origin }}</span>
+                            <div class="route-arrow"><i class="fas fa-arrow-down"></i></div>
+                            <span class="route-to">{{ shipment.destination }}</span>
+                        </div>
+                    </td>
+                    <td style="text-align: center;">
+                        <div style="font-size: 1.2rem; font-weight: 600; color: #28a745;">
+                            {{ shipment.no_article }}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="weight-info">
+                            <div class="weight-value">{{ shipment.charged_weight|floatformat:1 }}</div>
+                            {% if shipment.actual_weight != shipment.charged_weight %}
+                            <div class="weight-actual">Actual: {{ shipment.actual_weight|floatformat:1 }}</div>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td style="text-align: right;">
+                        <span style="font-weight: 600; color: #28a745; font-size: 1rem;">
+                            ₹{{ shipment.freight|floatformat:2 }}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="font-weight: 500;">{{ shipment.consignee_name|truncatechars:20 }}</div>
+                        <small style="color: #6c757d;">{{ shipment.consignee_contact }}</small>
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ shipment.status|lower|cut:' ' }}">
+                            {{ shipment.status|default:"Booked" }}
+                        </span>
+                    </td>
+                    <td>
+                        <div>{{ shipment.date|date:"d M Y" }}</div>
+                        <small style="color: #6c757d;">{{ shipment.date|time:"H:i" }}</small>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <h3>No Shipments Loaded</h3>
+                            <p>This manifest doesn't have any shipments assigned yet.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+            <!-- Totals Row -->
+            {% if manifest.shipments.exists %}
+            <tfoot>
+                <tr class="totals-row">
+                    <td><strong>TOTALS</strong></td>
+                    <td><strong>{{ manifest.shipments.count }} Routes</strong></td>
+                    <td style="text-align: center;"><strong>{{ manifest.total_articles|default:"0" }}</strong></td>
+                    <td style="text-align: center;"><strong id="footer-total-weight">-</strong></td>
+                    <td style="text-align: right;"><strong>₹{{ manifest.total_freight|floatformat:2 }}</strong></td>
+                    <td colspan="3"><strong>Total Value</strong></td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+</div>
+
+<!-- Timeline -->
+<!--<div class="timeline">-->
+<!--    <div class="timeline-header">-->
+<!--        <i class="fas fa-history"></i>-->
+<!--        Manifest Timeline-->
+<!--    </div>-->
+<!--    <div class="timeline-item active">-->
+<!--        <div>-->
+<!--            <strong>Manifest Created</strong>-->
+<!--            <div style="color: #6c757d; font-size: 0.9rem;">{{ manifest.created_at|date:"d M Y, H:i" }}</div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--    <div class="timeline-item">-->
+<!--        <div>-->
+<!--            <strong>Shipments Loaded</strong>-->
+<!--            <div style="color: #6c757d; font-size: 0.9rem;">{{ manifest.shipments.count }} shipments added</div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--    {% if manifest.vehicle_no %}-->
+<!--    <div class="timeline-item active">-->
+<!--        <div>-->
+<!--            <strong>Vehicle Assigned</strong>-->
+<!--            <div style="color: #6c757d; font-size: 0.9rem;">{{ manifest.vehicle_no }} - {{ manifest.driver_name }}</div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--    {% endif %}-->
+<!--</div>-->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Calculate total weight from shipment rows
+    function calculateTotalWeight() {
+        const rows = document.querySelectorAll('#shipments-tbody tr[data-weight]');
+        let totalWeight = 0;
+
+        rows.forEach(row => {
+            const weight = parseFloat(row.dataset.weight) || 0;
+            totalWeight += weight;
+        });
+
+        // Update displays
+        const totalWeightElement = document.getElementById('total-weight');
+        const footerTotalWeightElement = document.getElementById('footer-total-weight');
+
+        if (totalWeightElement) {
+            totalWeightElement.textContent = totalWeight.toFixed(1) + ' kg';
+        }
+        if (footerTotalWeightElement) {
+            footerTotalWeightElement.textContent = totalWeight.toFixed(1) + ' kg';
+        }
+    }
+
+    // Calculate totals on page load
+    calculateTotalWeight();
+
+    // Add click handlers for shipment rows
+    const shipmentRows = document.querySelectorAll('.shipments-table tbody tr[onclick]');
+    shipmentRows.forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Get consignment number from the row
+            const consignmentNo = this.querySelector('.consignment-no').textContent.trim();
+
+            // Navigate to shipment detail page (adjust URL as needed)
+            // window.location.href = `/shipments/${consignmentNo}/`;
+
+            // For now, just highlight the row
+            shipmentRows.forEach(r => r.style.backgroundColor = '');
+            this.style.backgroundColor = '#e3f2fd';
+        });
+    });
+
+    // Print functionality
+    window.addEventListener('beforeprint', function() {
+        document.title = `Manifest-${document.querySelector('.manifest-id').textContent.trim()}`;
+    });
+
+    // Add loading states to buttons
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(button => {
+        if (button.getAttribute('onclick') || button.href) {
+            button.addEventListener('click', function() {
+                if (this.textContent.includes('Print')) {
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing...';
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-print"></i> Print';
+                    }, 2000);
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

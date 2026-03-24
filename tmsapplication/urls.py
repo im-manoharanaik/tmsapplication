@@ -47,6 +47,8 @@ urlpatterns = [
     path('manifest/<int:pk>/', views.manifest_detail, name='manifest_detail'),
     path('manifest/<int:pk>/pdf/', views.manifest_pdf, name='manifest_pdf'),
     path('manifests/print/', views.print_manifest_list, name='print_manifest_list'),
+    path('manifests/<int:pk>/update/', views.manifest_update, name='manifest_update'),
+    path('manifests/report/download/', views.manifest_report_download, name='manifest_report_download'),
 
     # Label, Notes, POD
     path('print_label/', views.print_label, name='print_label'),
@@ -69,12 +71,20 @@ urlpatterns = [
     path('add/', views.fleet_add, name='fleet_add'),
     path('manage/', views.fleet_manage, name='fleet_manage'),
     path("vendors/create/", views.create_vendor, name="vendor-create"),
+
     path("trips/", views.trip_list, name="trip-list"),
     path("trips/create/", views.create_trip, name="trip-create"),
     path("trips/", views.trip_list, name="trip-list"),
     path("trips/<int:pk>/status/", views.update_trip_status, name="trip-status-update"),
     path("trips/<int:pk>/", views.trip_detail, name="trip-detail"),
     path("trips/<int:pk>/edit/", views.trip_update, name="trip-update"),
+
+    path('trips/', views.trip_list, name='trip-list'),
+    path('trips/report/download/', views.trip_report_download, name='trip_report_download'),
+    path('trips/<int:pk>/', views.trip_detail, name='trip-detail'),
+    path('trips/<int:pk>/update/', views.trip_update, name='trip-update'),
+    path('trips/<int:pk>/status-update/', views.trip_status_update, name='trip-status-update'),
+
     path('shipment/consignment-note/', views.generate_consignment_notes, name='download_consignment_note'),
     path('qrcode/<str:consignment_no>/', views.generate_qr_code_url, name='generate_qr_code'),
     path('barcode/<str:consignment_no>/', views.generate_qr_code_url, name='generate_barcode'),

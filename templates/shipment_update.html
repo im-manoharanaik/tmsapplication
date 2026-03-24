@@ -1,191 +1,268 @@
 {% extends "base.html" %}
 {% load static %}
+{% load custom_filters %}
 {% block content %}
 
-    {% if messages %}
-        {% for message in messages %}
-            <p class="alert alert-success">{{ message }}</p>
-        {% endfor %}
-    {% endif %}
+{% if messages %}
+    {% for message in messages %}
+        <p class="alert alert-success">{{ message }}</p>
+    {% endfor %}
+{% endif %}
 
-    {% if form.errors %}
-        <div class="alert alert-error">
-            <ul>
-                {% for field in form %}
-                    {% for error in field.errors %}
-                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
-                    {% endfor %}
-                {% endfor %}
-                {% for error in form.non_field_errors %}
-                    <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-    {% endif %}
-
-    <form method="POST" enctype="multipart/form-data" id="shipment-update-form">
-        {% csrf_token %}
-
-        <!-- Basic Shipment Details -->
-        <div class="section-title">Basic Shipment Information</div>
-        <div class="details">
+{% if form.errors %}
+    <div class="alert alert-error">
+        <ul>
             {% for field in form %}
-                {% if field.name != 'length_ft' and field.name != 'width_ft' and field.name != 'height' and field.name != 'total_dfc' %}
-                    <div {% if field.field.widget.input_type == 'textarea' %}class="full-width"{% endif %}>
-                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.errors %}
-                            <div class="field-error">{{ field.errors }}</div>
-                        {% endif %}
-                    </div>
-                {% endif %}
+                {% for error in field.errors %}
+                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                {% endfor %}
             {% endfor %}
-        </div>
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
 
-        <!-- Enhanced Dimension Details Section -->
-        <div class="section-title">
-            Dimension Details (Box-wise)
-            <button type="button" id="add_dimension" class="add-btn">
-                <i class="fas fa-plus"></i> Add Box
-            </button>
-            <span class="helper-text">Add dimensions for each type of box/package</span>
-        </div>
+<form method="POST" enctype="multipart/form-data" id="shipment-update-form">
+    {% csrf_token %}
 
-        <div class="dimension-summary">
-            <div class="summary-item">
-                <label>Total Boxes:</label>
-                <span id="total_boxes">{{ existing_boxes_count|default:0 }}</span>
-            </div>
-            <div class="summary-item">
-                <label>Total Volume:</label>
-                <span id="total_volume">{{ existing_total_volume|default:0.00 }}</span> CFT
-            </div>
-            <div class="summary-item">
-                <label>Remaining Articles:</label>
-                <span id="remaining_articles">0</span>
-            </div>
-        </div>
+    <!-- Basic Information -->
+    <div class="full-width section-title">
+        <i class="fas fa-info-circle"></i> Basic Information
+    </div>
+    <div><label for="{{ form.date.id_for_label }}">Date</label>{{ form.date }}</div>
+    <div><label for="{{ form.freight.id_for_label }}">Freight</label>{{ form.freight }}</div>
+    <div><label for="{{ form.payment_mode.id_for_label }}">Payment Mode</label>{{ form.payment_mode }}</div>
+    <div><label for="{{ form.shipment_type.id_for_label }}">Shipment Type</label>{{ form.shipment_type }}</div>
+    <div><label for="{{ form.shipment_mode.id_for_label }}">Shipment Mode</label>{{ form.shipment_mode }}</div>
+    <div><label for="{{ form.vendor.id_for_label }}">Vendor</label>{{ form.vendor }}</div>
+    <div><label for="{{ form.vehicle_type.id_for_label }}">Vehicle Type</label>{{ form.vehicle_type }}</div>
+    <div><label for="{{ form.vehicle_no.id_for_label }}">Vehicle No</label>{{ form.vehicle_no }}</div>
 
-        <div id="dimension_items_container">
-            <!-- Existing dimension items will be loaded here -->
-            {% for content in shipment.boxes.all %}
-            <div class="dimension-item" data-index="{{ forloop.counter0 }}">
-                <div class="dimension-item-header">
-                    <span class="dimension-item-title">Box Type {{ forloop.counter }}</span>
-                    <button type="button" class="remove-dimension-btn" title="Remove this box type">
-                        <i class="fas fa-times"></i>
-                    </button>
+    <!-- Location Details -->
+    <div class="full-width section-title">
+        <i class="fas fa-route"></i> Location Details
+    </div>
+    <div><label for="{{ form.origin.id_for_label }}">Origin</label>{{ form.origin }}</div>
+    <div><label for="{{ form.origin_pin.id_for_label }}">Origin Pincode</label>{{ form.origin_pin }}</div>
+    <div><label for="{{ form.destination.id_for_label }}">Destination</label>{{ form.destination }}</div>
+    <div><label for="{{ form.destination_pin.id_for_label }}">Destination Pincode</label>{{ form.destination_pin }}</div>
+    <div><label for="{{ form.driver_details.id_for_label }}">Driver Details</label>{{ form.driver_details }}</div>
+
+    <!-- Consignor Details -->
+    <div class="full-width section-title">
+        <i class="fas fa-user-tie"></i> Consignor Details
+        <span class="helper-text">Start typing company name to search existing customers</span>
+    </div>
+    <div><label for="{{ form.billto_customer.id_for_label }}">Billed To Customer</label>{{ form.billto_customer }}</div>
+
+    <div class="autocomplete-container">
+        <label for="consignor_search">Search Consignor</label>
+        <input type="text" id="consignor_search" placeholder="Type company name or contact person..." class="autocomplete-input">
+        <div id="consignor_suggestions" class="autocomplete-suggestions"></div>
+        <button type="button" id="clear_consignor" class="clear-btn" style="display:none;">Clear & Enter Manually</button>
+    </div>
+
+    <div><label for="{{ form.consignor_name.id_for_label }}">Consignor Name</label>{{ form.consignor_name }}</div>
+    <div class="full-width"><label for="{{ form.consignor_address.id_for_label }}">Consignor Address</label>{{ form.consignor_address }}</div>
+    <div><label for="{{ form.consignor_gst.id_for_label }}">Consignor GST</label>{{ form.consignor_gst }}</div>
+    <div><label for="{{ form.consignor_contact.id_for_label }}">Consignor Contact</label>{{ form.consignor_contact }}</div>
+
+    <!-- Consignee Details -->
+    <div class="full-width section-title">
+        <i class="fas fa-user"></i> Consignee Details
+        <span class="helper-text">Start typing company name to search existing customers</span>
+    </div>
+
+    <div class="autocomplete-container">
+        <label for="consignee_search">Search Consignee</label>
+        <input type="text" id="consignee_search" placeholder="Type company name or contact person..." class="autocomplete-input">
+        <div id="consignee_suggestions" class="autocomplete-suggestions"></div>
+        <button type="button" id="clear_consignee" class="clear-btn" style="display:none;">Clear & Enter Manually</button>
+    </div>
+
+    <div><label for="{{ form.consignee_name.id_for_label }}">Consignee Name</label>{{ form.consignee_name }}</div>
+    <div class="full-width"><label for="{{ form.consignee_address.id_for_label }}">Consignee Address</label>{{ form.consignee_address }}</div>
+    <div><label for="{{ form.consignee_gst.id_for_label }}">Consignee GST</label>{{ form.consignee_gst }}</div>
+    <div><label for="{{ form.consignee_contact.id_for_label }}">Consignee Contact</label>{{ form.consignee_contact }}</div>
+
+    <!-- Reference Numbers -->
+    <div class="full-width section-title">
+        <i class="fas fa-file-alt"></i> Reference Numbers
+    </div>
+    <div><label for="{{ form.invoice_ref_number.id_for_label }}">Invoice Ref No</label>{{ form.invoice_ref_number }}</div>
+    <div><label for="{{ form.so_number.id_for_label }}">Sales Order Number</label>{{ form.so_number }}</div>
+    <div><label for="{{ form.ro_number.id_for_label }}">Return Order Number</label>{{ form.ro_number }}</div>
+    <div><label for="{{ form.boe_num.id_for_label }}">Bill of Entry Ref No</label>{{ form.boe_num }}</div>
+    <div><label for="{{ form.ewaybill_number.id_for_label }}">E-Waybill Number</label>{{ form.ewaybill_number }}</div>
+    <div><label for="{{ form.additional_ref_number.id_for_label }}">Additional Ref Number</label>{{ form.additional_ref_number }}</div>
+
+    <!-- Cargo Details -->
+    <div class="full-width section-title">
+        <i class="fas fa-boxes"></i> Cargo Details
+    </div>
+    <div><label for="{{ form.value.id_for_label }}">Value</label>{{ form.value }}</div>
+    <div><label for="{{ form.pack_type.id_for_label }}">Pack Type</label>{{ form.pack_type }}</div>
+        <div><label for="{{ form.total_quantity.id_for_label }}">Total Quantity</label>{{ form.total_quantity }}</div>
+
+    <!-- Enhanced Content Details Section -->
+    <div class="full-width section-title">
+        <i class="fas fa-cubes"></i> Content Details (Item-wise)
+        <button type="button" id="add_content" class="add-btn">
+            <i class="fas fa-plus"></i> Add Content Item
+        </button>
+        <span class="helper-text">Add dimensions and details for each content item</span>
+    </div>
+
+    <div class="dimension-summary">
+        <div class="summary-item">
+            <label>Total Content Items:</label>
+            <span id="total_items">{{ shipment.boxes.count|default:"0" }}</span>
+        </div>
+        <div class="summary-item">
+            <label>Total Articles (Auto):</label>
+            <span id="total_boxes">{{ shipment.no_article|default:"0" }}</span>
+        </div>
+        <div class="summary-item">
+            <label>Total Weight (Auto):</label>
+            <span id="total_weight">{{ shipment.actual_weight|default:"0.00" }}</span> kg
+        </div>
+        <div class="summary-item">
+            <label>Total Volume (Auto):</label>
+            <span id="total_volume">{{ shipment.total_volume|default:"0.00" }}</span> CFT
+        </div>
+    </div>
+
+    <div id="content_items_container">
+        <!-- Existing content items will be loaded here -->
+        {% for content in shipment.boxes.all %}
+        <div class="content-item existing-item" data-index="{{ forloop.counter0 }}">
+            <div class="content-item-header">
+                <span class="content-item-title">
+                    <i class="fas fa-edit"></i> Content Item {{ forloop.counter }} ({{ content.batch_id }})
+                </span>
+                <button type="button" class="remove-content-btn" title="Remove this content item">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="content-fields">
+                <input type="hidden" name="content[{{ forloop.counter0 }}][id]" value="{{ content.id }}">
+
+                <div class="content-field">
+                    <label for="content_{{ forloop.counter0 }}_count">Count of Boxes *</label>
+                    <input type="number"
+                           min="1"
+                           id="content_{{ forloop.counter0 }}_count"
+                           name="content[{{ forloop.counter0 }}][count_of_box]"
+                           value="{{ content.count_of_box }}"
+                           required>
                 </div>
 
-                <div class="dimension-fields">
-                    <div class="dimension-field">
-                        <label>Length (ft)</label>
-                        <input type="number" step="0.01" min="0"
-                               name="dimensions[{{ forloop.counter0 }}][box_length]"
-                               value="{{ content.box_length }}" required>
-                    </div>
-
-                    <div class="dimension-field">
-                        <label>Width (ft)</label>
-                        <input type="number" step="0.01" min="0"
-                               name="dimensions[{{ forloop.counter0 }}][box_width]"
-                               value="{{ content.box_width }}" required>
-                    </div>
-
-                    <div class="dimension-field">
-                        <label>Height (ft)</label>
-                        <input type="number" step="0.01" min="0"
-                               name="dimensions[{{ forloop.counter0 }}][box_height]"
-                               value="{{ content.box_height }}" required>
-                    </div>
-
-                    <div class="dimension-field">
-                        <label>Box Type</label>
-                        <input type="text"
-                               name="dimensions[{{ forloop.counter0 }}][box_type]"
-                               value="{{ content.box_type }}"
-                               placeholder="e.g., Carton, Wooden Box" required>
-                    </div>
-
-                    <div class="dimension-field">
-                        <label>Count of Boxes</label>
-                        <input type="number" min="1"
-                               name="dimensions[{{ forloop.counter0 }}][count_of_box]"
-                               value="{{ content.count_of_box }}" required>
-                        <div class="error-message" style="display: none;"></div>
-                    </div>
-
-                    <div class="dimension-field">
-                        <label>Box Weight (kg)</label>
-                        <input type="number" step="0.01" min="0"
-                               name="dimensions[{{ forloop.counter0 }}][box_weight]"
-                               value="{{ content.box_weight }}" required>
-                    </div>
-
-                    <div class="dimension-field">
-                        <label>Volume/Box (CFT)</label>
-                        <input type="text" class="dimension-calculated" readonly
-                               value="{{ content.total_volumetric }}">
-                    </div>
-
-                    <div class="dimension-field">
-                        <label>Remark</label>
-                        <input type="text"
-                               name="dimensions[{{ forloop.counter0 }}][remark]"
-                               value="{{ content.remark }}"
-                               placeholder="Optional remarks">
-                    </div>
+                <div class="content-field">
+                    <label for="content_{{ forloop.counter0 }}_weight">Total Weight (kg) *</label>
+                    <input type="number"
+                           step="0.01"
+                           min="0.01"
+                           id="content_{{ forloop.counter0 }}_weight"
+                           name="content[{{ forloop.counter0 }}][box_weight]"
+                           value="{{ content.box_weight }}"
+                           required>
                 </div>
 
-                <!-- Hidden field for content ID to enable updates -->
-                <input type="hidden" name="dimensions[{{ forloop.counter0 }}][id]" value="{{ content.id }}">
-            </div>
-            {% endfor %}
-        </div>
+                <div class="content-field">
+                    <label for="content_{{ forloop.counter0 }}_length">Length (cm) *</label>
+                    <input type="number"
+                           step="0.01"
+                           min="0.01"
+                           id="content_{{ forloop.counter0 }}_length"
+                           name="content[{{ forloop.counter0 }}][box_length]"
+                           value="{{ content.box_length }}"
+                           required>
+                </div>
 
-        <!-- Aggregated Shipment Dimensions -->
-        <div class="section-title">Aggregated Shipment Dimensions</div>
-        <div class="aggregated-dimensions">
-            <div class="aggregation-field">
-                <label for="length_ft">Total Length (ft) *</label>
-                <input type="number" step="0.01" min="0" id="length_ft" name="length_ft"
-                       readonly value="{{ form.length_ft.value|default:0.00 }}" required />
-                <small>Auto-calculated from all boxes</small>
-            </div>
-            <div class="aggregation-field">
-                <label for="width_ft">Total Width (ft) *</label>
-                <input type="number" step="0.01" min="0" id="width_ft" name="width_ft"
-                       readonly value="{{ form.width_ft.value|default:0.00 }}" required />
-                <small>Auto-calculated from all boxes</small>
-            </div>
-            <div class="aggregation-field">
-                <label for="height_ft">Total Height (ft) *</label>
-                <input type="number" step="0.01" min="0" id="height_ft" name="height"
-                       readonly value="{{ form.height.value|default:0.00 }}" required />
-                <small>Auto-calculated from all boxes</small>
-            </div>
-            <div class="aggregation-field">
-                <label for="total_dfc">Total Volume/CFT *</label>
-                <input type="number" step="0.01" min="0" id="total_dfc" name="total_dfc"
-                       readonly value="{{ form.total_dfc.value|default:0.00 }}" required />
-                <small>Auto-calculated total cubic feet</small>
-            </div>
-        </div>
+                <div class="content-field">
+                    <label for="content_{{ forloop.counter0 }}_width">Width (cm) *</label>
+                    <input type="number"
+                           step="0.01"
+                           min="0.01"
+                           id="content_{{ forloop.counter0 }}_width"
+                           name="content[{{ forloop.counter0 }}][box_width]"
+                           value="{{ content.box_width }}"
+                           required>
+                </div>
 
-        <!-- Action Buttons -->
-        <div class="action-buttons">
-            <button type="submit" class="save-btn">
-                <i class="fas fa-save"></i> Save Changes
-            </button>
-            <button type="button" class="back-btn" onclick="window.history.back();">
-                <i class="fas fa-arrow-left"></i> Back
-            </button>
-            <a href="{% url 'shipment_detail' shipment.pk %}" class="view-btn">
-                <i class="fas fa-eye"></i> View Details
-            </a>
+                <div class="content-field">
+                    <label for="content_{{ forloop.counter0 }}_height">Height (cm) *</label>
+                    <input type="number"
+                           step="0.01"
+                           min="0.01"
+                           id="content_{{ forloop.counter0 }}_height"
+                           name="content[{{ forloop.counter0 }}][box_height]"
+                           value="{{ content.box_height }}"
+                           required>
+                </div>
+
+                <div class="content-field">
+                    <label for="content_{{ forloop.counter0 }}_volume">Volume/Item (CFT)</label>
+                    <input type="text"
+                           id="content_{{ forloop.counter0 }}_volume"
+                           class="content-calculated"
+                           readonly
+                           value="{{ content.volume_per_box|floatformat:2|default:"0.00" }}">
+                </div>
+            </div>
         </div>
-    </form>
-</div>
+        {% empty %}
+        <div class="no-content-message">
+            <p><i class="fas fa-info-circle"></i> No content items found. Please add at least one content item.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Status & Tracking -->
+    <div class="full-width section-title">
+        <i class="fas fa-truck"></i> Status & Tracking
+    </div>
+    <div><label for="{{ form.status.id_for_label }}">Status</label>{{ form.status }}</div>
+    <div><label for="{{ form.pickedup_date.id_for_label }}">Pickup Date</label>{{ form.pickedup_date }}</div>
+    <div><label for="{{ form.estimated_delivery_date.id_for_label }}">Estimated Delivery Date</label>{{ form.estimated_delivery_date }}</div>
+    <div><label for="{{ form.delivery_date.id_for_label }}">Delivery Date</label>{{ form.delivery_date }}</div>
+
+    <!-- POD Section -->
+    <div class="full-width section-title">
+        <i class="fas fa-file-upload"></i> Proof of Delivery
+    </div>
+    <div><label for="{{ form.pod_scan.id_for_label }}">POD Scan</label>{{ form.pod_scan }}</div>
+    <div><label for="{{ form.pod_link.id_for_label }}">POD Link</label>{{ form.pod_link }}</div>
+
+    <!-- Appointment Details -->
+    <div class="full-width section-title">
+        <i class="fas fa-calendar-alt"></i> Appointment Details
+    </div>
+    <div><label for="{{ form.appointment_delivery.id_for_label }}">Is This Appointment Delivery</label>{{ form.appointment_delivery }}</div>
+    <div><label for="{{ form.appointment_date.id_for_label }}">Appointment Date</label>{{ form.appointment_date }}</div>
+
+    <!-- Remark -->
+    <div class="full-width section-title">
+        <i class="fas fa-comment"></i> Additional Information
+    </div>
+    <div class="full-width">
+        <label for="{{ form.remark.id_for_label }}">Remark about the Shipment</label>
+        {{ form.remark }}
+    </div>
+
+    <!-- Submit button -->
+    <div class="full-width" style="text-align:center; margin-top:20px;">
+        <button type="submit" class="submit-btn">
+            <i class="fas fa-save"></i> Update Shipment
+        </button>
+        <a href="{% url 'shipment_detail' pk=shipment.pk %}" class="cancel-btn">
+            <i class="fas fa-times"></i> Cancel
+        </a>
+    </div>
+</form>
 
 <style>
     .container {
@@ -194,87 +271,158 @@
         padding: 0 15px;
     }
 
-    h2 {
-        color: #2c3e50;
-        margin-bottom: 30px;
-        font-size: 24px;
-    }
-
-    .section-title {
-        grid-column: 1 / -1;
-        font-weight: 700;
-        font-size: 18px;
-        color: #2c3e50;
-        padding: 15px 0;
-        border-bottom: 2px solid #2980b9;
-        margin-top: 30px;
-        margin-bottom: 20px;
-        position: relative;
+    /* Shipment Header */
+    .shipment-header {
+        background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
         display: flex;
-        align-items: center;
         justify-content: space-between;
+        align-items: center;
     }
 
-    .helper-text {
-        font-size: 12px;
-        font-weight: 400;
-        color: #7f8c8d;
-        font-style: italic;
+    .shipment-header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 600;
     }
 
-    .details {
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    form {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 20px;
-        margin-bottom: 30px;
+        align-items: start;
+    }
+
+    label {
+        font-weight: 600;
+        font-size: 13px;
+        margin-bottom: 6px;
+        display: block;
+        color: #34495e;
+        user-select: none;
+    }
+
+    input[type="text"], input[type="number"], input[type="date"], input[type="file"], input[type="url"], select, textarea {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 14px;
+        box-sizing: border-box;
+        transition: border-color 0.3s ease;
+        background-color: #fff;
+    }
+
+    input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus, input[type="file"]:focus, input[type="url"]:focus, select:focus, textarea:focus {
+        border-color: #ff6b35;
+        outline: none;
+        background-color: #fcfdff;
+    }
+
+    textarea {
+        min-height: 70px;
+        resize: vertical;
+        background: antiquewhite;
+    }
+
+    select {
+        background: antiquewhite;
+        cursor: pointer;
     }
 
     .full-width {
         grid-column: 1 / -1;
     }
 
-    label {
-        font-weight: 600;
-        font-size: 14px;
-        margin-bottom: 8px;
+    .section-title {
+        grid-column: 1 / -1;
+        font-weight: 700;
+        font-size: 16px;
+        color: #2c3e50;
+        padding: 12px 0;
+        border-bottom: 2px solid #ff6b35;
+        margin-top: 30px;
+        user-select: none;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .section-title i {
+        margin-right: 0.5rem;
+        color: #ff6b35;
+    }
+
+    .helper-text {
+        font-size: 11px;
+        font-weight: 400;
+        color: #7f8c8d;
+        font-style: italic;
+    }
+
+    .help-text {
+        font-size: 11px;
+        color: #6c757d;
+        font-style: italic;
+        margin-top: 4px;
         display: block;
-        color: #34495e;
     }
 
-    input, select, textarea {
-        padding: 10px 12px;
-        width: 100%;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        font-size: 14px;
-        box-sizing: border-box;
-        transition: border-color 0.3s ease;
+    /* Manual Quantity Section */
+    .manual-quantity-section {
+        grid-column: 1 / -1;
+        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+        padding: 20px;
+        border-radius: 8px;
+        border: 2px solid #2196f3;
+        margin-bottom: 15px;
     }
 
-    input:focus, select:focus, textarea:focus {
-        border-color: #2980b9;
-        outline: none;
-        background-color: #fcfdff;
+    .manual-quantity-field {
+        max-width: 300px;
     }
 
-    textarea {
-        min-height: 80px;
-        resize: vertical;
+    .manual-quantity-field input {
+        background: white;
+        border: 2px solid #2196f3;
+        font-weight: 600;
+        color: #1976d2;
+    }
+
+    .manual-indicator {
+        color: #1976d2;
+        font-weight: 600;
+        font-size: 11px;
     }
 
     .add-btn {
         background: linear-gradient(135deg, #27ae60, #2ecc71);
         color: white;
         border: none;
-        padding: 10px 18px;
+        padding: 8px 16px;
         border-radius: 6px;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
     }
 
     .add-btn:hover {
@@ -283,157 +431,132 @@
         box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
     }
 
-    /* Dimension Summary */
+    /* Content Summary */
     .dimension-summary {
+        grid-column: 1 / -1;
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 20px;
-        background: linear-gradient(135deg, #e8f5e8, #f0f8ff);
-        padding: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        background: linear-gradient(135deg, #fff3e0, #ffecb3);
+        padding: 15px;
         border-radius: 8px;
-        border: 1px solid #c3e6cb;
-        margin-bottom: 20px;
+        border: 1px solid #ffb74d;
+        margin-bottom: 10px;
     }
 
     .summary-item {
         text-align: center;
-        padding: 15px;
+        padding: 8px;
         background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     .summary-item label {
-        font-size: 13px;
+        font-size: 12px;
         color: #666;
-        margin-bottom: 8px;
+        margin-bottom: 4px;
     }
 
     .summary-item span {
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 700;
-        color: #2c3e50;
+        color: #e65100;
     }
 
-    /* Aggregated Dimensions */
-    .aggregated-dimensions {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 20px;
-        background: linear-gradient(135deg, #fff5f5, #ffe6e6);
-        padding: 25px;
+    /* Content Items */
+    #content_items_container {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .content-item {
+        background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+        border: 2px solid #ff6b35;
         border-radius: 8px;
-        border: 2px solid #ff6b6b;
-        margin: 20px 0;
-    }
-
-    .aggregation-field {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .aggregation-field label {
-        font-weight: 600;
-        font-size: 14px;
-        color: #c92a2a;
-        margin-bottom: 8px;
-    }
-
-    .aggregation-field input {
-        background: #f8f9fa;
-        border: 2px solid #dee2e6;
-        color: #495057;
-        font-weight: 600;
-        font-size: 14px;
-        cursor: not-allowed;
-    }
-
-    .aggregation-field small {
-        font-size: 11px;
-        color: #868e96;
-        margin-top: 5px;
-        font-style: italic;
-    }
-
-    /* Dimension Items */
-    #dimension_items_container {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        margin-bottom: 30px;
-    }
-
-    .dimension-item {
-        background: #f8f9fa;
-        border: 1px solid #e9ecef;
-        border-radius: 10px;
-        padding: 20px;
+        padding: 15px;
         position: relative;
+        transition: all 0.3s ease;
     }
 
-    .dimension-item-header {
+    .content-item.existing-item {
+        background: linear-gradient(135deg, #e8f5e8, #f0f8ff);
+        border-color: #4caf50;
+    }
+
+    .content-item.existing-item .content-item-title {
+        color: #4caf50;
+    }
+
+    .content-item-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 12px;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
         border-bottom: 1px solid #dee2e6;
     }
 
-    .dimension-item-title {
-        font-weight: 600;
-        color: #495057;
-        font-size: 16px;
+    .content-item-title {
+        font-weight: 700;
+        color: #ff6b35;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
-    .dimension-fields {
+    .content-fields {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        gap: 15px;
+        gap: 12px;
         align-items: end;
     }
 
-    .dimension-field {
+    .content-field {
         display: flex;
         flex-direction: column;
     }
 
-    .dimension-field label {
-        font-size: 13px;
+    .content-field label {
+        font-size: 12px;
         font-weight: 600;
         color: #495057;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
     }
 
-    .dimension-field input {
-        padding: 10px 12px;
+    .content-field input {
+        padding: 8px 10px;
         font-size: 14px;
         border: 1px solid #ced4da;
-        border-radius: 5px;
+        border-radius: 4px;
         background: white;
     }
 
-    .dimension-field input:focus {
-        border-color: #27ae60;
-        box-shadow: 0 0 0 2px rgba(39, 174, 96, 0.1);
+    .content-field input:focus {
+        border-color: #ff6b35;
+        box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.1);
     }
 
-    .dimension-calculated {
-        background: #e8f5e8;
-        border-color: #27ae60;
-        color: #155724;
-        font-weight: 600;
+    .content-calculated {
+        background: #e8f5e8 !important;
+        border-color: #4caf50 !important;
+        color: #2e7d32 !important;
+        font-weight: 600 !important;
+        cursor: not-allowed !important;
     }
 
-    .remove-dimension-btn {
+    .remove-content-btn {
         position: absolute;
-        top: 15px;
-        right: 15px;
+        top: 10px;
+        right: 10px;
         background: #dc3545;
         color: white;
         border: none;
-        width: 35px;
-        height: 35px;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
         font-size: 16px;
         font-weight: bold;
@@ -444,92 +567,139 @@
         justify-content: center;
     }
 
-    .remove-dimension-btn:hover {
+    .remove-content-btn:hover {
         background: #c82333;
         transform: scale(1.1);
     }
 
-    .error-message {
-        color: #dc3545;
-        font-size: 12px;
-        margin-top: 5px;
+    .no-content-message {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 2rem;
+        color: #6c757d;
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        margin: 1rem 0;
     }
 
-    .field-error {
-        color: #dc3545;
-        font-size: 12px;
-        margin-top: 5px;
-    }
-
-    /* Action Buttons */
-    .action-buttons {
-        display: flex;
-        gap: 15px;
-        margin-top: 40px;
-        padding-top: 20px;
-        border-top: 1px solid #dee2e6;
-    }
-
-    .save-btn {
-        background: linear-gradient(135deg, #28a745, #20c997);
+    /* Submit Buttons */
+    button.submit-btn {
+        background: linear-gradient(135deg, #ff6b35, #f7931e);
         color: white;
         border: none;
-        padding: 15px 25px;
+        padding: 15px 40px;
         font-size: 16px;
         font-weight: 600;
         border-radius: 8px;
         cursor: pointer;
         transition: all 0.3s ease;
-        display: flex;
+        display: inline-flex;
         align-items: center;
         gap: 8px;
+        justify-self: center;
+        margin-right: 10px;
     }
 
-    .save-btn:hover {
-        background: linear-gradient(135deg, #218838, #1ea085);
+    button.submit-btn:hover {
+        background: linear-gradient(135deg, #e55722, #e8851c);
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+        box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
     }
 
-    .back-btn {
+    .cancel-btn {
         background: linear-gradient(135deg, #6c757d, #5a6268);
         color: white;
-        border: none;
-        padding: 15px 25px;
+        text-decoration: none;
+        padding: 15px 40px;
         font-size: 16px;
         font-weight: 600;
         border-radius: 8px;
         cursor: pointer;
         transition: all 0.3s ease;
-        display: flex;
+        display: inline-flex;
         align-items: center;
         gap: 8px;
+        justify-self: center;
     }
 
-    .back-btn:hover {
-        background: linear-gradient(135deg, #5a6268, #545b62);
+    .cancel-btn:hover {
+        background: linear-gradient(135deg, #5a6268, #495057);
         transform: translateY(-2px);
-    }
-
-    .view-btn {
-        background: linear-gradient(135deg, #007bff, #0056b3);
+        box-shadow: 0 8px 20px rgba(108, 117, 125, 0.3);
         color: white;
         text-decoration: none;
-        padding: 15px 25px;
-        font-size: 16px;
+    }
+
+    /* Autocomplete Styles */
+    .autocomplete-container {
+        position: relative;
+        grid-column: 1 / -1;
+    }
+
+    .autocomplete-input {
+        background: linear-gradient(135deg, #e8f5e8, #f0f8ff);
+        border: 2px solid #27ae60;
         font-weight: 600;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 8px;
     }
 
-    .view-btn:hover {
-        background: linear-gradient(135deg, #0056b3, #004085);
-        transform: translateY(-2px);
-        text-decoration: none;
+    .autocomplete-input:focus {
+        border-color: #27ae60;
+        box-shadow: 0 0 10px rgba(39, 174, 96, 0.3);
+    }
+
+    .autocomplete-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-top: none;
+        border-radius: 0 0 5px 5px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .suggestion-item {
+        padding: 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+        transition: background-color 0.2s ease;
+    }
+
+    .suggestion-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .suggestion-company {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 4px;
+    }
+
+    .suggestion-contact {
+        font-size: 12px;
+        color: #7f8c8d;
+    }
+
+    .clear-btn {
+        background: #e74c3c;
         color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        margin-top: 5px;
+    }
+
+    .auto-filled {
+        background: linear-gradient(135deg, #d5f4e6, #ffeaa7) !important;
+        border-color: #00b894 !important;
     }
 
     /* Alert Styles */
@@ -559,7 +729,13 @@
 
     /* Responsive Design */
     @media (max-width: 768px) {
-        .dimension-fields {
+        .shipment-header {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .content-fields {
             grid-template-columns: repeat(2, 1fr);
         }
 
@@ -567,256 +743,456 @@
             grid-template-columns: repeat(2, 1fr);
         }
 
-        .aggregated-dimensions {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .section-title {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-        }
-
-        .action-buttons {
-            flex-direction: column;
+        .submit-btn, .cancel-btn {
+            width: 100%;
+            margin-bottom: 10px;
         }
     }
 
     @media (max-width: 480px) {
-        .dimension-fields {
+        .content-fields {
             grid-template-columns: 1fr;
         }
 
         .dimension-summary {
-            grid-template-columns: 1fr;
-        }
-
-        .aggregated-dimensions {
-            grid-template-columns: 1fr;
-        }
-
-        .details {
             grid-template-columns: 1fr;
         }
     }
 </style>
 
 <script>
-// Enhanced Dimension Management for Update Form
-class DimensionManager {
+// Content Management for Update
+class ContentUpdateManager {
     constructor() {
-        this.dimensionIndex = {{ shipment.boxes.count|default:0 }};
-        this.container = document.getElementById('dimension_items_container');
-        this.addBtn = document.getElementById('add_dimension');
+        this.contentIndex = {{ shipment.boxes.count|default:0 }};
+        this.container = document.getElementById('content_items_container');
+        this.addBtn = document.getElementById('add_content');
 
         this.init();
-        this.updateSummary(); // Initial calculation
+        this.updateSummary();
     }
 
     init() {
-        this.addBtn.addEventListener('click', () => this.addDimensionItem());
+        this.addBtn.addEventListener('click', () => this.addContentItem());
 
-        // Listen to article count changes
-        const articleInput = document.querySelector('input[name*="no_article"]');
-        if (articleInput) {
-            articleInput.addEventListener('input', () => this.updateSummary());
-        }
-
-        // Attach listeners to existing items
-        this.container.querySelectorAll('.dimension-item').forEach((item, index) => {
-            this.attachEventListeners(item, index);
+        // Attach listeners to existing content items
+        this.container.querySelectorAll('.content-item').forEach((item, index) => {
+            const actualIndex = parseInt(item.dataset.index);
+            this.attachEventListeners(item, actualIndex);
         });
     }
 
-    addDimensionItem() {
+    addContentItem() {
         const itemDiv = document.createElement('div');
-        itemDiv.className = 'dimension-item';
-        itemDiv.setAttribute('data-index', this.dimensionIndex);
+        itemDiv.className = 'content-item new-item';
+        itemDiv.setAttribute('data-index', this.contentIndex);
 
         itemDiv.innerHTML = `
-            <div class="dimension-item-header">
-                <span class="dimension-item-title">Box Type ${this.dimensionIndex + 1}</span>
-                <button type="button" class="remove-dimension-btn" title="Remove this box type">
+            <div class="content-item-header">
+                <span class="content-item-title">
+                    <i class="fas fa-plus-circle"></i> New Content Item ${this.contentIndex + 1}
+                </span>
+                <button type="button" class="remove-content-btn" title="Remove this content item">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
 
-            <div class="dimension-fields">
-                <div class="dimension-field">
-                    <label>Length (ft)</label>
-                    <input type="number" step="0.01" min="0"
-                           name="dimensions[${this.dimensionIndex}][box_length]"
-                           value="0.00" required>
+            <div class="content-fields">
+                <div class="content-field">
+                    <label for="content_${this.contentIndex}_count">Count of Boxes *</label>
+                    <input type="number"
+                           min="1"
+                           id="content_${this.contentIndex}_count"
+                           name="content[${this.contentIndex}][count_of_box]"
+                           value="1"
+                           required>
                 </div>
 
-                <div class="dimension-field">
-                    <label>Width (ft)</label>
-                    <input type="number" step="0.01" min="0"
-                           name="dimensions[${this.dimensionIndex}][box_width]"
-                           value="0.00" required>
+                <div class="content-field">
+                    <label for="content_${this.contentIndex}_weight">Total Weight (kg) *</label>
+                    <input type="number"
+                           step="0.01"
+                           min="0.01"
+                           id="content_${this.contentIndex}_weight"
+                           name="content[${this.contentIndex}][box_weight]"
+                           value=""
+                           placeholder="0.00"
+                           required>
                 </div>
 
-                <div class="dimension-field">
-                    <label>Height (ft)</label>
-                    <input type="number" step="0.01" min="0"
-                           name="dimensions[${this.dimensionIndex}][box_height]"
-                           value="0.00" required>
+                <div class="content-field">
+                    <label for="content_${this.contentIndex}_length">Length (cm) *</label>
+                    <input type="number"
+                           step="0.01"
+                           min="0.01"
+                           id="content_${this.contentIndex}_length"
+                           name="content[${this.contentIndex}][box_length]"
+                           value=""
+                           placeholder="0.00"
+                           required>
                 </div>
 
-                <div class="dimension-field">
-                    <label>Box Type</label>
+                <div class="content-field">
+                    <label for="content_${this.contentIndex}_width">Width (cm) *</label>
+                    <input type="number"
+                           step="0.01"
+                           min="0.01"
+                           id="content_${this.contentIndex}_width"
+                           name="content[${this.contentIndex}][box_width]"
+                           value=""
+                           placeholder="0.00"
+                           required>
+                </div>
+
+                <div class="content-field">
+                    <label for="content_${this.contentIndex}_height">Height (cm) *</label>
+                    <input type="number"
+                           step="0.01"
+                           min="0.01"
+                           id="content_${this.contentIndex}_height"
+                           name="content[${this.contentIndex}][box_height]"
+                           value=""
+                           placeholder="0.00"
+                           required>
+                </div>
+
+                <div class="content-field">
+                    <label for="content_${this.contentIndex}_volume">Volume/Item (CFT)</label>
                     <input type="text"
-                           name="dimensions[${this.dimensionIndex}][box_type]"
-                           placeholder="e.g., Carton, Wooden Box" required>
-                </div>
-
-                <div class="dimension-field">
-                    <label>Count of Boxes</label>
-                    <input type="number" min="1"
-                           name="dimensions[${this.dimensionIndex}][count_of_box]"
-                           value="1" required>
-                    <div class="error-message" style="display: none;"></div>
-                </div>
-
-                <div class="dimension-field">
-                    <label>Box Weight (kg)</label>
-                    <input type="number" step="0.01" min="0"
-                           name="dimensions[${this.dimensionIndex}][box_weight]"
-                           value="0.00" required>
-                </div>
-
-                <div class="dimension-field">
-                    <label>Volume/Box (CFT)</label>
-                    <input type="text" class="dimension-calculated" readonly value="0.00">
-                </div>
-
-                <div class="dimension-field">
-                    <label>Remark</label>
-                    <input type="text"
-                           name="dimensions[${this.dimensionIndex}][remark]"
-                           placeholder="Optional remarks">
+                           id="content_${this.contentIndex}_volume"
+                           class="content-calculated"
+                           readonly
+                           value="0.00">
                 </div>
             </div>
         `;
 
         this.container.appendChild(itemDiv);
-        this.attachEventListeners(itemDiv, this.dimensionIndex);
 
-        this.dimensionIndex++;
+        // Add event listeners
+        this.attachEventListeners(itemDiv, this.contentIndex);
+
+        this.contentIndex++;
         this.updateSummary();
-        this.updateAggregates();
     }
 
     attachEventListeners(itemDiv, index) {
         // Remove button
-        const removeBtn = itemDiv.querySelector('.remove-dimension-btn');
-        if (removeBtn) {
-            removeBtn.addEventListener('click', () => {
-                if (this.container.children.length > 1) {
-                    itemDiv.remove();
-                    this.updateSummary();
-                    this.updateAggregates();
-                } else {
-                    alert('At least one dimension item is required.');
-                }
-            });
-        }
-
-        // Volume calculation and aggregation update
-        const inputs = itemDiv.querySelectorAll('input[type="number"]');
-        inputs.forEach(input => {
-            input.addEventListener('input', () => {
-                this.calculateItemVolume(itemDiv);
+        const removeBtn = itemDiv.querySelector('.remove-content-btn');
+        removeBtn.addEventListener('click', () => {
+            if (this.container.children.length > 1 || !itemDiv.classList.contains('no-content-message')) {
+                itemDiv.remove();
                 this.updateSummary();
-                this.updateAggregates();
-            });
+            } else {
+                alert('At least one content item is required.');
+            }
         });
 
-        // Initial calculation
-        this.calculateItemVolume(itemDiv);
+        // Get input elements
+        const inputs = {
+            length: itemDiv.querySelector(`[name*="[box_length]"]`),
+            width: itemDiv.querySelector(`[name*="[box_width]"]`),
+            height: itemDiv.querySelector(`[name*="[box_height]"]`),
+            count: itemDiv.querySelector(`[name*="[count_of_box]"]`),
+            weight: itemDiv.querySelector(`[name*="[box_weight]"]`),
+            volume: itemDiv.querySelector('.content-calculated')
+        };
+
+        // Add event listeners for calculation
+        [inputs.length, inputs.width, inputs.height, inputs.count, inputs.weight].forEach(input => {
+            if (input) {
+                input.addEventListener('input', () => {
+                    this.calculateVolume(inputs);
+                    this.updateSummary();
+                });
+            }
+        });
+
+        // Initial calculation for existing items
+        if (inputs.length && inputs.width && inputs.height) {
+            this.calculateVolume(inputs);
+        }
     }
 
-    calculateItemVolume(itemDiv) {
-        const lengthInput = itemDiv.querySelector('input[name*="[box_length]"]');
-        const widthInput = itemDiv.querySelector('input[name*="[box_width]"]');
-        const heightInput = itemDiv.querySelector('input[name*="[box_height]"]');
-        const volumeInput = itemDiv.querySelector('.dimension-calculated');
+    calculateVolume(inputs) {
+        const length = parseFloat(inputs.length.value) || 0;
+        const width = parseFloat(inputs.width.value) || 0;
+        const height = parseFloat(inputs.height.value) || 0;
 
-        if (lengthInput && widthInput && heightInput && volumeInput) {
-            const length = parseFloat(lengthInput.value) || 0;
-            const width = parseFloat(widthInput.value) || 0;
-            const height = parseFloat(heightInput.value) || 0;
-            const volume = length * width * height;
-            volumeInput.value = volume.toFixed(2);
+        // Convert cm³ to CFT (1 CFT = 28316.8 cm³)
+        const volume = (length * width * height) / 28316.8;
+
+        if (inputs.volume) {
+            inputs.volume.value = volume.toFixed(2);
         }
     }
 
     updateSummary() {
-        let totalBoxes = 0;
+        let totalItems = 0;
+        let totalArticles = 0;
+        let totalWeight = 0;
         let totalVolume = 0;
 
-        this.container.querySelectorAll('.dimension-item').forEach(item => {
-            const countInput = item.querySelector('input[name*="[count_of_box]"]');
-            const volumeInput = item.querySelector('.dimension-calculated');
+        this.container.querySelectorAll('.content-item:not(.no-content-message)').forEach(item => {
+            const countInput = item.querySelector('[name*="[count_of_box]"]');
+            const weightInput = item.querySelector('[name*="[box_weight]"]');
+            const volumeInput = item.querySelector('.content-calculated');
 
             const count = parseInt(countInput?.value) || 0;
+            const weight = parseFloat(weightInput?.value) || 0;
             const volume = parseFloat(volumeInput?.value) || 0;
 
-            totalBoxes += count;
-            totalVolume += (volume * count);
+            if (count > 0) {
+                totalItems += 1;
+                totalArticles += count;
+                totalWeight += weight;
+                totalVolume += (volume * count);
+            }
         });
-
-        const totalArticlesInput = document.querySelector('input[name*="no_article"]');
-        const totalArticles = parseInt(totalArticlesInput?.value) || 0;
-        const remainingArticles = Math.max(0, totalArticles - totalBoxes);
 
         // Update summary display
-        document.getElementById('total_boxes').textContent = totalBoxes;
-        document.getElementById('total_volume').textContent = totalVolume.toFixed(2);
-        document.getElementById('remaining_articles').textContent = remainingArticles;
+        const totalItemsEl = document.getElementById('total_items');
+        const totalBoxesEl = document.getElementById('total_boxes');
+        const totalWeightEl = document.getElementById('total_weight');
+        const totalVolumeEl = document.getElementById('total_volume');
 
-        // Color coding for remaining articles
-        const remainingSpan = document.getElementById('remaining_articles');
-        if (remainingArticles < 0) {
-            remainingSpan.style.color = '#dc3545';
-        } else if (remainingArticles === 0) {
-            remainingSpan.style.color = '#28a745';
-        } else {
-            remainingSpan.style.color = '#ffc107';
+        if (totalItemsEl) totalItemsEl.textContent = totalItems;
+        if (totalBoxesEl) totalBoxesEl.textContent = totalArticles;
+        if (totalWeightEl) totalWeightEl.textContent = totalWeight.toFixed(2);
+        if (totalVolumeEl) totalVolumeEl.textContent = totalVolume.toFixed(2);
+
+        // Remove no-content message if items exist
+        const noContentMsg = this.container.querySelector('.no-content-message');
+        if (totalItems > 0 && noContentMsg) {
+            noContentMsg.remove();
         }
-    }
-
-    updateAggregates() {
-        let totalLength = 0, totalWidth = 0, totalHeight = 0, totalVolume = 0;
-
-        this.container.querySelectorAll('.dimension-item').forEach(item => {
-            const count = parseInt(item.querySelector('input[name*="[count_of_box]"]')?.value) || 0;
-            const length = parseFloat(item.querySelector('input[name*="[box_length]"]')?.value) || 0;
-            const width = parseFloat(item.querySelector('input[name*="[box_width]"]')?.value) || 0;
-            const height = parseFloat(item.querySelector('input[name*="[box_height]"]')?.value) || 0;
-
-            totalLength += length * count;
-            totalWidth += width * count;
-            totalHeight += height * count;
-            totalVolume += length * width * height * count;
-        });
-
-        // Update aggregated dimension fields
-        const lengthField = document.getElementById('length_ft');
-        const widthField = document.getElementById('width_ft');
-        const heightField = document.getElementById('height_ft');
-        const volumeField = document.getElementById('total_dfc');
-
-        if (lengthField) lengthField.value = totalLength.toFixed(2);
-        if (widthField) widthField.value = totalWidth.toFixed(2);
-        if (heightField) heightField.value = totalHeight.toFixed(2);
-        if (volumeField) volumeField.value = totalVolume.toFixed(2);
     }
 }
 
-// Initialize when DOM is loaded
+// Customer Autocomplete Class
+class CustomerAutocomplete {
+    constructor(searchInputId, suggestionsId, clearBtnId, fieldPrefix) {
+        this.searchInput = document.getElementById(searchInputId);
+        this.suggestions = document.getElementById(suggestionsId);
+        this.clearBtn = document.getElementById(clearBtnId);
+        this.fieldPrefix = fieldPrefix;
+        this.selectedCustomer = null;
+        this.searchTimeout = null;
+
+        this.init();
+    }
+
+    init() {
+        if (!this.searchInput) return;
+
+        this.searchInput.addEventListener('input', (e) => this.handleSearch(e));
+        this.searchInput.addEventListener('focus', () => this.showSuggestions());
+        this.searchInput.addEventListener('blur', () => {
+            setTimeout(() => this.hideSuggestions(), 200);
+        });
+
+        if (this.clearBtn) {
+            this.clearBtn.addEventListener('click', () => this.clearSelection());
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.autocomplete-container')) {
+                this.hideSuggestions();
+            }
+        });
+    }
+
+    handleSearch(e) {
+        const query = e.target.value.trim();
+
+        if (this.searchTimeout) {
+            clearTimeout(this.searchTimeout);
+        }
+
+        if (query.length < 2) {
+            this.hideSuggestions();
+            return;
+        }
+
+        this.searchInput.classList.add('loading');
+
+        this.searchTimeout = setTimeout(() => {
+            this.searchCustomers(query);
+        }, 300);
+    }
+
+    async searchCustomers(query) {
+        try {
+            const response = await fetch(`/api/customer-autocomplete/?term=${encodeURIComponent(query)}`);
+            const data = await response.json();
+
+            this.searchInput.classList.remove('loading');
+            this.displaySuggestions(data.results);
+
+        } catch (error) {
+            console.error('Error searching customers:', error);
+            this.searchInput.classList.remove('loading');
+        }
+    }
+
+    displaySuggestions(results) {
+        if (!results || results.length === 0) {
+            this.hideSuggestions();
+            return;
+        }
+
+        this.suggestions.innerHTML = '';
+
+        results.forEach(customer => {
+            const item = document.createElement('div');
+            item.className = 'suggestion-item';
+            item.innerHTML = `
+                <div class="suggestion-company">${customer.company_name}</div>
+                <div class="suggestion-contact">Contact: ${customer.contact_person} | ${customer.contact_number}</div>
+                <div class="suggestion-id">ID: ${customer.customer_id}</div>
+            `;
+
+            item.addEventListener('click', () => this.selectCustomer(customer));
+            this.suggestions.appendChild(item);
+        });
+
+        this.showSuggestions();
+    }
+
+    selectCustomer(customer) {
+        this.selectedCustomer = customer;
+        this.searchInput.value = customer.company_name;
+        this.populateFields(customer);
+        this.hideSuggestions();
+
+        if (this.clearBtn) {
+            this.clearBtn.style.display = 'inline-block';
+        }
+    }
+
+    populateFields(customer) {
+        const fields = [
+            { id: `id_${this.fieldPrefix}_name`, value: customer.company_name },
+            { id: `id_${this.fieldPrefix}_address`, value: `${customer.address}, ${customer.city}, ${customer.state} - ${customer.pin_code}` },
+            { id: `id_${this.fieldPrefix}_gst`, value: customer.gstn },
+            { id: `id_${this.fieldPrefix}_contact`, value: customer.contact_number }
+        ];
+
+        fields.forEach(field => {
+            const element = document.getElementById(field.id);
+            if (element) {
+                element.value = field.value || '';
+                element.classList.add('auto-filled');
+
+                element.addEventListener('input', function() {
+                    this.classList.remove('auto-filled');
+                }, { once: true });
+            }
+        });
+    }
+
+    clearSelection() {
+        this.selectedCustomer = null;
+        this.searchInput.value = '';
+
+        const fields = [
+            `id_${this.fieldPrefix}_name`,
+            `id_${this.fieldPrefix}_address`,
+            `id_${this.fieldPrefix}_gst`,
+            `id_${this.fieldPrefix}_contact`
+        ];
+
+        fields.forEach(fieldId => {
+            const element = document.getElementById(fieldId);
+            if (element) {
+                element.value = '';
+                element.classList.remove('auto-filled');
+            }
+        });
+
+        if (this.clearBtn) {
+            this.clearBtn.style.display = 'none';
+        }
+
+        this.searchInput.focus();
+    }
+
+    showSuggestions() {
+        if (this.suggestions.children.length > 0) {
+            this.suggestions.style.display = 'block';
+        }
+    }
+
+    hideSuggestions() {
+        this.suggestions.style.display = 'none';
+    }
+}
+
+// Form Validation
+function validateForm() {
+    const contentItems = document.querySelectorAll('.content-item:not(.no-content-message)');
+
+    if (contentItems.length === 0) {
+        alert('At least one content item is required.');
+        return false;
+    }
+
+    let isValid = true;
+    contentItems.forEach((item, index) => {
+        const inputs = item.querySelectorAll('input[required]');
+        inputs.forEach(input => {
+            if (!input.value || (input.type === 'number' && parseFloat(input.value) <= 0)) {
+                input.classList.add('validation-error');
+                isValid = false;
+            } else {
+                input.classList.remove('validation-error');
+            }
+        });
+    });
+
+    if (!isValid) {
+        alert('Please fill all required fields with valid positive values.');
+        return false;
+    }
+
+    return true;
+}
+
+// Initialize everything when DOM is loaded
+let contentUpdateManager;
+
 document.addEventListener("DOMContentLoaded", function() {
-    window.dimensionManager = new DimensionManager();
+    console.log('DOM loaded, initializing content update manager...');
+
+    // Initialize content update manager
+    contentUpdateManager = new ContentUpdateManager();
+
+    // Initialize autocomplete for consignor and consignee
+    new CustomerAutocomplete('consignor_search', 'consignor_suggestions', 'clear_consignor', 'consignor');
+    new CustomerAutocomplete('consignee_search', 'consignee_suggestions', 'clear_consignee', 'consignee');
+
+    // Add form validation
+    const form = document.getElementById('shipment-update-form');
+    form.addEventListener('submit', function(e) {
+        console.log('Form submitting, validating...');
+
+        if (!validateForm()) {
+            e.preventDefault();
+        }
+    });
+
+    // Handle appointment delivery checkbox
+    const appointmentCheckbox = document.getElementById('id_appointment_delivery');
+    const appointmentDate = document.getElementById('id_appointment_date');
+
+    if (appointmentCheckbox && appointmentDate) {
+        appointmentCheckbox.addEventListener('change', function() {
+            appointmentDate.required = this.checked;
+            if (!this.checked) {
+                appointmentDate.value = '';
+            }
+        });
+    }
 });
 </script>
 

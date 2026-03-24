@@ -1,139 +1,928 @@
 {% extends "base.html" %}
 {% load static %}
+{% load custom_filters %}
+
+{% block page_title %}Manifest List{% endblock %}
+{% block page_icon %}content: '📋';{% endblock %}
+{% block breadcrumb %}Manifest / List{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container {
+        max-width: 100%;
+        margin: 20px auto 80px;
+        padding: 0 15px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .page-header h2 {
+        margin: 0 0 0.5rem;
+        font-size: 1.8rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .page-header p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 1rem;
+    }
+
+    .filter-section {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e9ecef;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-group label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+
+    .filter-group input, .filter-group select {
+        padding: 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .filter-group input:focus, .filter-group select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    /* Action Bar */
+    .action-bar {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .report-section {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .btn-report {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 2px 8px rgba(231, 76, 60, 0.2);
+    }
+
+    .btn-report:hover {
+        background: linear-gradient(135deg, #c0392b, #a93226);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+        color: white;
+    }
+
+    .btn-report.excel {
+        background: linear-gradient(135deg, #27ae60, #2ecc71);
+        box-shadow: 0 2px 8px rgba(39, 174, 96, 0.2);
+    }
+
+    .btn-report.excel:hover {
+        background: linear-gradient(135deg, #229954, #27ae60);
+        box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+    }
+
+    .results-info {
+        font-size: 0.9rem;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .results-count {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e9ecef;
+    }
+
+    .table-header {
+        background: linear-gradient(135deg, #2c3e50, #3498db);
+        color: white;
+        padding: 1.5rem;
+        border-bottom: 3px solid #667eea;
+    }
+
+    .table-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .manifest-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+
+    .manifest-table th {
+        background: linear-gradient(135deg, #34495e, #2c3e50);
+        color: white;
+        padding: 1rem 0.75rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #667eea;
+    }
+
+    .manifest-table td {
+        padding: 1rem 0.75rem;
+        border-bottom: 1px solid #e9ecef;
+        vertical-align: middle;
+    }
+
+    .manifest-table tbody tr {
+        transition: all 0.3s ease;
+    }
+
+    .manifest-table tbody tr:hover {
+        background-color: #f8f9ff;
+        transform: scale(1.002);
+    }
+
+    .manifest-table tbody tr:nth-child(even) {
+        background-color: #fafbfc;
+    }
+
+    .manifest-id {
+        font-family: 'Courier New', monospace;
+        font-weight: 700;
+        color: #667eea;
+        font-size: 1rem;
+    }
+
+    .amount {
+        font-weight: 600;
+        color: #28a745;
+        font-size: 1rem;
+    }
+
+    .location {
+        font-weight: 500;
+        color: #495057;
+    }
+
+    .vehicle-info {
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        color: #6f42c1;
+    }
+
+    .vendor-info {
+        font-weight: 600;
+        color: #e67e22;
+        font-size: 0.95rem;
+    }
+
+    .driver-info {
+        font-size: 0.85rem;
+        color: #495057;
+    }
+
+    .driver-name {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .date-info {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    /* Updated Action Buttons - Icon Only */
+    .action-buttons {
+        display: flex;
+        gap: 0.4rem;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.7rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        position: relative;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        text-decoration: none;
+        color: white;
+    }
+
+    .btn-view {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+    }
+
+    .btn-view:hover {
+        background: linear-gradient(135deg, #2980b9, #21618c);
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+        color: white;
+    }
+
+    .btn-edit {
+        background: linear-gradient(135deg, #f39c12, #e67e22);
+        color: white;
+    }
+
+    .btn-edit:hover {
+        background: linear-gradient(135deg, #e67e22, #d68910);
+        box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
+        color: white;
+    }
+
+    .btn-pdf {
+        background: linear-gradient(135deg, #27ae60, #2ecc71);
+        color: white;
+    }
+
+    .btn-pdf:hover {
+        background: linear-gradient(135deg, #229954, #27ae60);
+        box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+        color: white;
+    }
+
+    /* Tooltip enhancement */
+    .btn[title]:hover::after {
+        content: attr(title);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 0.4rem 0.6rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        white-space: nowrap;
+        z-index: 1000;
+        margin-bottom: 5px;
+    }
+
+    .btn[title]:hover::before {
+        content: '';
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 4px solid transparent;
+        border-top-color: rgba(0, 0, 0, 0.8);
+        z-index: 1000;
+        margin-bottom: 1px;
+    }
+
+    .btn-filter {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-filter:hover {
+        background: linear-gradient(135deg, #2980b9, #21618c);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+
+    .create-btn {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ff6f61, #ff8a50);
+        color: white;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(255, 111, 97, 0.4);
+        transition: all 0.3s ease;
+        z-index: 100;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .create-btn:hover {
+        transform: scale(1.1) translateY(-2px);
+        box-shadow: 0 8px 30px rgba(255, 111, 97, 0.6);
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6c757d;
+    }
+
+    .empty-state .fa-inbox {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: #dee2e6;
+    }
+
+    .empty-state h3 {
+        margin-bottom: 0.5rem;
+        color: #495057;
+    }
+
+    .status-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+        background: #28a745;
+    }
+
+    /* Current filters display */
+    .current-filters {
+        background: linear-gradient(135deg, #e8f5e8, #f0f8ff);
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        border: 1px solid #c3e6cb;
+    }
+
+    .filter-tag {
+        background: linear-gradient(135deg, #2980b9, #3498db);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .filter-tag:hover {
+        background: linear-gradient(135deg, #21618c, #2980b9);
+        transform: scale(1.05);
+    }
+
+    .filter-count {
+        color: #2c3e50;
+        font-weight: 700;
+        margin-left: auto;
+        background: white;
+        padding: 4px 10px;
+        border-radius: 12px;
+        border: 1px solid #bdc3c7;
+    }
+
+    /* Loading overlay for reports */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(44, 62, 80, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        backdrop-filter: blur(4px);
+    }
+
+    .loading-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        text-align: center;
+        max-width: 300px;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Fix dropdown z-index issues */
+    .dropdown-menu {
+        z-index: 1050 !important;
+        position: absolute !important;
+    }
+
+    .navbar .dropdown-menu {
+        z-index: 1060 !important;
+    }
+
+    /* Make sure our elements don't block dropdowns */
+    .filter-section,
+    .action-bar,
+    .table-container {
+        position: relative;
+        z-index: auto;
+    }
+
+    @media (max-width: 768px) {
+        .action-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .report-section {
+            justify-content: center;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .manifest-table {
+            font-size: 0.8rem;
+        }
+
+        .manifest-table th,
+        .manifest-table td {
+            padding: 0.75rem 0.5rem;
+        }
+
+        .action-buttons {
+            gap: 0.3rem;
+        }
+
+        .btn {
+            width: 32px;
+            height: 32px;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .create-btn {
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+        }
+
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h2 {
+            font-size: 1.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .action-buttons {
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .btn {
+            width: 28px;
+            height: 28px;
+            padding: 0.4rem;
+            font-size: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Manifest List</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-<!--        .container {-->
-<!--            max-width: 1000px;-->
-<!--            margin: 80px auto;-->
-<!--            background: white;-->
-<!--            padding: 30px;-->
-<!--            border-radius: 8px;-->
-<!--            box-shadow: 0 0 10px rgba(0,0,0,0.1);-->
-<!--        }-->
-
-        h2 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
-
-        .shipment-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        .shipment-table th, .shipment-table td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: center;
-        }
-
-        .shipment-table th {
-            background-color: #2c3e50;
-            color: white;
-        }
-
-        .shipment-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        .shipment-table tr:hover {
-            background-color: #f1f1f1;
-        }
-
-        .shipment-table a {
-            text-decoration: none;
-            padding: 6px 12px;
-            margin: 0 4px;
-            color: white;
-            border-radius: 4px;
-            font-size: 13px;
-        }
-
-        .shipment-table a.details-btn {
-            background-color: #3498db;
-        }
-
-        .shipment-table a.update-btn {
-            background-color: #f39c12;
-        }
-
-        .shipment-table a:hover {
-            opacity: 0.85;
-        }
-
-        .add-button {
-            background-color: #ff6f61;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            text-align: center;
-            display: inline-block;
-            margin-top: 20px;
-            text-decoration: none;
-        }
-
-        .add-button:hover {
-            background-color: #e65b50;
-        }
-    </style>
-</head>
-<body>
 <div class="container">
+    <!-- Filters Section -->
+    <div class="filter-section">
+        <h3 style="margin: 0 0 1rem; color: #2c3e50; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-filter"></i>
+            Search & Filter Manifests
+        </h3>
+        <form method="GET" class="filter-grid" id="filterForm">
+            <div class="filter-group">
+                <label for="search">
+                    <i class="fas fa-search"></i>
+                    Search Manifest ID
+                </label>
+                <input type="text" id="search" name="search" placeholder="Enter Manifest ID..."
+                       value="{{ request.GET.search }}">
+            </div>
 
-    <table class="shipment-table">
-        <thead>
-            <tr>
-                <th>Manifest ID</th>
-                <th>Total Articles</th>
-                <th>Total Freight</th>
-                <th>Origin Branch</th>
-                <th>Destination Branch</th>
-                <th>Vehicle No</th>
-                <th>Driver Name</th>
-                <th>Driver Contact</th>
-                <th>Created At</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for manifest in manifests %}
-            <tr>
-                <td>{{ manifest.manifest_id }}</td>
-                <td>{{ manifest.total_articles }}</td>
-                <td>{{ manifest.total_freight }}</td>
-                <td>{{ manifest.origin_branch }}</td>
-                <td>{{ manifest.destination_branch }}</td>
-                <td>{{ manifest.vehicle_no }}</td>
-                <td>{{ manifest.driver_name }}</td>
-                <td>{{ manifest.driver_contact }}</td>
-                <td>{{ manifest.created_at|date:"Y-m-d H:i:s" }}</td>
-                <td>
-                    {% comment %}
-                    <a href="{% url 'manifest_detail' manifest.id %}" class="details-btn">Details</a>
-                    <a href="{% url 'manifest_update' manifest.id %}" class="update-btn">Update</a>
-                    {% endcomment %}
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="10">No manifests available.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            <div class="filter-group">
+                <label for="vehicle">
+                    <i class="fas fa-truck"></i>
+                    Vehicle Number
+                </label>
+                <input type="text" id="vehicle" name="vehicle" placeholder="Vehicle Number..."
+                       value="{{ request.GET.vehicle }}">
+            </div>
 
-    <a href="{% url 'create_manifest' %}" class="add-button">Create New Manifest</a>
+            <div class="filter-group">
+                <label for="vendor">
+                    <i class="fas fa-building"></i>
+                    Vendor Name
+                </label>
+                <input type="text" id="vendor" name="vendor" placeholder="Vendor Name..."
+                       value="{{ request.GET.vendor }}">
+            </div>
+
+            <div class="filter-group">
+                <label for="date_from">
+                    <i class="fas fa-calendar"></i>
+                    From Date
+                </label>
+                <input type="date" id="date_from" name="date_from" value="{{ request.GET.date_from }}">
+            </div>
+
+            <div class="filter-group">
+                <label for="date_to">
+                    <i class="fas fa-calendar"></i>
+                    To Date
+                </label>
+                <input type="date" id="date_to" name="date_to" value="{{ request.GET.date_to }}">
+            </div>
+
+            <div class="filter-group">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn-filter" id="filterBtn">
+                    <i class="fas fa-search"></i> Filter Results
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Current Filters Display -->
+    {% if request.GET.search or request.GET.vehicle or request.GET.vendor or request.GET.date_from or request.GET.date_to %}
+    <div class="current-filters">
+        <strong>
+            <i class="fas fa-filter"></i>
+            Active Filters:
+        </strong>
+        {% if request.GET.search %}
+            <span class="filter-tag" data-filter="search" title="Click to remove">
+                <i class="fas fa-search"></i>
+                Manifest: {{ request.GET.search }}
+            </span>
+        {% endif %}
+        {% if request.GET.vehicle %}
+            <span class="filter-tag" data-filter="vehicle" title="Click to remove">
+                <i class="fas fa-truck"></i>
+                Vehicle: {{ request.GET.vehicle }}
+            </span>
+        {% endif %}
+        {% if request.GET.vendor %}
+            <span class="filter-tag" data-filter="vendor" title="Click to remove">
+                <i class="fas fa-building"></i>
+                Vendor: {{ request.GET.vendor }}
+            </span>
+        {% endif %}
+        {% if request.GET.date_from %}
+            <span class="filter-tag" data-filter="date_from" title="Click to remove">
+                <i class="fas fa-calendar"></i>
+                From: {{ request.GET.date_from }}
+            </span>
+        {% endif %}
+        {% if request.GET.date_to %}
+            <span class="filter-tag" data-filter="date_to" title="Click to remove">
+                <i class="fas fa-calendar"></i>
+                To: {{ request.GET.date_to }}
+            </span>
+        {% endif %}
+        <span class="filter-count">
+            <i class="fas fa-list"></i>
+            {{ manifests.count }} manifest{{ manifests.count|pluralize }} found
+        </span>
+    </div>
+    {% endif %}
+
+    <!-- Action Bar with Report Downloads -->
+    <div class="action-bar">
+        <div class="results-info">
+            <i class="fas fa-chart-bar"></i>
+            <span>Total Results:</span>
+            <span class="results-count">{{ manifests.count }}</span>
+        </div>
+
+        <div class="report-section">
+            <form method="GET" action="{% url 'manifest_report_download' %}" style="display: inline;" class="excel-report-form">
+                <!-- Pass current filter values to download -->
+                {% if request.GET.search %}<input type="hidden" name="search" value="{{ request.GET.search }}">{% endif %}
+                {% if request.GET.vehicle %}<input type="hidden" name="vehicle" value="{{ request.GET.vehicle }}">{% endif %}
+                {% if request.GET.vendor %}<input type="hidden" name="vendor" value="{{ request.GET.vendor }}">{% endif %}
+                {% if request.GET.date_from %}<input type="hidden" name="date_from" value="{{ request.GET.date_from }}">{% endif %}
+                {% if request.GET.date_to %}<input type="hidden" name="date_to" value="{{ request.GET.date_to }}">{% endif %}
+                <input type="hidden" name="format" value="excel">
+
+                <button type="submit" class="btn-report excel">
+                    <i class="fas fa-file-excel"></i>
+                    Download Report
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Manifests Table -->
+    <div class="table-container">
+        <div style="overflow-x: auto;">
+            <table class="manifest-table">
+                <thead>
+                    <tr>
+                        <th>
+                            <i class="fas fa-hashtag" style="margin-right: 0.5rem;"></i>
+                            Manifest ID
+                        </th>
+                        <th>
+                            <i class="fas fa-boxes" style="margin-right: 0.5rem;"></i>
+                            Articles
+                        </th>
+                        <th>
+                            <i class="fas fa-rupee-sign" style="margin-right: 0.5rem;"></i>
+                            Total Freight
+                        </th>
+                        <th>
+                            <i class="fas fa-map-marker-alt" style="margin-right: 0.5rem;"></i>
+                            Route
+                        </th>
+                        <th>
+                            <i class="fas fa-truck" style="margin-right: 0.5rem;"></i>
+                            Vehicle Details
+                        </th>
+                        <th>
+                            <i class="fas fa-building" style="margin-right: 0.5rem;"></i>
+                            Vendor ID & Name
+                        </th>
+                        <th>
+                            <i class="fas fa-user" style="margin-right: 0.5rem;"></i>
+                            Driver Info
+                        </th>
+                        <th>
+                            <i class="fas fa-calendar" style="margin-right: 0.5rem;"></i>
+                            Created
+                        </th>
+                        <th>
+                            <i class="fas fa-cogs" style="margin-right: 0.5rem;"></i>
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for manifest in manifests %}
+                    <tr data-manifest-id="{{ manifest.pk }}">
+                        <td>
+                            <div class="manifest-id">{{ manifest.manifest_id }}</div>
+                            <div style="display: flex; align-items: center; margin-top: 0.25rem;">
+                                <span class="status-indicator"></span>
+                                <small style="color: #6c757d;">Active</small>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: #495057;">{{ manifest.total_articles|default:"0" }}</div>
+                            <small style="color: #6c757d;">articles</small>
+                        </td>
+                        <td>
+                            <div class="amount">₹{{ manifest.total_freight|floatformat:2|default:"0.00" }}</div>
+                            {% if manifest.advance_amount %}
+                            <small style="color: #6c757d;">Advance: ₹{{ manifest.advance_amount|floatformat:2 }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="location">
+                                {% if manifest.origin_branch %}
+                                    <strong>{{ manifest.origin_branch }}</strong>
+                                {% else %}
+                                    <span style="color: #adb5bd;">Multiple Origins</span>
+                                {% endif %}
+                            </div>
+                            <div style="font-size: 0.8rem; color: #6c757d; text-align: center; margin: 0.25rem 0;">
+                                <i class="fas fa-arrow-down"></i>
+                            </div>
+                            <div class="location">
+                                {% if manifest.destination_branch %}
+                                    <strong>{{ manifest.destination_branch }}</strong>
+                                {% else %}
+                                    <span style="color: #adb5bd;">Multiple Destinations</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="vehicle-info">
+                                {{ manifest.vehicle_no|default:"Not Assigned" }}
+                            </div>
+                            {% if manifest.vehicle_type %}
+                            <small style="color: #6c757d; display: block; margin-top: 0.25rem;">
+                                Type: {{ manifest.vehicle_type }}
+                            </small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="vendor-info">
+                                {% if manifest.vendor_name %}
+                                    {{ manifest.vendor_name }}
+                                {% else %}
+                                    <span style="color: #adb5bd;">Not Assigned</span>
+                                {% endif %}
+                            </div>
+                            {% if manifest.vendor_name.contact %}
+                            <small style="color: #6c757d; display: block; margin-top: 0.25rem;">
+                                <i class="fas fa-phone"></i>
+                                {{ manifest.vendor_name.contact }}
+                            </small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="driver-name">{{ manifest.driver_name|default:"Not Assigned" }}</div>
+                            {% if manifest.driver_contact %}
+                            <div class="driver-info">
+                                <i class="fas fa-phone"></i>
+                                {{ manifest.driver_contact }}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="date-info">
+                                <strong>{{ manifest.created_at|date:"d M Y" }}</strong>
+                            </div>
+                            <div class="date-info">
+                                {{ manifest.created_at|time:"H:i" }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'manifest_detail' manifest.pk %}"
+                                   class="btn btn-view" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'manifest_update' manifest.pk %}"
+                                   class="btn btn-edit" title="Edit Manifest">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'manifest_pdf' manifest.pk %}"
+                                   class="btn btn-pdf" title="Download PDF" target="_blank">
+                                    <i class="fas fa-file-pdf"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9">
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <h3>No Manifests Found</h3>
+                                <p>No manifests match your current filter criteria.</p>
+                                {% if request.GET.search or request.GET.vehicle or request.GET.vendor or request.GET.date_from or request.GET.date_to %}
+                                <a href="{% url 'manifest_list' %}" class="btn btn-primary" style="margin-top: 1rem;">
+                                    <i class="fas fa-refresh"></i> Clear All Filters
+                                </a>
+                                {% else %}
+                                <p style="margin-top: 1rem;">
+                                    <a href="{% url 'create_manifest' %}" class="btn btn-primary">
+                                        <i class="fas fa-plus"></i> Create Your First Manifest
+                                    </a>
+                                </p>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Floating Create Button -->
+    <a href="{% url 'create_manifest' %}" class="create-btn" title="Create New Manifest">
+        <i class="fas fa-plus"></i>
+    </a>
 </div>
-</body>
-</html>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <h4 id="loadingText">Preparing Report...</h4>
+        <p>Please wait while we generate your manifest report.</p>
+    </div>
+</div>
+
+{% block extra_js %}
+<!--<script>-->
+<!--document.addEventListener('DOMContentLoaded', function() {-->
+<!--    // Handle filter tag removal-->
+<!--    document.querySelectorAll('.filter-tag[data-filter]').forEach(tag => {-->
+<!--        tag.addEventListener('click', function(e) {-->
+<!--            e.preventDefault();-->
+<!--            const filterType = this.getAttribute('data-filter');-->
+<!--            if (filterType) {-->
+<!--                const url = new URL(window.location);-->
+<!--                url.searchParams.delete(filterType);-->
+<!--                window.location.href = url.toString();-->
+<!--            }-->
+<!--        });-->
+<!--    });-->
+
+<!--    // Handle report download with loading overlay-->
+<!--    document.querySelectorAll('.excel-report-form').forEach(form => {-->
+<!--        form.addEventListener('submit', function() {-->
+<!--            const overlay = document.getElementById('loadingOverlay');-->
+<!--            if (overlay) {-->
+<!--                overlay.style.display = 'flex';-->
+<!--                setTimeout(() => {-->
+<!--                    overlay.style.display = 'none';-->
+<!--                }, 3000);-->
+<!--            }-->
+<!--        });-->
+<!--    });-->
+<!--});-->
+<!--</script>-->
+{% endblock %}
+
 {% endblock %}

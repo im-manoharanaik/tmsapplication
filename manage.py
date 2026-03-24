@@ -3,6 +3,9 @@
 import os
 import sys
 
+# Limit OpenBLAS / NumPy threads for cPanel
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
 
 def main():
     """Run administrative tasks."""

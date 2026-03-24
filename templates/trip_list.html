@@ -1,158 +1,934 @@
 {% extends "base.html" %}
-{% block content %}
-<head>
-    <style>
-        h2 {
-            color: #2c3e50;
-            margin-bottom: 20px;
+{% load static %}
+
+{% block page_title %}Trip List{% endblock %}
+{% block page_icon %}content: '🚛';{% endblock %}
+{% block breadcrumb %}Trips / List{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container {
+        max-width: 100%;
+        margin: 20px auto 80px;
+        padding: 0 15px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* Trip Header */
+    .trip-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+    }
+
+    .trip-header h2 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .trip-header p {
+        margin: 0.5rem 0 0;
+        opacity: 0.9;
+        font-size: 1rem;
+    }
+
+    /* Filter Section */
+    .filter-section {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e9ecef;
+    }
+
+    .filter-section h3 {
+        margin: 0 0 1rem;
+        color: #2c3e50;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-group label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-group input,
+    .filter-group select {
+        padding: 0.75rem;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .filter-group input:focus,
+    .filter-group select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-search {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-search:hover {
+        background: linear-gradient(135deg, #2980b9, #21618c);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+
+    /* Current Filters Display */
+    .current-filters {
+        background: linear-gradient(135deg, #e8f5e8, #f0f8ff);
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        border: 1px solid #c3e6cb;
+    }
+
+    .filter-tag {
+        background: linear-gradient(135deg, #2980b9, #3498db);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .filter-tag:hover {
+        background: linear-gradient(135deg, #21618c, #2980b9);
+        transform: scale(1.05);
+    }
+
+    .filter-count {
+        color: #2c3e50;
+        font-weight: 700;
+        margin-left: auto;
+        background: white;
+        padding: 4px 10px;
+        border-radius: 12px;
+        border: 1px solid #bdc3c7;
+    }
+
+    /* Action Bar */
+    .action-bar {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .results-info {
+        font-size: 0.9rem;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .results-count {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    .report-section {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .btn-report {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 2px 8px rgba(231, 76, 60, 0.2);
+    }
+
+    .btn-report:hover {
+        background: linear-gradient(135deg, #c0392b, #a93226);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-report.excel {
+        background: linear-gradient(135deg, #27ae60, #2ecc71);
+        box-shadow: 0 2px 8px rgba(39, 174, 96, 0.2);
+    }
+
+    .btn-report.excel:hover {
+        background: linear-gradient(135deg, #229954, #27ae60);
+        box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+    }
+
+    /* Table Container */
+    .table-container {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e9ecef;
+        margin-bottom: 2rem;
+    }
+
+    .table-header {
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        color: white;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .table-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .scrollable-table-container {
+        max-height: 600px;
+        overflow: auto;
+        position: relative;
+    }
+
+    .trip-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 14px;
+        table-layout: auto;
+    }
+
+    .trip-table th,
+    .trip-table td {
+        border-bottom: 1px solid #e9ecef;
+        padding: 1rem 0.75rem;
+        text-align: left;
+        background-color: white;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+        white-space: normal;
+        vertical-align: middle;
+    }
+
+    .trip-table th {
+        background: linear-gradient(135deg, #34495e, #2c3e50);
+        color: white;
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .trip-table th:first-child {
+        position: sticky;
+        top: 0;
+        left: 0;
+        z-index: 4;
+        border-top-left-radius: 12px;
+    }
+
+    .trip-table td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background-color: #ffffff;
+        font-weight: 600;
+        color: #667eea;
+    }
+
+    .trip-table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    .trip-table tbody tr:nth-child(even) {
+        background-color: #fafbfc;
+    }
+
+    .trip-table tbody tr:hover {
+        background-color: #f8f9ff;
+        transform: scale(1.001);
+    }
+
+    /* Special Cell Styling */
+    .trip-id {
+        font-family: 'Courier New', monospace;
+        font-weight: 700;
+        color: #667eea;
+        font-size: 0.9rem;
+    }
+
+    .vendor-name {
+        font-weight: 600;
+        color: #e67e22;
+    }
+
+    .amount {
+        font-weight: 600;
+        color: #27ae60;
+        text-align: right;
+    }
+
+    .status-cell {
+        padding: 0.5rem;
+    }
+
+    .status-select {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 6px;
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .status-select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+    }
+
+    .status-in-progress {
+        background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+        color: #856404;
+    }
+
+    .status-closed {
+        background: linear-gradient(135deg, #d4edda, #c3e6cb);
+        color: #155724;
+    }
+
+    .status-cancelled {
+        background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+        color: #721c24;
+    }
+
+    .status-hold {
+        background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+        color: #0c5460;
+    }
+
+    /* Action Buttons */
+    .actions-cell {
+        padding: 0.5rem;
+        white-space: nowrap;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        text-decoration: none;
+        color: white;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-view {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+    }
+
+    .btn-view:hover {
+        background: linear-gradient(135deg, #2980b9, #21618c);
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .btn-edit {
+        background: linear-gradient(135deg, #f39c12, #e67e22);
+    }
+
+    .btn-edit:hover {
+        background: linear-gradient(135deg, #e67e22, #d68910);
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6c757d;
+    }
+
+    .empty-state .fa-truck {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: #dee2e6;
+    }
+
+    .empty-state h3 {
+        margin-bottom: 0.5rem;
+        color: #495057;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(44, 62, 80, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        backdrop-filter: blur(4px);
+    }
+
+    .loading-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        text-align: center;
+        max-width: 300px;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Floating Create Button */
+    .create-btn {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ff6f61, #ff8a50);
+        color: white;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(255, 111, 97, 0.4);
+        transition: all 0.3s ease;
+        z-index: 100;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .create-btn:hover {
+        transform: scale(1.1) translateY(-2px);
+        box-shadow: 0 8px 30px rgba(255, 111, 97, 0.6);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .filter-form {
+            grid-template-columns: 1fr;
         }
-        .scrollable-table-container {
-            max-height: 400px;
-            overflow: auto;
-            position: relative;
+
+        .action-bar {
+            flex-direction: column;
+            align-items: stretch;
         }
-        .shipment-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            font-size: 14px;
-            table-layout: auto;
+
+        .report-section {
+            justify-content: center;
         }
-        .shipment-table th,
-        .shipment-table td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: center;
-            background-color: white;
-            overflow-wrap: break-word;
-            word-wrap: break-word;
-            white-space: normal;
-        }
-        .shipment-table th {
-            background-color: #2c3e50;
-            color: white;
-            position: sticky;
-            top: 0;
-            z-index: 3;
-        }
-        .shipment-table th:first-child {
-            position: sticky;
-            top: 0;
-            left: 0;
-            z-index: 4;
-            background-color: #2c3e50;
-            color: white;
-        }
-        .shipment-table td:first-child {
-            position: sticky;
-            left: 0;
-            z-index: 2;
-            background-color: #ffffff;
-        }
-        .shipment-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .shipment-table tr:hover {
-            background-color: #f1f1f1;
-        }
-        .shipment-table a {
-            text-decoration: none;
-            color: white;
-            border-radius: 4px;
-            padding: 5px 8px;
+
+        .trip-table {
             font-size: 12px;
         }
-        .shipment-table a.details-btn { background-color: #3498db; }
-        .shipment-table a.update-btn { background-color: #f39c12; }
-        .shipment-table a:hover { opacity: 0.85; }
-        .shipment-table td.actions-cell {
-            display: flex;
+
+        .trip-table th,
+        .trip-table td {
+            padding: 0.5rem 0.4rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .btn-action {
+            font-size: 0.7rem;
+            padding: 0.3rem 0.6rem;
             justify-content: center;
-            gap: 6px;
-            flex-wrap: wrap;
         }
-        @media (max-width: 768px) {
-            .shipment-table { font-size: 12px; }
-            .shipment-table th, .shipment-table td { padding: 8px; }
+
+        .create-btn {
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
         }
-    </style>
-</head>
+    }
+</style>
+{% endblock %}
 
-<section>
-    <form method="get" class="mb-3" style="display: flex; gap: 15px; align-items: center;">
-        <!-- Filter by Status -->
-        <div>
-            <label for="status-filter">Status:</label>
-            <select name="status" id="status-filter" onchange="this.form.submit()">
-                <option value="">-- All --</option>
-                <option value="In-Progress" {% if request.GET.status == "In-Progress" %}selected{% endif %}>In-Progress</option>
-                <option value="Closed" {% if request.GET.status == "Closed" %}selected{% endif %}>Closed</option>
-                <option value="Cancelled" {% if request.GET.status == "Cancelled" %}selected{% endif %}>Cancelled</option>
-                <option value="Hold" {% if request.GET.status == "Hold" %}selected{% endif %}>Hold</option>
-            </select>
-        </div>
+{% block content %}
+<div class="container">
+    <!-- Trip Header -->
 
-        <!-- Filter by Trip ID -->
-        <div>
-            <label for="trip-filter">Trip ID:</label>
-            <input type="text" name="trip_id" id="trip-filter" value="{{ request.GET.trip_id }}" placeholder="Enter Trip ID">
-            <button type="submit">Search</button>
-        </div>
-    </form>
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <h3>
+            <i class="fas fa-filter"></i>
+            Search & Filter Trips
+        </h3>
+        <form method="get" class="filter-form" id="filterForm">
+            <div class="filter-group">
+                <label for="status-filter">
+                    <i class="fas fa-info-circle"></i>
+                    Status
+                </label>
+                <select name="status" id="status-filter">
+                    <option value="">-- All Status --</option>
+                    <option value="In-Progress" {% if request.GET.status == "In-Progress" %}selected{% endif %}>In-Progress</option>
+                    <option value="Closed" {% if request.GET.status == "Closed" %}selected{% endif %}>Closed</option>
+                    <option value="Cancelled" {% if request.GET.status == "Cancelled" %}selected{% endif %}>Cancelled</option>
+                    <option value="Hold" {% if request.GET.status == "Hold" %}selected{% endif %}>Hold</option>
+                    <option value="Hold" {% if request.GET.status == "Payment Received" %}selected{% endif %}>Payment Received</option>
+                </select>
+            </div>
 
-    <br>
-    <div class="scrollable-table-container">
-        <table class="shipment-table">
-            <thead>
-                <tr>
-                    <th>Trip ID</th>
-                    <th>Vendor</th>
-                    <th>Vehicle Type</th>
-                    <th>Capacity</th>
-                    <th>From</th>
-                    <th>Destination</th>
-                    <th>KMs</th>
-                    <th>Total Bill</th>
-                    <th>Status</th>
-                    <th>Created At</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for trip in trips %}
-                <tr>
-                    <td>{{ trip.trip_id }}</td>
-                    <td>{{ trip.vendor.vendor_name }}</td>
-                    <td>{{ trip.vehicle_type }}</td>
-                    <td>{{ trip.vehicle_capacity }}</td>
-                    <td>{{ trip.from_location }}</td>
-                    <td>{{ trip.destination }}</td>
-                    <td>{{ trip.kilometer }}</td>
-                    <td>{{ trip.total_bill_amount }}</td>
-                    <td>
-                        <form method="post" action="{% url 'trip-status-update' trip.id %}">
-                            {% csrf_token %}
-                            <select name="status" onchange="this.form.submit()">
-                                <option value="In-Progress" {% if trip.status == "In-Progress" %}selected{% endif %}>In-Progress</option>
-                                <option value="Closed" {% if trip.status == "Closed" %}selected{% endif %}>Closed</option>
-                                <option value="Cancelled" {% if trip.status == "Cancelled" %}selected{% endif %}>Cancelled</option>
-                                <option value="Hold" {% if trip.status == "Hold" %}selected{% endif %}>Hold</option>
-                            </select>
-                        </form>
-                    </td>
-                    <td>{{ trip.created_at|date:"Y-m-d" }}</td>
-                    <td class="actions-cell">
-                        <a href="{% url 'trip-detail' trip.id %}" class="details-btn">View</a>
-                        <a href="{% url 'trip-update' trip.id %}" class="update-btn">Update</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="11">No trips found.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            <div class="filter-group">
+                <label for="vendor-filter">
+                    <i class="fas fa-handshake"></i>
+                    Vendor Name
+                </label>
+                <input type="text" name="vendor" id="vendor-filter"
+                       value="{{ request.GET.vendor }}"
+                       placeholder="Enter vendor name...">
+            </div>
+
+            <div class="filter-group">
+                <label for="trip-filter">
+                    <i class="fas fa-hashtag"></i>
+                    Trip ID
+                </label>
+                <input type="text" name="trip_id" id="trip-filter"
+                       value="{{ request.GET.trip_id }}"
+                       placeholder="Enter trip ID...">
+            </div>
+
+            <div class="filter-group">
+                <label for="location-filter">
+                    <i class="fas fa-map-marker-alt"></i>
+                    From Location
+                </label>
+                <input type="text" name="from_location" id="location-filter"
+                       value="{{ request.GET.from_location }}"
+                       placeholder="Enter location...">
+            </div>
+
+            <div class="filter-group">
+                <label for="destination-filter">
+                    <i class="fas fa-flag-checkered"></i>
+                    Destination
+                </label>
+                <input type="text" name="destination" id="destination-filter"
+                       value="{{ request.GET.destination }}"
+                       placeholder="Enter destination...">
+            </div>
+
+            <div class="filter-group">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn-search" id="searchBtn">
+                    <i class="fas fa-search"></i>
+                    Search Trips
+                </button>
+            </div>
+        </form>
     </div>
-</section>
+
+    <!-- Current Filters Display -->
+    {% if request.GET.status or request.GET.vendor or request.GET.trip_id or request.GET.from_location or request.GET.destination %}
+    <div class="current-filters">
+        <strong>
+            <i class="fas fa-filter"></i>
+            Active Filters:
+        </strong>
+        {% if request.GET.status %}
+            <span class="filter-tag" data-filter="status" title="Click to remove">
+                <i class="fas fa-info-circle"></i>
+                Status: {{ request.GET.status }}
+            </span>
+        {% endif %}
+        {% if request.GET.vendor %}
+            <span class="filter-tag" data-filter="vendor" title="Click to remove">
+                <i class="fas fa-handshake"></i>
+                Vendor: {{ request.GET.vendor }}
+            </span>
+        {% endif %}
+        {% if request.GET.trip_id %}
+            <span class="filter-tag" data-filter="trip_id" title="Click to remove">
+                <i class="fas fa-hashtag"></i>
+                Trip: {{ request.GET.trip_id }}
+            </span>
+        {% endif %}
+        {% if request.GET.from_location %}
+            <span class="filter-tag" data-filter="from_location" title="Click to remove">
+                <i class="fas fa-map-marker-alt"></i>
+                From: {{ request.GET.from_location }}
+            </span>
+        {% endif %}
+        {% if request.GET.destination %}
+            <span class="filter-tag" data-filter="destination" title="Click to remove">
+                <i class="fas fa-flag-checkered"></i>
+                To: {{ request.GET.destination }}
+            </span>
+        {% endif %}
+        <span class="filter-count">
+            <i class="fas fa-list"></i>
+            {{ trips.count }} trip{{ trips.count|pluralize }} found
+        </span>
+    </div>
+    {% endif %}
+
+    <!-- Action Bar with Report Downloads -->
+    <div class="action-bar">
+        <div class="results-info">
+            <i class="fas fa-chart-bar"></i>
+            <span>Total Results:</span>
+            <span class="results-count">{{ trips.count }}</span>
+        </div>
+
+        <div class="report-section">
+            <form method="GET" action="{% url 'trip_report_download' %}" style="display: inline;" class="report-form" data-report="Excel">
+                <!-- Pass current filter values to download -->
+                {% if request.GET.status %}<input type="hidden" name="status" value="{{ request.GET.status }}">{% endif %}
+                {% if request.GET.vendor %}<input type="hidden" name="vendor" value="{{ request.GET.vendor }}">{% endif %}
+                {% if request.GET.trip_id %}<input type="hidden" name="trip_id" value="{{ request.GET.trip_id }}">{% endif %}
+                {% if request.GET.from_location %}<input type="hidden" name="from_location" value="{{ request.GET.from_location }}">{% endif %}
+                {% if request.GET.destination %}<input type="hidden" name="destination" value="{{ request.GET.destination }}">{% endif %}
+                <input type="hidden" name="format" value="excel">
+
+                <button type="submit" class="btn-report excel">
+                    <i class="fas fa-file-excel"></i>
+                    Download Report
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Trips Table -->
+    <div class="table-container">
+        <div class="scrollable-table-container">
+            <table class="trip-table">
+                <thead>
+                    <tr>
+                        <th>
+                            <i class="fas fa-hashtag"></i> Trip ID
+                        </th>
+                        <th>
+                            <i class="fas fa-handshake"></i> Vendor
+                        </th>
+                        <th>
+                            <i class="fas fa-truck"></i> Vehicle Type
+                        </th>
+                        <th>
+                            <i class="fas fa-weight-hanging"></i> Capacity
+                        </th>
+                        <th>
+                            <i class="fas fa-map-marker-alt"></i> From
+                        </th>
+                        <th>
+                            <i class="fas fa-flag-checkered"></i> Destination
+                        </th>
+                        <th>
+                            <i class="fas fa-road"></i> Distance
+                        </th>
+                        <th>
+                            <i class="fas fa-rupee-sign"></i> Total Bill
+                        </th>
+                        <th>
+                            <i class="fas fa-info-circle"></i> Status
+                        </th>
+                        <th>
+                            <i class="fas fa-calendar"></i> Created
+                        </th>
+                        <th>
+                            <i class="fas fa-cogs"></i> Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trip in trips %}
+                    <tr>
+                        <td class="trip-id">{{ trip.trip_id }}</td>
+                        <td class="vendor-name">{{ trip.vendor.vendor_name|default:"Not Assigned" }}</td>
+                        <td>{{ trip.vehicle_type|default:"Not Specified" }}</td>
+                        <td>
+                            {% if trip.vehicle_capacity %}
+                                {{ trip.vehicle_capacity }} MT
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>{{ trip.from_location|title }}</td>
+                        <td>{{ trip.destination|title }}</td>
+                        <td>
+                            {% if trip.kilometer %}
+                                {{ trip.kilometer }} KM
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td class="amount">₹{{ trip.total_bill_amount|floatformat:2|default:"0.00" }}</td>
+                        <td class="status-cell">
+                            <form method="post" action="{% url 'trip-status-update' trip.id %}" class="status-form">
+                                {% csrf_token %}
+                                <select name="status"
+                                        class="status-select status-{{ trip.status|lower|cut:'-' }}"
+                                        onchange="this.form.submit()">
+                                    <option value="In-Progress" {% if trip.status == "In-Progress" %}selected{% endif %}>In-Progress</option>
+                                    <option value="Closed" {% if trip.status == "Closed" %}selected{% endif %}>Closed</option>
+                                    <option value="Cancelled" {% if trip.status == "Cancelled" %}selected{% endif %}>Cancelled</option>
+                                    <option value="Hold" {% if trip.status == "Hold" %}selected{% endif %}>Hold</option>
+                                    <option value="Payment Received" {% if trip.status == "Payment Received" %}selected{% endif %}>Payment Received</option>
+                                </select>
+                            </form>
+                        </td>
+                        <td>
+                            {{ trip.created_at|date:"d M Y" }}
+                            <br><small style="color: #6c757d;">{{ trip.created_at|time:"H:i" }}</small>
+                        </td>
+                        <td class="actions-cell">
+                            <div class="action-buttons">
+                                <a href="{% url 'trip-detail' trip.id %}" class="btn-action btn-view" title="View Details">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                <a href="{% url 'trip-update' trip.id %}" class="btn-action btn-edit" title="Edit Trip">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="11">
+                            <div class="empty-state">
+                                <i class="fas fa-truck"></i>
+                                <h3>No Trips Found</h3>
+                                <p>No trips match your current filter criteria.</p>
+                                {% if request.GET.status or request.GET.vendor or request.GET.trip_id or request.GET.from_location or request.GET.destination %}
+                                <a href="{% url 'trip-list' %}" class="btn-search" style="margin-top: 1rem; text-decoration: none;">
+                                    <i class="fas fa-refresh"></i> Clear All Filters
+                                </a>
+                                {% else %}
+                                <p style="margin-top: 1rem;">
+                                    <a href="{% url 'trip-create' %}" class="btn-search" style="text-decoration: none;">
+                                        <i class="fas fa-plus"></i> Create Your First Trip
+                                    </a>
+                                </p>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Floating Create Button -->
+    <a href="{% url 'trip-create' %}" class="create-btn" title="Create New Trip">
+        <i class="fas fa-plus"></i>
+    </a>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <h4 id="loadingText">Preparing Report...</h4>
+        <p>Please wait while we generate your trip report.</p>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle filter tag removal
+    document.querySelectorAll('.filter-tag[data-filter]').forEach(tag => {
+        tag.addEventListener('click', function(e) {
+            e.preventDefault();
+            const filterType = this.getAttribute('data-filter');
+            if (filterType) {
+                const url = new URL(window.location);
+                url.searchParams.delete(filterType);
+                window.location.href = url.toString();
+            }
+        });
+    });
+
+    // Handle report download with loading overlay
+    document.querySelectorAll('.report-form').forEach(form => {
+        form.addEventListener('submit', function() {
+            const overlay = document.getElementById('loadingOverlay');
+            const reportType = this.getAttribute('data-report');
+            const loadingText = document.getElementById('loadingText');
+
+            if (overlay && loadingText) {
+                loadingText.textContent = `Preparing ${reportType} Report...`;
+                overlay.style.display = 'flex';
+
+                // Hide overlay after 5 seconds (adjust based on your report generation time)
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 5000);
+            }
+        });
+    });
+
+    // Status change confirmation
+    document.querySelectorAll('.status-select').forEach(select => {
+        const originalValue = select.value;
+        select.addEventListener('change', function(e) {
+            const newStatus = this.value;
+            const tripId = this.closest('tr').querySelector('.trip-id').textContent;
+
+            if (newStatus === 'Cancelled' || newStatus === 'Closed') {
+                const confirmed = confirm(`Are you sure you want to change trip ${tripId} status to "${newStatus}"?`);
+                if (!confirmed) {
+                    this.value = originalValue;
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        });
+    });
+
+    // Enhanced table interactions
+    document.querySelectorAll('.trip-table tbody tr').forEach(row => {
+        const tripId = row.querySelector('.trip-id');
+        if (tripId) {
+            row.addEventListener('click', function(e) {
+                // Don't trigger on button clicks or form interactions
+                if (e.target.closest('.btn-action') ||
+                    e.target.closest('.status-form') ||
+                    e.target.tagName === 'SELECT') {
+                    return;
+                }
+
+                // Highlight selected row
+                document.querySelectorAll('.trip-table tbody tr').forEach(r => r.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        }
+    });
+
+    // Auto-submit form on status change with small delay for better UX
+    document.querySelectorAll('.status-form').forEach(form => {
+        const select = form.querySelector('.status-select');
+        if (select) {
+            select.addEventListener('change', function() {
+                // Small delay to show the visual change
+                setTimeout(() => {
+                    form.submit();
+                }, 300);
+            });
+        }
+    });
+});
+</script>
 {% endblock %}

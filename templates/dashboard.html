@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard - SVE TRANSPORT</title>
+  <title>Dashboard - VARSHA TRANSPORT</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
@@ -682,9 +682,9 @@
 <!-- Header -->
 <header class="header">
   <div class="header-left">
-    <img src="{% static 'logo.png' %}" alt="SVE TRANSPORT logo" />
+    <img src="{% static 'logo.png' %}" alt="VARSHA TRANSPORT logo" />
     <div class="company-info">
-      <h1>SVE TRANSPORT</h1>
+      <h1>VARSHA TRANSPORT</h1>
       <p>Your Trusted Transport Partner</p>
     </div>
   </div>
@@ -722,10 +722,10 @@
     <span class="label">Shipment</span>
   </button>
   <div class="dropdown-container">
-    {% if user_permissions.can_create_shipment %}
+    {% if user.usertype == 'Internal' %}
       <a href="{% url 'shipment_create' %}"><i class="fas fa-plus"></i> Create Shipment</a>
-      <a href="{% url 'search_consignment' %}"><i class="fas fa-edit"></i> Update Content</a>
-      <a href="{% url 'shipment_bulk_upload' %}"><i class="fas fa-upload"></i> Bulk Upload</a>
+<!--      <a href="{% url 'search_consignment' %}"><i class="fas fa-edit"></i> Update Content</a>-->
+<!--      <a href="{% url 'shipment_bulk_upload' %}"><i class="fas fa-upload"></i> Bulk Upload</a>-->
       <a href="{% url 'consignment_note' %}"><i class="fas fa-file-alt"></i> Consignment Notes</a>
       <a href="{% url 'print_label' %}"><i class="fas fa-tags"></i> Label Download</a>
       <a href="{% url 'pod_upload_search' %}"><i class="fas fa-cloud-upload-alt"></i> Upload POD</a>
@@ -739,19 +739,20 @@
     <span class="label">Manifest</span>
   </button>
   <div class="dropdown-container">
-    {% if user_permissions.can_create_manifest %}
+    {% if user.usertype == 'Internal' %}
       <a href="{% url 'create_manifest' %}"><i class="fas fa-plus"></i> Create Manifest</a>
-      <a href="#"><i class="fas fa-edit"></i> Update by Manifest</a>
-      <a href="#"><i class="fas fa-print"></i> Print Manifest</a>
+<!--      <a href="#"><i class="fas fa-edit"></i> Update by Manifest</a>-->
+<!--      <a href="#"><i class="fas fa-print"></i> Print Manifest</a>-->
       <a href="{% url 'trip-create' %}"><i class="fas fa-route"></i> Create Trip to Vendor</a>
-      <a href="#"><i class="fas fa-edit"></i> Update Trip-Vendor</a>
-      <a href="#"><i class="fas fa-cogs"></i> Manage Trips - Vendor</a>
+<!--      <a href="#"><i class="fas fa-edit"></i> Update Trip-Vendor</a>-->
+<!--      <a href="#"><i class="fas fa-cogs"></i> Manage Trips - Vendor</a>-->
     {% endif %}
     <a href="{% url 'manifest_list' %}"><i class="fas fa-list"></i> Manifest List</a>
-    <a href="{% url 'trip-list' %}"><i class="fas fa-list-alt"></i> Trip List -Vendor</a>
+    <a href="{% url 'trip-list' %}"><i class="fas fa-list-alt"></i> Trip to Vendor List</a>
+        <a href="{% url 'trip-list' %}"><i class="fas fa-list-alt"></i> Consolidated Report</a>
   </div>
 
-  {% if user_permissions.can_view_billing %}
+  {% if user.usertype == 'Internal' %}
   <button class="dropdown-btn" aria-expanded="false" aria-haspopup="true" aria-label="Toggle Billing menu">
     <span class="icon"><i class="fas fa-money-bill"></i></span>
     <span class="label">Billing</span>
@@ -912,7 +913,7 @@
   </div>
 
   <footer>
-    <p>&copy; 2025 SVE TRANSPORT. All Rights Reserved. | <i class="fas fa-phone"></i> +91-9164993830 | <i class="fas fa-envelope"></i> info@svetransport.com</p>
+    <p>&copy; 2025 VARSHA TRANSPORT. All Rights Reserved. | <i class="fas fa-phone"></i> +91-9164993830 | <i class="fas fa-envelope"></i> info@varshatransport.com</p>
   </footer>
 </main>
 

@@ -3,7 +3,6 @@
 {% load static %}
 
 <style>
-  /* Container */
   .container {
     max-width: 100%;
     margin: 20px auto 80px;
@@ -11,36 +10,64 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
 
-  /* Headings */
   h2 {
     color: #2c3e50;
     margin-bottom: 20px;
-    user-select: none;
+    font-size: 28px;
+    font-weight: 700;
   }
 
   /* Filter Form */
   form.filter-form {
     margin-bottom: 15px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    background: linear-gradient(135deg, #f8f9ff, #e8f4fd);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e3f2fd;
+    align-items: end;
   }
+
+  form.filter-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
   form.filter-form label {
     font-weight: 600;
     color: #34495e;
-    user-select: none;
+    font-size: 13px;
   }
+
   form.filter-form input[type="date"],
-  form.filter-form input[type="text"] {
-    padding: 6px 10px;
+  form.filter-form input[type="text"],
+  form.filter-form select {
+    padding: 8px 12px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 14px;
-    min-width: 130px;
+    transition: border-color 0.3s ease;
   }
-  form.filter-form button, form.filter-form a.reset-btn {
-    padding: 6px 10px;
+
+  form.filter-form input:focus,
+  form.filter-form select:focus {
+    border-color: #2980b9;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(41, 128, 185, 0.2);
+  }
+
+  form.filter-form .button-group {
+    display: flex;
+    gap: 8px;
+    grid-column: span 2;
+  }
+
+  form.filter-form button,
+  form.filter-form a.reset-btn {
+    padding: 10px 20px;
     border-radius: 4px;
     border: none;
     font-size: 14px;
@@ -48,25 +75,71 @@
     text-decoration: none;
     text-align: center;
     color: white;
-    transition: background-color 0.3s ease;
-    user-select: none;
-  }
-  form.filter-form button {
-    background-color: #2980b9;
-  }
-  form.filter-form button:hover {
-    background-color: #2471a3;
-  }
-  form.filter-form a.reset-btn {
-    background-color: #7f8c8d;
-    line-height: 1.7;
-    display: inline-block;
-  }
-  form.filter-form a.reset-btn:hover {
-    background-color: #6c7a89;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    white-space: nowrap;
   }
 
-  /* Action Buttons Row */
+  form.filter-form button {
+    background: linear-gradient(135deg, #2980b9, #3498db);
+    flex: 1;
+  }
+
+  form.filter-form button:hover {
+    background: linear-gradient(135deg, #2471a3, #2980b9);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(41, 128, 185, 0.3);
+  }
+
+  form.filter-form a.reset-btn {
+    background: linear-gradient(135deg, #7f8c8d, #95a5a6);
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  form.filter-form a.reset-btn:hover {
+    background: linear-gradient(135deg, #6c7a89, #7f8c8d);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(127, 140, 141, 0.3);
+  }
+
+  /* Current Filters */
+  .current-filters {
+    background: linear-gradient(135deg, #e8f5e8, #f0f8ff);
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    border: 1px solid #c3e6cb;
+  }
+
+  .filter-tag {
+    background: linear-gradient(135deg, #2980b9, #3498db);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .filter-count {
+    color: #2c3e50;
+    font-weight: 700;
+    margin-left: auto;
+    background: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    border: 1px solid #bdc3c7;
+  }
+
+  /* Action Buttons */
   .action-buttons {
     display: flex;
     justify-content: space-between;
@@ -83,74 +156,81 @@
   }
 
   .save-changes-btn {
-    padding: 8px 18px;
+    padding: 10px 20px;
     background: linear-gradient(135deg, #27ae60, #2ecc71);
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
     font-size: 14px;
-    user-select: none;
     transition: all 0.3s ease;
     display: none;
+    box-shadow: 0 2px 4px rgba(39, 174, 96, 0.2);
   }
 
   .save-changes-btn:hover {
     background: linear-gradient(135deg, #229954, #27ae60);
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
   }
 
   .save-changes-btn.show {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
   }
 
   .download-report button {
-    padding: 8px 18px;
-    background-color: #e74c3c;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
     font-size: 14px;
-    user-select: none;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(231, 76, 60, 0.2);
   }
+
   .download-report button:hover {
-    background-color: #c0392b;
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
   }
 
   /* Table Container */
   .scrollable-table-container {
-    max-height: 500px;
+    max-height: 600px;
     overflow: auto;
     position: relative;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     background-color: white;
+    border: 1px solid #e8e8e8;
   }
 
-  /* Table styles */
+  /* Table */
   table.shipment-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    font-size: 14px;
+    font-size: 13px;
     table-layout: auto;
-    min-width: 1200px;
+    min-width: 1400px;
   }
+
   table.shipment-table th,
   table.shipment-table td {
     border: 1px solid #ddd;
-    padding: 8px 10px;
+    padding: 10px 12px;
     text-align: center;
     white-space: normal;
-    overflow-wrap: anywhere;
     background-color: white;
     vertical-align: middle;
   }
+
   table.shipment-table th {
     background: linear-gradient(135deg, #2c3e50, #34495e);
     color: white;
@@ -158,52 +238,56 @@
     top: 0;
     z-index: 3;
     white-space: nowrap;
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
+
   table.shipment-table th:first-child {
     left: 0;
     position: sticky;
     z-index: 4;
-    background: linear-gradient(135deg, #2c3e50, #34495e);
-    box-shadow: 2px 0 5px -1px rgba(0,0,0,0.3);
+    box-shadow: 2px 0 8px rgba(0,0,0,0.15);
   }
+
   table.shipment-table td:first-child {
     position: sticky;
     left: 0;
     background-color: #fff;
     z-index: 2;
-    box-shadow: 2px 0 5px -1px rgba(0,0,0,0.1);
+    box-shadow: 2px 0 8px rgba(0,0,0,0.08);
     white-space: nowrap;
-    font-weight: 600;
+    font-weight: 700;
     font-family: 'Courier New', monospace;
     color: #2c3e50;
+    font-size: 12px;
   }
+
+  table.shipment-table tr:nth-child(even) td:first-child {
+    background-color: #f8f9fa;
+  }
+
   table.shipment-table tr:nth-child(even) {
     background-color: #f8f9fa;
   }
+
   table.shipment-table tr:hover {
-    background-color: #e8f4f8;
+    background-color: #e3f2fd;
   }
 
-  /* Editable Fields Styling */
-  .editable-field {
-    position: relative;
-  }
-
+  /* Editable Fields */
   .editable-field input,
   .editable-field select {
     width: 100%;
-    padding: 4px 6px;
+    padding: 6px 8px;
     border: 1px solid #ddd;
-    border-radius: 3px;
-    font-size: 13px;
+    border-radius: 4px;
+    font-size: 12px;
     background: white;
     transition: all 0.3s ease;
-    box-sizing: border-box;
-    min-width: 120px;
+    min-width: 110px;
   }
 
   .editable-field input:focus,
@@ -216,96 +300,82 @@
 
   .editable-field input.changed,
   .editable-field select.changed {
-    border-color: #e67e22;
-    background: #fff5f0;
+    border-color: #f39c12;
+    background: linear-gradient(135deg, #fff5f0, #fef9e7);
+    box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.2);
   }
 
-  .editable-field input.error,
-  .editable-field select.error {
-    border-color: #e74c3c;
-    background: #fdf2f2;
-  }
-
-  /* Status Badge Styling */
+  /* Status Styles */
   .status-select {
-    padding: 4px 6px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
+    padding: 6px 8px;
+    border-radius: 15px;
+    font-size: 10px;
+    font-weight: 700;
     text-align: center;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
+    cursor: pointer;
   }
 
-  .status-booked { background: #e3f2fd; color: #1565c0; }
-  .status-in-transit { background: #fff3e0; color: #ef6c00; }
-  .status-delivered { background: #e8f5e9; color: #2e7d32; }
-  .status-partial-delivered { background: #fff8e1; color: #f57f17; }
-  .status-cancelled { background: #ffebee; color: #d32f2f; }
+  .status-booked { background: linear-gradient(135deg, #e3f2fd, #bbdefb); color: #1565c0; }
+  .status-in-transit { background: linear-gradient(135deg, #fff3e0, #ffe0b2); color: #ef6c00; }
+  .status-delivered { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); color: #2e7d32; }
+  .status-on-hold { background: linear-gradient(135deg, #fff3e0, #ffe0b2); color: #ef6c00; }
+  .status-cancelled { background: linear-gradient(135deg, #ffebee, #ffcdd2); color: #d32f2f; }
 
-  /* Date Input Styling */
-  .date-input {
-    color: #495057;
-    font-size: 12px;
-  }
-
-  .date-input:invalid {
-    border-color: #e74c3c;
-  }
-
-  /* Action buttons */
+  /* Action Buttons */
   table.shipment-table a.details-btn,
   table.shipment-table a.update-btn {
     color: white;
     border-radius: 4px;
-    padding: 4px 8px;
+    padding: 5px 10px;
     font-size: 11px;
     display: inline-block;
     text-decoration: none;
-    user-select: none;
-    transition: all 0.3s ease;
-    margin: 1px;
-  }
-<!--  table.shipment-table a.details-btn {-->
-<!--    background: linear-gradient(135deg, #3498db, #2980b9);-->
-<!--  }-->
-<!--  table.shipment-table a.update-btn {-->
-<!--    background: linear-gradient(135deg, #f39c12, #e67e22);-->
-<!--  }-->
-  table.shipment-table a:hover,
-  table.shipment-table a:focus {
-    transform: translateY(-1px);
-    outline: none;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+    margin: 2px;
+    font-weight: 600;
   }
 
-  /* Actions cell */
+  table.shipment-table a.details-btn {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+  }
+
+  table.shipment-table a.update-btn {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+  }
+
+  table.shipment-table a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+
   td.actions-cell {
     display: flex;
     justify-content: center;
     gap: 4px;
     flex-wrap: wrap;
-    min-width: 100px;
   }
 
-  /* Loading State */
+  /* Loading & Messages */
   .loading-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
+    background: rgba(44, 62, 80, 0.8);
     display: none;
     justify-content: center;
     align-items: center;
     z-index: 9999;
+    backdrop-filter: blur(4px);
   }
 
   .loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid #f3f3f3;
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(255,255,255,0.3);
     border-top: 4px solid #3498db;
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -316,7 +386,6 @@
     100% { transform: rotate(360deg); }
   }
 
-  /* Success/Error Messages */
   .message-container {
     position: fixed;
     top: 20px;
@@ -325,22 +394,23 @@
   }
 
   .alert {
-    padding: 12px 16px;
-    border-radius: 4px;
-    margin-bottom: 10px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin-bottom: 12px;
     font-weight: 600;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     animation: slideIn 0.3s ease-out;
+    min-width: 300px;
   }
 
   .alert-success {
-    background: #d4edda;
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
     color: #155724;
     border: 1px solid #c3e6cb;
   }
 
   .alert-error {
-    background: #f8d7da;
+    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
     color: #721c24;
     border: 1px solid #f5c6cb;
   }
@@ -350,61 +420,150 @@
     to { transform: translateX(0); opacity: 1; }
   }
 
-  /* Responsive adjustments */
+  .no-shipments {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    color: #6c757d;
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    font-size: 16px;
+  }
+
+  /* Pagination */
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .pagination a,
+  .pagination span {
+    padding: 8px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.2s ease;
+  }
+
+  .pagination a {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+  }
+
+  .pagination a:hover {
+    background: linear-gradient(135deg, #2980b9, #2471a3);
+    transform: translateY(-1px);
+  }
+
+  .pagination .current {
+    background: #ecf0f1;
+    color: #2c3e50;
+  }
+
+  /* Responsive */
   @media (max-width: 1200px) {
-    table.shipment-table {
-      min-width: 1000px;
-      font-size: 13px;
-    }
-    .editable-field input,
-    .editable-field select {
-      min-width: 100px;
-      font-size: 12px;
+    form.filter-form {
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     }
   }
 
-  @media (max-width: 900px) {
-    table.shipment-table {
-      min-width: 800px;
-      font-size: 12px;
+  @media (max-width: 768px) {
+    form.filter-form {
+      grid-template-columns: 1fr;
     }
-    form.filter-form input[type="date"],
-    form.filter-form input[type="text"] {
-      min-width: 90px;
-      font-size: 13px;
+    form.filter-form .button-group {
+      grid-column: span 1;
     }
     .action-buttons {
       flex-direction: column;
       align-items: stretch;
     }
   }
-
-  @media (max-width: 600px) {
-    form.filter-form {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    .bulk-actions {
-      justify-content: center;
-    }
-  }
 </style>
 
 <div class="container">
-  <!-- Date filter form -->
-  <form method="get" action="" class="filter-form" aria-label="Filter shipments">
-    <label for="start_date">From:</label>
-    <input id="start_date" type="date" name="start_date" value="{{ start_date }}">
+  <h2>📦 Shipment Management</h2>
 
-    <label for="end_date">To:</label>
-    <input id="end_date" type="date" name="end_date" value="{{ end_date }}">
+  <!-- Filter Form -->
+  <form method="get" action="" class="filter-form">
+    <div class="form-group">
+      <label for="start_date">📅 From Date</label>
+      <input id="start_date" type="date" name="start_date" value="{{ start_date }}">
+    </div>
 
-    <label for="consignment_no">Consignment No:</label>
-    <input id="consignment_no" type="text" name="consignment_no" value="{{ request.GET.consignment_no }}" placeholder="Enter Consignment No">
+    <div class="form-group">
+      <label for="end_date">📅 To Date</label>
+      <input id="end_date" type="date" name="end_date" value="{{ end_date }}">
+    </div>
 
-    <button type="submit" aria-label="Filter shipments">Filter</button>
-    <a href="{% url 'shipment_list' %}" class="reset-btn" role="button" aria-label="Reset filters">Reset</a>
+    <div class="form-group">
+      <label for="consignment_no">🔍 Consignment No</label>
+      <input id="consignment_no" type="text" name="consignment_no" value="{{ request.GET.consignment_no }}" placeholder="CN12345">
+    </div>
+
+    <div class="form-group">
+      <label for="consignor">👤 Consignor</label>
+      <input id="consignor" type="text" name="consignor" value="{{ request.GET.consignor }}" placeholder="Consignor Name">
+    </div>
+
+    <div class="form-group">
+      <label for="origin">📍 Origin</label>
+      <input id="origin" type="text" name="origin" value="{{ request.GET.origin }}" placeholder="City/State">
+    </div>
+
+    <div class="form-group">
+      <label for="consignee">👤 Consignee</label>
+      <input id="consignee" type="text" name="consignee" value="{{ request.GET.consignee }}" placeholder="Consignee Name">
+    </div>
+
+    <div class="form-group">
+      <label for="destination">📍 Destination</label>
+      <input id="destination" type="text" name="destination" value="{{ request.GET.destination }}" placeholder="City/State">
+    </div>
+
+    <div class="form-group">
+      <label for="vehicle_no">🚚 Vehicle #</label>
+      <input id="vehicle_no" type="text" name="vehicle_no" value="{{ request.GET.vehicle_no }}" placeholder="KA01AB1234">
+    </div>
+
+    <div class="form-group">
+      <label for="status_filter">📊 Status</label>
+      <select id="status_filter" name="status">
+        <option value="">All Statuses</option>
+        <option value="Booked" {% if request.GET.status == 'Booked' %}selected{% endif %}>Booked</option>
+        <option value="In Transit" {% if request.GET.status == 'In Transit' %}selected{% endif %}>In Transit</option>
+        <option value="Delivered" {% if request.GET.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+        <option value="Out For Delivery" {% if request.GET.status == 'Out For Delivery' %}selected{% endif %}>Out For Delivery</option>
+        <option value="On Hold" {% if request.GET.status == 'On Hold' %}selected{% endif %}>On Hold</option>
+        <option value="Cancelled" {% if request.GET.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+      </select>
+    </div>
+
+    <div class="button-group">
+      <button type="submit">🔍 Filter</button>
+      <a href="{% url 'shipment_list' %}" class="reset-btn">🔄 Reset</a>
+    </div>
   </form>
+
+  <!-- Current Filters -->
+  {% if start_date or end_date or request.GET.consignment_no or request.GET.consignor or request.GET.origin or request.GET.consignee or request.GET.destination or request.GET.vehicle_no or request.GET.status %}
+  <div class="current-filters">
+    <strong>📋 Active Filters:</strong>
+    {% if start_date %}<span class="filter-tag">From: {{ start_date }}</span>{% endif %}
+    {% if end_date %}<span class="filter-tag">To: {{ end_date }}</span>{% endif %}
+    {% if request.GET.consignment_no %}<span class="filter-tag">CN: {{ request.GET.consignment_no }}</span>{% endif %}
+    {% if request.GET.consignor %}<span class="filter-tag">Consignor: {{ request.GET.consignor }}</span>{% endif %}
+    {% if request.GET.origin %}<span class="filter-tag">Origin: {{ request.GET.origin }}</span>{% endif %}
+    {% if request.GET.consignee %}<span class="filter-tag">Consignee: {{ request.GET.consignee }}</span>{% endif %}
+    {% if request.GET.destination %}<span class="filter-tag">Dest: {{ request.GET.destination }}</span>{% endif %}
+    {% if request.GET.vehicle_no %}<span class="filter-tag">Vehicle: {{ request.GET.vehicle_no }}</span>{% endif %}
+    {% if request.GET.status %}<span class="filter-tag">Status: {{ request.GET.status }}</span>{% endif %}
+    <span class="filter-count">{{ page_obj.paginator.count }} shipment{{ page_obj.paginator.count|pluralize }}</span>
+  </div>
+  {% endif %}
 
   <!-- Action Buttons -->
   <div class="action-buttons">
@@ -419,35 +578,44 @@
 
     <div class="download-report">
       <form method="get" action="{% url 'shipment_report_download' %}" style="display: inline;">
-        <button type="submit" aria-label="Download shipments report as CSV">📊 Download Report</button>
+        {% if start_date %}<input type="hidden" name="start_date" value="{{ start_date }}">{% endif %}
+        {% if end_date %}<input type="hidden" name="end_date" value="{{ end_date }}">{% endif %}
+        {% if request.GET.consignment_no %}<input type="hidden" name="consignment_no" value="{{ request.GET.consignment_no }}">{% endif %}
+        {% if request.GET.consignor %}<input type="hidden" name="consignor" value="{{ request.GET.consignor }}">{% endif %}
+        {% if request.GET.origin %}<input type="hidden" name="origin" value="{{ request.GET.origin }}">{% endif %}
+        {% if request.GET.consignee %}<input type="hidden" name="consignee" value="{{ request.GET.consignee }}">{% endif %}
+        {% if request.GET.destination %}<input type="hidden" name="destination" value="{{ request.GET.destination }}">{% endif %}
+        {% if request.GET.vehicle_no %}<input type="hidden" name="vehicle_no" value="{{ request.GET.vehicle_no }}">{% endif %}
+        {% if request.GET.status %}<input type="hidden" name="status" value="{{ request.GET.status }}">{% endif %}
+        <button type="submit">📊 Download Report ({{ page_obj.paginator.count }})</button>
       </form>
     </div>
   </div>
 
-  <!-- Editable Shipments Table -->
+  <!-- Editable Table -->
   <form id="bulkEditForm">
     {% csrf_token %}
-    <div class="scrollable-table-container" role="region" aria-label="Editable List of Shipments">
+    <div class="scrollable-table-container">
       <table class="shipment-table">
         <thead>
           <tr>
-            <th scope="col">Consignment No</th>
-            <th scope="col">Date</th>
-            <th scope="col">Consignor</th>
-            <th scope="col">Origin</th>
-            <th scope="col">Consignee</th>
-            <th scope="col">Destination</th>
-            <th scope="col">Vehicle No</th>
-            <th scope="col">Status ✏️</th>
-            <th scope="col">Est. Delivery ✏️</th>
-            <th scope="col">Delivery Date ✏️</th>
-            <th scope="col">Actions</th>
+            <th>Consignment No</th>
+            <th>Date</th>
+            <th>Consignor</th>
+            <th>Origin</th>
+            <th>Consignee</th>
+            <th>Destination</th>
+            <th>Vehicle No</th>
+            <th>Status ✏️</th>
+            <th>Est. Delivery ✏️</th>
+            <th>Delivery Date ✏️</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {% for shipment in shipments %}
           <tr data-shipment-id="{{ shipment.pk }}">
-            <th scope="row">{{ shipment.consignment_no }}</th>
+            <td>{{ shipment.consignment_no }}</td>
             <td>{{ shipment.date|date:"d-m-Y" }}</td>
             <td>{{ shipment.consignor_name|truncatechars:20 }}</td>
             <td>{{ shipment.origin }}</td>
@@ -455,87 +623,83 @@
             <td>{{ shipment.destination }}</td>
             <td>{{ shipment.vehicle_no|default:"-" }}</td>
 
-            <!-- Editable Status -->
-           <td class="editable-field">
-  <select name="status_{{ shipment.pk }}" class="status-select status-{{ shipment.status|lower|slugify }}"
-          data-original="{{ shipment.status }}" data-field="status"
-          onchange="handleFieldChange(this)">
+            <td class="editable-field">
+                 <select name="status_{{ shipment.pk }}" class="status-select status-{{ shipment.status|lower|slugify }}"
+                      data-original="{{ shipment.status }}" data-field="status"
+                      onchange="handleFieldChange(this)">
 
-    <!-- Initial/Booking Statuses -->
-    <option value="Booked" {% if shipment.status == 'Booked' %}selected{% endif %}>Booked</option>
-    <option value="Confirmed" {% if shipment.status == 'Confirmed' %}selected{% endif %}>Confirmed</option>
+                <!-- Initial/Booking Statuses -->
+                <option value="Booked" {% if shipment.status == 'Booked' %}selected{% endif %}>Booked</option>
+                <option value="Confirmed" {% if shipment.status == 'Confirmed' %}selected{% endif %}>Confirmed</option>
 
-    <!-- Pickup/Collection Statuses -->
-    <option value="Ready for Pickup" {% if shipment.status == 'Ready for Pickup' %}selected{% endif %}>Ready for Pickup</option>
-    <option value="Pickup Scheduled" {% if shipment.status == 'Pickup Scheduled' %}selected{% endif %}>Pickup Scheduled</option>
-    <option value="Picked Up" {% if shipment.status == 'Picked Up' %}selected{% endif %}>Picked Up</option>
+                <!-- Pickup/Collection Statuses -->
+                <option value="Ready for Pickup" {% if shipment.status == 'Ready for Pickup' %}selected{% endif %}>Ready for Pickup</option>
+                <option value="Pickup Scheduled" {% if shipment.status == 'Pickup Scheduled' %}selected{% endif %}>Pickup Scheduled</option>
+                <option value="Picked Up" {% if shipment.status == 'Picked Up' %}selected{% endif %}>Picked Up</option>
+                <option value="Arrived" {% if shipment.status == 'Arrived' %}selected{% endif %}>Arrived</option>
+                <option value="Accepted at Hub" {% if shipment.status == 'Accepted at Hub' %}selected{% endif %}>Accepted at Hub</option>
 
-    <!-- Transit Statuses -->
-    <option value="In Transit" {% if shipment.status == 'In Transit' %}selected{% endif %}>In Transit</option>
-    <option value="Reached Origin Hub" {% if shipment.status == 'Reached Origin Hub' %}selected{% endif %}>Reached Origin Hub</option>
-    <option value="Departed Origin Hub" {% if shipment.status == 'Departed Origin Hub' %}selected{% endif %}>Departed Origin Hub</option>
-    <option value="In Transit to Destination" {% if shipment.status == 'In Transit to Destination' %}selected{% endif %}>In Transit to Destination</option>
-    <option value="Reached Destination Hub" {% if shipment.status == 'Reached Destination Hub' %}selected{% endif %}>Reached Destination Hub</option>
+                <!-- Transit Statuses -->
+                <option value="In Transit" {% if shipment.status == 'In Transit' %}selected{% endif %}>In Transit</option>
+                <option value="Reached Origin Hub" {% if shipment.status == 'Reached Origin Hub' %}selected{% endif %}>Reached Origin Hub</option>
+                <option value="Departed Origin Hub" {% if shipment.status == 'Departed Origin Hub' %}selected{% endif %}>Departed Origin Hub</option>
+                <option value="In Transit to Destination" {% if shipment.status == 'In Transit to Destination' %}selected{% endif %}>In Transit to Destination</option>
+                <option value="Reached Destination Hub" {% if shipment.status == 'Reached Destination Hub' %}selected{% endif %}>Reached Destination Hub</option>
 
-    <!-- Delivery Statuses -->
-    <option value="Out For Delivery" {% if shipment.status == 'Out For Delivery' %}selected{% endif %}>Out for Delivery</option>
-    <option value="Delivery Attempted" {% if shipment.status == 'Delivery Attempted' %}selected{% endif %}>Delivery Attempted</option>
-    <option value="Delivered" {% if shipment.status == 'Delivered' %}selected{% endif %}>Delivered</option>
-    <option value="Partial Delivered" {% if shipment.status == 'Partial Delivered' %}selected{% endif %}>Partial Delivered</option>
+                <!-- Delivery Statuses -->
+                <option value="Out For Delivery" {% if shipment.status == 'Out For Delivery' %}selected{% endif %}>Out for Delivery</option>
+                <option value="Delivery Attempted" {% if shipment.status == 'Delivery Attempted' %}selected{% endif %}>Delivery Attempted</option>
+                <option value="Delivered" {% if shipment.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                <option value="Partial Delivered" {% if shipment.status == 'Partial Delivered' %}selected{% endif %}>Partial Delivered</option>
 
-    <!-- Exception/Problem Statuses -->
-    <option value="Failed Delivery" {% if shipment.status == 'Failed Delivery' %}selected{% endif %}>Failed Delivery</option>
-    <option value="Customer Not Available" {% if shipment.status == 'Customer Not Available' %}selected{% endif %}>Customer Not Available</option>
-    <option value="Address Issue" {% if shipment.status == 'Address Issue' %}selected{% endif %}>Address Issue</option>
-    <option value="Refused by Customer" {% if shipment.status == 'Refused by Customer' %}selected{% endif %}>Refused by Customer</option>
-    <option value="Damaged" {% if shipment.status == 'Damaged' %}selected{% endif %}>Damaged</option>
-    <option value="Lost" {% if shipment.status == 'Lost' %}selected{% endif %}>Lost</option>
+                <!-- Exception/Problem Statuses -->
+                <option value="Failed Delivery" {% if shipment.status == 'Failed Delivery' %}selected{% endif %}>Failed Delivery</option>
+                <option value="Customer Not Available" {% if shipment.status == 'Customer Not Available' %}selected{% endif %}>Customer Not Available</option>
+                <option value="Address Issue" {% if shipment.status == 'Address Issue' %}selected{% endif %}>Address Issue</option>
+                <option value="Refused by Customer" {% if shipment.status == 'Refused by Customer' %}selected{% endif %}>Refused by Customer</option>
+                <option value="Damaged" {% if shipment.status == 'Damaged' %}selected{% endif %}>Damaged</option>
+                <option value="Lost" {% if shipment.status == 'Lost' %}selected{% endif %}>Lost</option>
 
-    <!-- Hold/Delay Statuses -->
-    <option value="On Hold" {% if shipment.status == 'On Hold' %}selected{% endif %}>On Hold</option>
-    <option value="Delayed" {% if shipment.status == 'Delayed' %}selected{% endif %}>Delayed</option>
-    <option value="Under Investigation" {% if shipment.status == 'Under Investigation' %}selected{% endif %}>Under Investigation</option>
+                <!-- Hold/Delay Statuses -->
+                <option value="On Hold" {% if shipment.status == 'On Hold' %}selected{% endif %}>On Hold</option>
+                <option value="Delayed" {% if shipment.status == 'Delayed' %}selected{% endif %}>Delayed</option>
+                <option value="Under Investigation" {% if shipment.status == 'Under Investigation' %}selected{% endif %}>Under Investigation</option>
 
-    <!-- Return/Cancellation Statuses -->
-    <option value="RTO" {% if shipment.status == 'RTO' %}selected{% endif %}>RTO (Return to Origin)</option>
-    <option value="RTO In Transit" {% if shipment.status == 'RTO In Transit' %}selected{% endif %}>RTO In Transit</option>
-    <option value="RTO Delivered" {% if shipment.status == 'RTO Delivered' %}selected{% endif %}>RTO Delivered</option>
-    <option value="Cancelled" {% if shipment.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
-    <option value="Returned to Sender" {% if shipment.status == 'Returned to Sender' %}selected{% endif %}>Returned to Sender</option>
+                <!-- Return/Cancellation Statuses -->
+                <option value="RTO" {% if shipment.status == 'RTO' %}selected{% endif %}>RTO</option>
+                <option value="RTO In Transit" {% if shipment.status == 'RTO In Transit' %}selected{% endif %}>RTO In Transit</option>
+                <option value="RTO Delivered" {% if shipment.status == 'RTO Delivered' %}selected{% endif %}>RTO Delivered</option>
+                <option value="Cancelled" {% if shipment.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                <option value="Returned to Sender" {% if shipment.status == 'Returned to Sender' %}selected{% endif %}>Returned to Sender</option>
 
-  </select>
-</td>
+              </select>
 
-
-            <!-- Editable Estimated Delivery Date -->
             <td class="editable-field">
               <input type="date" name="estimated_delivery_date_{{ shipment.pk }}"
-                     class="date-input" value="{{ shipment.estimated_delivery_date|date:'Y-m-d' }}"
+                     value="{{ shipment.estimated_delivery_date|date:'Y-m-d' }}"
                      data-original="{{ shipment.estimated_delivery_date|date:'Y-m-d' }}"
-                     data-field="estimated_delivery_date"
-                     onchange="handleFieldChange(this)">
+                     data-field="estimated_delivery_date" onchange="handleFieldChange(this)">
             </td>
 
-            <!-- Editable Delivery Date -->
             <td class="editable-field">
               <input type="date" name="delivery_date_{{ shipment.pk }}"
-                     class="date-input" value="{{ shipment.delivery_date|date:'Y-m-d' }}"
+                     value="{{ shipment.delivery_date|date:'Y-m-d' }}"
                      data-original="{{ shipment.delivery_date|date:'Y-m-d' }}"
-                     data-field="delivery_date"
-                     onchange="handleFieldChange(this)">
+                     data-field="delivery_date" onchange="handleFieldChange(this)">
             </td>
 
             <td class="actions-cell">
-              <a href="{% url 'shipment_detail' shipment.pk %}" class="details-btn"
-                 aria-label="View details for {{ shipment.consignment_no }}">📋 </a>
-              <a href="{% url 'shipment_update' shipment.pk %}" class="update-btn"
-                 aria-label="Update shipment {{ shipment.consignment_no }}">✏️ </a>
+              <a href="{% url 'shipment_detail' shipment.pk %}" class="details-btn">📋 View</a>
+              <a href="{% url 'shipment_update' shipment.pk %}" class="update-btn">✏️ Edit</a>
             </td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="11" style="text-align:center; padding: 20px; font-style: italic; color: #666;">
+            <td colspan="11" class="no-shipments" style="text-align:center; padding: 40px;">
               📦 No shipments available.
+              {% if start_date or end_date %}
+                <br><small><a href="{% url 'shipment_list' %}">Reset filters</a></small>
+              {% endif %}
             </td>
           </tr>
           {% endfor %}
@@ -543,75 +707,65 @@
       </table>
     </div>
   </form>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+  <div class="pagination">
+    {% if page_obj.has_previous %}
+      <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">« First</a>
+      <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">‹ Prev</a>
+    {% endif %}
+
+    <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next ›</a>
+      <a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last »</a>
+    {% endif %}
+  </div>
+  {% endif %}
 </div>
 
-<!-- Loading Overlay -->
+<!-- Loading & Messages -->
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-spinner"></div>
 </div>
-
-<!-- Message Container -->
 <div class="message-container" id="messageContainer"></div>
 
 <script>
 let pendingChanges = {};
-let changesCount = 0;
 
-// Handle field changes
 function handleFieldChange(element) {
   const shipmentId = element.closest('tr').dataset.shipmentId;
   const fieldName = element.dataset.field;
   const originalValue = element.dataset.original;
   const currentValue = element.value;
 
-  // Create unique key for this field
-  const changeKey = `${shipmentId}_${fieldName}`;
-
   if (currentValue !== originalValue) {
-    // Mark as changed
     element.classList.add('changed');
-
-    // Store the change
-    if (!pendingChanges[shipmentId]) {
-      pendingChanges[shipmentId] = {};
-    }
+    if (!pendingChanges[shipmentId]) pendingChanges[shipmentId] = {};
     pendingChanges[shipmentId][fieldName] = currentValue;
-
-    // Update status class for status field
     if (fieldName === 'status') {
-      element.className = element.className.replace(/status-\w+/g, '');
+      element.className = element.className.replace(/status-[\w-]+/g, '');
       element.classList.add(`status-${currentValue.toLowerCase().replace(/\s+/g, '-')}`);
     }
-
   } else {
-    // Remove changed styling
     element.classList.remove('changed');
-
-    // Remove from pending changes
-    if (pendingChanges[shipmentId] && pendingChanges[shipmentId][fieldName]) {
+    if (pendingChanges[shipmentId]) {
       delete pendingChanges[shipmentId][fieldName];
-
-      // If no more changes for this shipment, remove the shipment entry
-      if (Object.keys(pendingChanges[shipmentId]).length === 0) {
-        delete pendingChanges[shipmentId];
-      }
+      if (Object.keys(pendingChanges[shipmentId]).length === 0) delete pendingChanges[shipmentId];
     }
   }
-
   updateChangesCounter();
 }
 
-// Update changes counter and show/hide save button
 function updateChangesCounter() {
-  changesCount = Object.keys(pendingChanges).reduce((total, shipmentId) => {
-    return total + Object.keys(pendingChanges[shipmentId]).length;
-  }, 0);
-
+  const count = Object.values(pendingChanges).reduce((t, s) => t + Object.keys(s).length, 0);
   const counter = document.getElementById('changesCounter');
   const saveBtn = document.getElementById('saveChangesBtn');
 
-  if (changesCount > 0) {
-    counter.textContent = `${changesCount} change${changesCount > 1 ? 's' : ''} pending`;
+  if (count > 0) {
+    counter.textContent = `${count} change${count > 1 ? 's' : ''} pending`;
     counter.style.display = 'inline';
     saveBtn.classList.add('show');
   } else {
@@ -620,7 +774,6 @@ function updateChangesCounter() {
   }
 }
 
-// Save changes via AJAX
 async function saveChanges() {
   if (Object.keys(pendingChanges).length === 0) {
     showMessage('No changes to save.', 'error');
@@ -636,99 +789,63 @@ async function saveChanges() {
         'Content-Type': 'application/json',
         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
       },
-      body: JSON.stringify({
-        changes: pendingChanges
-      })
+      body: JSON.stringify({ changes: pendingChanges })
     });
 
     const data = await response.json();
 
     if (response.ok && data.success) {
-      showMessage(`Successfully updated ${data.updated_count} shipment${data.updated_count > 1 ? 's' : ''}.`, 'success');
-
-      // Clear pending changes and update UI
+      showMessage(`✅ Successfully updated ${data.updated_count} shipment${data.updated_count > 1 ? 's' : ''}!`, 'success');
       pendingChanges = {};
-      changesCount = 0;
       updateChangesCounter();
-
-      // Remove changed styling from all fields
-      document.querySelectorAll('.changed').forEach(element => {
-        element.classList.remove('changed');
-        // Update original value
-        element.dataset.original = element.value;
+      document.querySelectorAll('.changed').forEach(el => {
+        el.classList.remove('changed');
+        el.dataset.original = el.value;
       });
-
     } else {
-      showMessage(data.error || 'Failed to save changes.', 'error');
+      showMessage(`❌ ${data.error || 'Failed to save changes.'}`, 'error');
     }
-
   } catch (error) {
-    console.error('Error saving changes:', error);
-    showMessage('An error occurred while saving changes.', 'error');
+    console.error('Error:', error);
+    showMessage('❌ An error occurred while saving changes.', 'error');
   }
 
   showLoading(false);
 }
 
-// Show loading overlay
 function showLoading(show) {
   document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
 }
 
-// Show message
 function showMessage(message, type) {
-  const messageContainer = document.getElementById('messageContainer');
-  const alertDiv = document.createElement('div');
-  alertDiv.className = `alert alert-${type}`;
-  alertDiv.textContent = message;
-
-  messageContainer.appendChild(alertDiv);
-
-  // Auto remove after 5 seconds
-  setTimeout(() => {
-    if (alertDiv.parentNode) {
-      alertDiv.parentNode.removeChild(alertDiv);
-    }
-  }, 5000);
+  const container = document.getElementById('messageContainer');
+  const alert = document.createElement('div');
+  alert.className = `alert alert-${type}`;
+  alert.textContent = message;
+  container.appendChild(alert);
+  setTimeout(() => alert.remove(), 5000);
 }
 
-// Keyboard shortcuts
 document.addEventListener('keydown', function(e) {
-  // Ctrl+S or Cmd+S to save
   if ((e.ctrlKey || e.metaKey) && e.key === 's') {
     e.preventDefault();
-    if (Object.keys(pendingChanges).length > 0) {
-      saveChanges();
-    }
+    if (Object.keys(pendingChanges).length > 0) saveChanges();
   }
-
-  // Escape to reset current field
   if (e.key === 'Escape') {
-    const activeElement = document.activeElement;
-    if (activeElement.dataset && activeElement.dataset.original) {
-      activeElement.value = activeElement.dataset.original;
-      handleFieldChange(activeElement);
+    const el = document.activeElement;
+    if (el.dataset && el.dataset.original) {
+      el.value = el.dataset.original;
+      handleFieldChange(el);
     }
   }
 });
 
-// Warn before leaving page with unsaved changes
 window.addEventListener('beforeunload', function(e) {
   if (Object.keys(pendingChanges).length > 0) {
     e.preventDefault();
-    e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    e.returnValue = '⚠️ You have unsaved changes. Are you sure you want to leave?';
     return e.returnValue;
   }
-});
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-  updateChangesCounter();
-
-  // Add tooltips for editable fields
-  document.querySelectorAll('.editable-field input, .editable-field select').forEach(element => {
-    element.title = 'Click to edit. Press Escape to reset. Ctrl+S to save all changes.';
-  });
 });
 </script>
 
