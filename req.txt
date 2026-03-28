@@ -12,6 +12,7 @@ colorama==0.4.6
 cryptography==45.0.3
 cssselect2==0.8.0
 Django==5.2.1
+django-unfold==0.87.0
 django-widget-tweaks==1.5.0
 djangorestframework==3.17.0
 djangorestframework_simplejwt==5.5.1
@@ -43,6 +44,7 @@ python-barcode==0.16.1
 python-bidi==0.6.6
 python-dateutil==2.9.0.post0
 python-docx==1.2.0
+python-dotenv==1.2.2
 python-Levenshtein==0.27.1
 pytz==2025.2
 PyYAML==6.0.2
