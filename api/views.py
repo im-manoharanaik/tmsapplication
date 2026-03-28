@@ -4,9 +4,6 @@ from rest_framework import status
 from django.db import transaction
 from drf_yasg.utils import swagger_auto_schema
 from .serializers import ShipmentCreateSerializer
-
-
-
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from rest_framework.views import APIView
@@ -85,3 +82,32 @@ class ShipmentCreateAPI(APIView):
             "status": False,
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
+    
+
+from rest_framework.permissions import AllowAny
+from django.shortcuts import get_object_or_404
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
+
+from .serializers import ShipmentTrackingSerializer
+
+
+class ShipmentTrackingAPI(APIView):
+    permission_classes = [AllowAny]  # Public tracking
+
+    @swagger_auto_schema(
+        operation_description="Track shipment using consignment number"
+    )
+    def get(self, request, consignment_no):
+        shipment = get_object_or_404(
+            Shipment,
+            consignment_no=consignment_no
+        )
+
+        serializer = ShipmentTrackingSerializer(shipment)
+
+        return Response({
+            "status": True,
+            "message": "Shipment details fetched",
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)

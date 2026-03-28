@@ -44,3 +44,44 @@ class ShipmentCreateSerializer(serializers.ModelSerializer):
         shipment.update_calculated_fields()
 
         return shipment
+    
+
+class ContentTrackingSerializer(serializers.ModelSerializer):
+    volume = serializers.FloatField(source="volume_per_box", read_only=True)
+
+    class Meta:
+        model = Content
+        fields = [
+            "batch_id",
+            "count_of_box",
+            "box_weight",
+            "box_length",
+            "box_width",
+            "box_height",
+            "volume",
+        ]
+
+
+class ShipmentTrackingSerializer(serializers.ModelSerializer):
+    boxes = ContentTrackingSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Shipment
+        fields = [
+            "consignment_no",
+            "status",
+            "origin",
+            "destination",
+            "consignor_name",
+            "consignee_name",
+            "vehicle_no",
+            "driver_details",
+            "freight",
+            "total_quantity",
+            "no_article",
+            "actual_weight",
+            "created_at",
+            "estimated_delivery_date",
+            "delivery_date",
+            "boxes",
+        ]
